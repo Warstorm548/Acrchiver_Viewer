@@ -1,0 +1,33 @@
+{
+  "id": "archive-viewer",
+  "name": "Archive Viewer",
+  "summary": "View and extract archive files",
+  "description": "A comprehensive archive viewer supporting ZIP, TAR, TAR.GZ, GZ, TGZ, BZ2, XZ, 7Z, and RAR formats. View contents, extract files, create archives, and manage large files up to 20GB+ efficiently.",
+  "version": "1.0.0",
+  "licence": "MIT",
+  "author": "OpenCloud.eu",
+  "namespace": "OpenCloud",
+  "category": "files",
+  "website": "https://opencloud.eu",
+  "bugs": "https://github.com/opencloud-eu/web-extensions/issues",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/opencloud-eu/web-extensions"
+  },
+  "screenshot": "img/screenshot.png",
+  "types": [
+    "filesystem"
+  ],
+  "mimes": [
+    "application/zip",
+    "application/x-zip-compressed",
+    "application/x-tar",
+    "application/x-gzip",
+    "application/gzip",
+    "application/x-bzip2",
+    "application/x-xz",
+    "application/x-7z-compressed",
+    "application/vnd.rar",
+    "application/x-rar-compressed"
+  ]
+}
