@@ -14,7 +14,8 @@ was removed in step 1.
   `js/remoteEntry-<hash>.mjs`), merged with `src/manifest.json` (the `config` block with the limit
   defaults).
 - `js/*.mjs` — Module Federation remote entry and chunks; shared host modules (`vue`,
-  `vue3-gettext`, `@opencloud-eu/web-pkg`, …) are **not** bundled.
+  `vue3-gettext`, `@opencloud-eu/web-pkg`, …) are **not** bundled. Each file carries a
+  `/*! archive-viewer v<version> */` comment, so a deployed build shows its version.
 
 `pnpm package` packs `dist/` into `release/archive-viewer-<version>.zip` (+ `.sha256`) whose
 top folder is already `archive-viewer/` and which also carries `LICENSE` and
@@ -69,12 +70,13 @@ app from loading.
 
 ## Releasing (not done yet)
 
-1. Bump `version` in `package.json` (semver; the manifest copies it).
+1. Bump `version` in `package.json` (semver; the manifest and JS banner copy it) and date the
+   version's entry in `CHANGELOG.md`.
 2. `pnpm install --frozen-lockfile`, all checks, `pnpm build`, `pnpm package`.
 3. Test the zip on a server (unzip, restart, `/config.json` check).
 4. Merge to `main`, tag `v<version>`, create a GitHub release and attach the zip and `.sha256`.
 
-Version 0.1.0 is prepared but no tag or release exists yet.
+Version 0.1.1 is prepared but no tag or release exists yet.
 
 ## Production security policy (CSP)
 

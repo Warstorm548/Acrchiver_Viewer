@@ -7,7 +7,7 @@ OpenCloud). Standalone extension at the repo root, built with OpenCloud's toolch
 TAR, TAR.GZ/TGZ, TAR.BZ2/TBZ2, TAR.XZ/TXZ, TAR.LZMA and single .gz/.bz2/.xz/.lzma files in the
 browser with pure JavaScript (no WebAssembly, no CSP change) — browse, search, sort, preview,
 download; ZIPs of any size are read by HTTP Range requests. UI in English, German,
-Spanish and French (AI-drafted). Version 0.1.0 is ready to release (no tag yet). Start with [project status](docs/overview/project-status.md).
+Spanish and French (AI-drafted). Version 0.1.1 is ready to release (no tag yet). Start with [project status](docs/overview/project-status.md).
 
 Commands: `pnpm install`, `pnpm build`, `pnpm check:types`, `pnpm lint`, `pnpm format:check`,
 `pnpm test:unit --run`, `pnpm package` (release zip), `pnpm l10n:extract` / `pnpm l10n:compile`
@@ -33,11 +33,16 @@ Commands: `pnpm install`, `pnpm build`, `pnpm check:types`, `pnpm lint`, `pnpm f
 - One bullet per doc: path + a short description of what it covers (Prettier may wrap it).
 - When a bug in [bugs](docs/known-issues/bugs.md) is fixed, remove it there and update any doc
   that mentions it.
+- **Every change bumps the SemVer version** in `package.json` (MAJOR breaking, MINOR feature,
+  PATCH fix) and adds an entry to [CHANGELOG.md](CHANGELOG.md) in the same change. Unreleased
+  versions collect further changes until tagged.
 
 ## Index
 
 ### Root
 
+- [CHANGELOG.md](CHANGELOG.md) — SemVer rules (MAJOR.MINOR.PATCH) and per-version changes,
+  starting at 0.1.0.
 - [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md) — licenses of ported/bundled code (seek-bzip
   MIT port, xz-compat MIT adaptation, zip.js BSD-3-Clause).
 - [README.md](README.md) — user-facing readme (step 6): features, formats, limits, install,

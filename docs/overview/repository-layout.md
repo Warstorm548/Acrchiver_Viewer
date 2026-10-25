@@ -7,13 +7,14 @@ Every tracked file after rework step 6, what it is, and its line count. Generate
 | Path                     | Lines | Purpose                                                                                   |
 | ------------------------ | ----: | ----------------------------------------------------------------------------------------- |
 | `README.md`              |   122 | User-facing readme (rewritten in step 6)                                                  |
-| `CLAUDE.md`              |   127 | Index into `docs/`                                                                        |
+| `CLAUDE.md`              |   132 | Index into `docs/`                                                                        |
 | `LICENSE`                |   661 | GNU AGPL-3.0 (canonical gnu.org text); copyright notice is in `README.md`                 |
 | `THIRD-PARTY-NOTICES.md` |   134 | Licenses of ported (seek-bzip) and bundled (zip.js) code                                  |
 | `package.json`           |    64 | Package metadata, scripts, `@zip.js/zip.js` dependency, devDependencies, `packageManager` |
 | `pnpm-lock.yaml`         |  5356 | Locked dependency tree                                                                    |
 | `.nvmrc`                 |     1 | Node version for nvm (`24`)                                                               |
-| `vite.config.ts`         |     5 | `defineConfig({ name: 'archive-viewer' })` from extension-sdk                             |
+| `CHANGELOG.md`           |    35 | SemVer rules and per-version changes                                                      |
+| `vite.config.ts`         |    17 | extension-sdk `defineConfig`, plus the version banner on compiled JS                      |
 | `gettext.config.cjs`     |    17 | vue3-gettext extract/compile config (de/es/fr)                                            |
 | `scripts/package.mjs`    |    64 | `pnpm package`: release zip + SHA-256 from `dist/`                                        |
 | `tsconfig.json`          |     4 | Extends `@opencloud-eu/tsconfig`                                                          |

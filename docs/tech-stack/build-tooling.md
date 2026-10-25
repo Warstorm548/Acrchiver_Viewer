@@ -28,8 +28,11 @@ repo. Everything below was run successfully in rework step 1.
 
 ## Vite — `vite.config.ts`
 
-`defineConfig({ name: 'archive-viewer' })` from
-`@opencloud-eu/extension-sdk` 8.0.0 (pinned to the server's 8.0 line). The SDK supplies:
+`defineConfig({ name: 'archive-viewer', build })` from
+`@opencloud-eu/extension-sdk` 8.0.0 (pinned to the server's 8.0 line). Our only override is
+`build.rollupOptions.output.postBanner`, which stamps `/*! archive-viewer v<version> */` (read from
+`package.json`) on every compiled JS file. It must be `postBanner`: Rolldown adds a plain `banner`
+before minifying, and the minifier strips it. The SDK supplies:
 
 - `@vitejs/plugin-vue`, `@tailwindcss/vite`, `@vitejs/plugin-basic-ssl` (dev server).
 - Module Federation (`@module-federation/vite`): exposes `./src/index.ts`, output
