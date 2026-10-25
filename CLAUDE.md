@@ -7,10 +7,11 @@ OpenCloud). Standalone extension at the repo root, built with OpenCloud's toolch
 TAR, TAR.GZ/TGZ, TAR.BZ2/TBZ2, TAR.XZ/TXZ, TAR.LZMA and single .gz/.bz2/.xz/.lzma files in the
 browser with pure JavaScript (no WebAssembly, no CSP change) — browse, search, sort, preview,
 download; ZIPs of any size are read by HTTP Range requests. UI in English, German,
-Spanish and French (AI-drafted). Version 0.2.1 is ready to release (no tag yet); it runs only on OpenCloud 8.0.1. Start with [project status](docs/overview/project-status.md).
+Spanish and French (AI-drafted). Version 0.2.2 is ready to release (no tag yet); it runs only on OpenCloud 8.0.1. Start with [project status](docs/overview/project-status.md).
 
 Commands: `pnpm install`, `pnpm build`, `pnpm check:types`, `pnpm lint`, `pnpm format:check`,
-`pnpm test:unit --run`, `pnpm package` (release zip), `pnpm l10n:extract` / `pnpm l10n:compile`
+`pnpm test:unit --run`, `pnpm test:e2e` (Chromium against the local stack; `E2E_SKIP_LARGE=1`
+for a quick run), `pnpm package` (release zip), `pnpm l10n:extract` / `pnpm l10n:compile`
 (translations; extract needs GNU gettext). Run `nvm use` first if Node 24 isn't active.
 
 ## How to use this index
@@ -96,7 +97,9 @@ Commands: `pnpm install`, `pnpm build`, `pnpm check:types`, `pnpm lint`, `pnpm f
 ### Testing
 
 - [docs/testing/tests.md](docs/testing/tests.md) — how to run, SDK test config, the 19 spec files,
-  test patterns (stubs, range-server fetch mock, zip), what only the manual checklist covers.
+  test patterns (stubs, range-server fetch mock, zip), browser memory measurements.
+- [docs/testing/e2e.md](docs/testing/e2e.md) — Playwright e2e suite in Chromium against the local
+  stack: setup, env vars, request rewrites instead of restarts, console guard, the 10 specs, results.
 
 ### Deployment
 

@@ -88,7 +88,7 @@ app from loading.
 3. Test the zip on a server (unzip, restart, `/config.json` check).
 4. Merge to `main`, tag `v<version>`, create a GitHub release and attach the zip and `.sha256`.
 
-Version 0.2.1 is prepared but no tag or release exists yet.
+Version 0.2.2 is prepared but no tag or release exists yet.
 
 ## Production security policy (CSP)
 

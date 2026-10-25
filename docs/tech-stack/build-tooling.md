@@ -14,17 +14,19 @@ repo. Everything below was run successfully in rework step 1.
 
 ## Scripts (`package.json`)
 
-| Script                          | Command                                 | Purpose                                            |
-| ------------------------------- | --------------------------------------- | -------------------------------------------------- |
-| `build`                         | `vite build`                            | Production build to `dist/`                        |
-| `build:w`                       | `vite build --watch --mode development` | Rebuild on change (for a mounted apps dir)         |
-| `check:types`                   | `vue-tsc --noEmit`                      | Type-check `.ts` and `.vue`                        |
-| `lint`                          | `eslint .`                              | `@opencloud-eu/eslint-config`                      |
-| `format:check` / `format:write` | `prettier . --check/--write`            | `@opencloud-eu/prettier-config`                    |
-| `test:unit`                     | `vitest`                                | Unit tests (watch; add `--run` for once)           |
-| `package`                       | `node scripts/package.mjs`              | Release zip from `dist/` (see below)               |
-| `l10n:extract`                  | `vue-gettext-extract`                   | Strings → `l10n/template.pot` + `.po` files        |
-| `l10n:compile`                  | `vue-gettext-compile` + Prettier        | `.po` files → `l10n/translations.json` (formatted) |
+| Script                          | Command                                 | Purpose                                                          |
+| ------------------------------- | --------------------------------------- | ---------------------------------------------------------------- |
+| `build`                         | `vite build`                            | Production build to `dist/`                                      |
+| `build:w`                       | `vite build --watch --mode development` | Rebuild on change (for a mounted apps dir)                       |
+| `check:types`                   | `vue-tsc --noEmit`                      | Type-check `.ts` and `.vue`                                      |
+| `lint`                          | `eslint .`                              | `@opencloud-eu/eslint-config`                                    |
+| `format:check` / `format:write` | `prettier . --check/--write`            | `@opencloud-eu/prettier-config`                                  |
+| `test:unit`                     | `vitest`                                | Unit tests (watch; add `--run` for once)                         |
+| `test:e2e`                      | `playwright test`                       | Chromium e2e tests on the local stack ([e2e](../testing/e2e.md)) |
+| `test:e2e:install`              | `playwright install chromium`           | Downloads Playwright's Chromium (once)                           |
+| `package`                       | `node scripts/package.mjs`              | Release zip from `dist/` (see below)                             |
+| `l10n:extract`                  | `vue-gettext-extract`                   | Strings → `l10n/template.pot` + `.po` files                      |
+| `l10n:compile`                  | `vue-gettext-compile` + Prettier        | `.po` files → `l10n/translations.json` (formatted)               |
 
 ## Vite — `vite.config.ts`
 

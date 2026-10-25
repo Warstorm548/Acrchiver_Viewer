@@ -13,6 +13,16 @@ Every change gets an entry and a version bump in `package.json`, which is the si
 the version: the build copies it into `dist/manifest.json` and stamps it on every compiled JS file
 (`/*! archive-viewer vX.Y.Z */`).
 
+## [0.2.2] - Unreleased
+
+Supported OpenCloud versions: **8.0.1**. No change to the extension itself.
+
+### Added
+
+- End-to-end tests in Chromium (Playwright, `pnpm test:e2e`) against the local OpenCloud stack:
+  every format, browsing, previews, byte-checked downloads, limits, the built-in-CSP fallback, the
+  version check, translations and the 3 GiB ZIP; see [e2e](docs/testing/e2e.md).
+
 ## [0.2.1] - Unreleased
 
 Supported OpenCloud versions: **8.0.1**. Memory fixes from browser testing with large archives

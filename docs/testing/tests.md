@@ -68,9 +68,8 @@ libbz2 byte-for-byte during step 4, and a 9.4 MB real-source tar compressed by `
 ## Not covered by unit tests
 
 `PreviewModal.vue` rendering, the decompression Web Worker, `download.ts` in a real browser and
-`src/index.ts` registration. These are covered by the manual checklist on the local stack
-([local-dev-environment](../deployment/local-dev-environment.md)). E2E tests (Playwright, as in
-`web-extensions`) could automate it later.
+`src/index.ts` registration. These are covered by the Playwright end-to-end suite in Chromium
+against the local stack (`pnpm test:e2e`, see [e2e](e2e.md)).
 
 ## Browser memory tests
 

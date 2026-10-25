@@ -120,6 +120,9 @@ curl -sk -D - -o /dev/null https://cloud.opencloud.test/      # Content-Security
 
 ## Browser checklist
 
+Automated by `pnpm test:e2e` (Chromium; see [e2e](../testing/e2e.md)); the manual list stays
+for a quick look in another browser.
+
 1. `https://cloud.opencloud.test`, accept the certificate warning, log in `admin` / `admin`.
 2. Personal files shows the fixtures.
 3. Right-click an archive → "Open in Archive Viewer" → file table (folders first).
@@ -266,3 +269,8 @@ CSP (`worker-src 'self' blob:`, so bzip2/xz/lzma ran in the worker).
   previews in `sample.zip` showed (checked by the user).
 - Cleanup confirmed: no share links, server file 404, trash empty, local and downloaded copies
   deleted.
+
+## Chromium e2e results (0.2.1 build, 2026-10-25)
+
+- `pnpm test:e2e` (Playwright 1.64.1, Chromium 156): all 64 tests passed in 3.0 minutes, incl. the
+  3 GiB ZIP (900 MiB download peak 584–591 MiB). Details in [e2e](../testing/e2e.md#results).
