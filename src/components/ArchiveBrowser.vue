@@ -410,7 +410,7 @@ export default defineComponent({
             0
           )
           const zip = await withProgress(fileName, compressed, () =>
-            zipEntries(props.handle, files)
+            zipEntries(props.handle, files, props.maxEntrySize)
           )
           triggerDownload(zip, fileName)
         }

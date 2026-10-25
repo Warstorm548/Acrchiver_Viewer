@@ -47,8 +47,9 @@ Not supported: `7z`, `rar` (roadmap) → `ArchiveError('unsupported-format')`.
 
 `ArchiveEntry`: `path` (normalized, no leading/trailing slash), `name`, `isDirectory`, `size`
 (uncompressed), `compressedSize?`, `modified?`, `encrypted?`, `supported` (content readable).
-`ArchiveHandle`: `format`, `entries`, `read(entry): Promise<Blob>` (blob carries a MIME type from
-the file name), `close()`.
+`ArchiveHandle`: `format`, `entries`, `read(entry, maxSize?): Promise<Blob>` (`maxSize` lowers the
+cap for one read — ZIP only, since tar and single-file sizes come from the data; blob carries a
+MIME type from the file name), `close()`.
 
 ## Format detection (`detect.ts`)
 

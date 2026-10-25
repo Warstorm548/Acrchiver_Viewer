@@ -33,9 +33,9 @@ Every tracked file after rework step 6, what it is, and its line count. Generate
 | `src/App.vue`                       |   273 | Viewer shell: ZIP range mode, size check, capped streamed download, detect + open, errors        |
 | `src/components/ArchiveBrowser.vue` |   469 | File table: folders, breadcrumb, search, sort, selection, downloads, cap, progress               |
 | `src/components/PreviewModal.vue`   |   132 | Text/image preview in `oc-modal` (reads via the capped `read` prop)                              |
-| `src/download.ts`                   |    61 | `sanitizeFileName`, `triggerDownload`, `zipEntries` (selection → zip)                            |
+| `src/download.ts`                   |    80 | `sanitizeFileName`, `triggerDownload`, `zipEntries` (selection → zip)                            |
 | `src/engine/index.ts`               |    72 | `openArchive` + re-exports (incl. range reader)                                                  |
-| `src/engine/types.ts`               |    51 | Entry/handle/limit types, `ArchiveError` (incl. `range-unsupported`, `out-of-memory`)            |
+| `src/engine/types.ts`               |    55 | Entry/handle/limit types, `ArchiveError` (incl. `range-unsupported`, `out-of-memory`)            |
 | `src/engine/buffer.ts`              |   171 | `GrowableBuffer` (resizable, size hint), `BlobBuilder`, `MAX_BUFFER_SIZE`, out-of-memory mapping |
 | `src/engine/detect.ts`              |   107 | Extension + signature → format                                                                   |
 | `src/engine/zip.ts`                 |   125 | ZIP via zip.js native build (no WebAssembly), Blob or range source, capped entry reads           |
@@ -76,13 +76,13 @@ Details: [extension-entry](../source/extension-entry.md), [viewer-ui](../source/
 | Path                                     | Lines | Purpose                                                          |
 | ---------------------------------------- | ----: | ---------------------------------------------------------------- |
 | `tests/unit/App.spec.ts`                 |   173 | Viewer flow: range mode, renewal, fallbacks, limits, errors      |
-| `tests/unit/ArchiveBrowser.spec.ts`      |   131 | Navigation, search, sort, downloads, entry cap, progress         |
+| `tests/unit/ArchiveBrowser.spec.ts`      |   133 | Navigation, search, sort, downloads, entry cap, progress         |
 | `tests/unit/limits.spec.ts`              |    52 | Device detection, limit resolution, manifest = defaults          |
 | `tests/unit/translations.spec.ts`        |    50 | Translation completeness and placeholders                        |
-| `tests/unit/download.spec.ts`            |    48 | Safe selection-zip paths                                         |
+| `tests/unit/download.spec.ts`            |    85 | Safe selection-zip paths                                         |
 | `tests/unit/rangeServer.ts`              |    38 | Test helper: `fetch` mock serving byte ranges                    |
 | `tests/unit/engine/tar.spec.ts`          |    84 | TAR parser                                                       |
-| `tests/unit/engine/zip.spec.ts`          |    87 | ZIP reader, range source, entry cap                              |
+| `tests/unit/engine/zip.spec.ts`          |    95 | ZIP reader, range source, entry cap                              |
 | `tests/unit/engine/rangeReader.spec.ts`  |    80 | Range reader: 206/200/401/errors/abort                           |
 | `tests/unit/engine/gzip.spec.ts`         |    67 | gunzip + limit                                                   |
 | `tests/unit/engine/buffer.spec.ts`       |   118 | Buffers, blob builder, out-of-memory mapping                     |

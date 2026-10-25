@@ -113,12 +113,12 @@ export const openZip = async (
   return {
     format: 'zip',
     entries,
-    read: async (entry) => {
+    read: async (entry, maxSize = maxEntrySize) => {
       const zipEntry = fileEntries.get(entry.path)
       if (!zipEntry || !entry.supported) {
         throw new ArchiveError('unreadable-entry', `Cannot read "${entry.path}"`)
       }
-      return await readLimited(zipEntry, entry.name, maxEntrySize)
+      return await readLimited(zipEntry, entry.name, Math.min(maxSize, maxEntrySize))
     },
     close: () => reader.close()
   }

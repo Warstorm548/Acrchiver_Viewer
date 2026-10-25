@@ -68,6 +68,9 @@ A zip.js `Reader` (native build) over a URL:
 
 - `ArchiveBrowser.readEntry` refuses up front when the declared size is over `maxEntrySize`;
   "Download selected" refuses when the declared total is over it. Both explain the limit.
+- The selection's **real** total is capped too: `zipEntries` passes each `read` what is left of
+  `maxEntrySize`, and `readLimited` stops at the lower of that and the entry cap. Declared sizes
+  can lie; zip.js already stops an entry at its declared size, so this is defence in depth.
 - `readLimited` in `zip.ts` refuses a declared size over the cap, then writes through a
   `WritableStream` that aborts once the **real** output passes the cap. Output goes into a
   `BlobBuilder` (blob store, 16 MiB parts), so a 900 MiB entry peaks at ~0.7 GiB of tab memory

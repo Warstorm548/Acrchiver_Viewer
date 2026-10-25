@@ -58,7 +58,8 @@ declared size is over `maxEntrySize` and shows "Extracting <name>… N%" while a
   inside selected folders (readable only); one file is downloaded directly, several are packed
   by `zipEntries` into `<archive>-selection.zip` (archive name minus its extension as computed by
   `archiveExtension`, e.g. `large.tar.bz2` → `large-selection.zip`). A selection whose declared
-  total is over `maxEntrySize` is refused before anything is read.
+  total is over `maxEntrySize` is refused before anything is read; while packing, the **real**
+  bytes are capped at `maxEntrySize` as well (see `zipEntries` below).
 - Failures → `useMessages().showErrorMessage` (host notification); `too-large` errors are replaced
   by a message naming the device limit, memory failures by "not enough free memory".
 
@@ -76,7 +77,9 @@ browser's `read` prop (`readEntry`, with cap and progress), falling back to `han
 
 - `sanitizeFileName`: replaces `/`, `\` and control characters (names come from the archive).
 - `triggerDownload`: temporary `<a download>`, URL revoked after 60 s.
-- `zipEntries(handle, files)`: zip.js native `ZipWriter`, entries added one at a time under their
+- `zipEntries(handle, files, maxTotal)`: zip.js native `ZipWriter`, entries added one at a time
+  (each `handle.read(file, maxTotal − bytes so far)`, so a read stops at what is left of the
+  allowance; over it → `too-large`, writer closed) under their
   archive paths made safe by `selectionPath` (trims segments, drops `.`/`..`, sanitizes the rest, numbers
   clashes as `name (2).ext`).
 

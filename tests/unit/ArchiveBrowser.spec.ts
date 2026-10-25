@@ -78,6 +78,8 @@ describe('ArchiveBrowser', () => {
       'docs/guide.md',
       'docs/deep/data.json'
     ])
+    // the real content is capped too, not just the declared total
+    expect(zip.mock.calls[0][2]).toBe(wrapper.props('maxEntrySize'))
     expect(trigger).toHaveBeenCalledWith(expect.any(Blob), 'sample-selection.zip')
   })
 

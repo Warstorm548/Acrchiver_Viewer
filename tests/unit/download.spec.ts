@@ -1,6 +1,6 @@
 import { BlobReader, ZipReader } from '@zip.js/zip.js/lib/zip-native.js'
 import { selectionPath, zipEntries } from '../../src/download'
-import { ArchiveEntry, ArchiveHandle } from '../../src/engine'
+import { ArchiveEntry, ArchiveError, ArchiveHandle } from '../../src/engine'
 import { configureZip } from '../../src/engine/zip'
 
 const entry = (path: string): ArchiveEntry => ({
@@ -44,5 +44,42 @@ describe('zipEntries', () => {
     const reader = new ZipReader(new BlobReader(zip))
     expect((await reader.getEntries()).map((e) => e.filename)).toEqual(['evil.txt', 'docs/ok.txt'])
     await reader.close()
+  })
+
+  // an archive whose entries claim 1 byte each but really hold more
+  const lyingHandle = (realSize: number) => {
+    const caps: number[] = []
+    const handle = {
+      read: (_e: ArchiveEntry, maxSize = Infinity) => {
+        caps.push(maxSize)
+        return realSize > maxSize
+          ? Promise.reject(new ArchiveError('too-large', 'over the cap'))
+          : Promise.resolve(new Blob([new Uint8Array(realSize)]))
+      }
+    } as unknown as ArchiveHandle
+    return { handle, caps }
+  }
+
+  it('gives each read only what is left of the allowance', async () => {
+    const { handle, caps } = lyingHandle(30)
+    await zipEntries(handle, [entry('a'), entry('b'), entry('c')], 100)
+    expect(caps).toEqual([100, 70, 40])
+  })
+
+  it('stops once the real content exceeds the allowance, whatever the declared sizes', async () => {
+    const { handle, caps } = lyingHandle(40)
+    await expect(
+      zipEntries(handle, [entry('a'), entry('b'), entry('c'), entry('d')], 100)
+    ).rejects.toMatchObject({ code: 'too-large' })
+    expect(caps).toEqual([100, 60, 20])
+  })
+
+  it('stops when a reader returns more than it was allowed', async () => {
+    const handle = {
+      read: () => Promise.resolve(new Blob([new Uint8Array(60)]))
+    } as unknown as ArchiveHandle
+    await expect(zipEntries(handle, [entry('a'), entry('b')], 100)).rejects.toMatchObject({
+      code: 'too-large'
+    })
   })
 })
