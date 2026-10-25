@@ -51,7 +51,7 @@ Requirements from the OpenCloud web service: each app has its own directory, con
 
 ## Supported OpenCloud versions
 
-Each release runs only on the exact OpenCloud versions it was tested on (`8.0.1` for 0.2.0, listed
+Each release runs only on the exact OpenCloud versions it was tested on (`8.0.1` for 0.2.x, listed
 in `CHANGELOG.md`). On any other version, or if the version can't be read, the viewer hides
 itself (no "Open in Archive Viewer", no file types). Before upgrading OpenCloud, install a viewer
 release that supports the new version, or set `allowUnsupportedOpenCloud: true` (below) at your
@@ -88,7 +88,7 @@ app from loading.
 3. Test the zip on a server (unzip, restart, `/config.json` check).
 4. Merge to `main`, tag `v<version>`, create a GitHub release and attach the zip and `.sha256`.
 
-Version 0.2.0 is prepared but no tag or release exists yet.
+Version 0.2.1 is prepared but no tag or release exists yet.
 
 ## Production security policy (CSP)
 

@@ -13,7 +13,7 @@ Every tracked file after rework step 6, what it is, and its line count. Generate
 | `package.json`           |    64 | Package metadata, scripts, `@zip.js/zip.js` dependency, devDependencies, `packageManager` |
 | `pnpm-lock.yaml`         |  5356 | Locked dependency tree                                                                    |
 | `.nvmrc`                 |     1 | Node version for nvm (`24`)                                                               |
-| `CHANGELOG.md`           |    48 | SemVer rules and per-version changes                                                      |
+| `CHANGELOG.md`           |    76 | SemVer rules and per-version changes                                                      |
 | `vite.config.ts`         |    17 | extension-sdk `defineConfig`, plus the version banner on compiled JS                      |
 | `gettext.config.cjs`     |    17 | vue3-gettext extract/compile config (de/es/fr)                                            |
 | `scripts/package.mjs`    |    64 | `pnpm package`: release zip + SHA-256 from `dist/`                                        |
