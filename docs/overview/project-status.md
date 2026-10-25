@@ -2,7 +2,7 @@
 
 Where the Archive Viewer stands. Merged to `main` (PR #1), rework **all 6 steps done**
 (rebuilt setup; verified in a local copy of the production stack; real viewer in pure JavaScript;
-bzip2, XZ/LZMA and single compressed files; large ZIPs by HTTP Range; translations, README, release zip). Version 0.1.0 is ready to release;
+bzip2, XZ/LZMA and single compressed files; large ZIPs by HTTP Range; translations, README, release zip). Version 0.2.2 (OpenCloud version check, runs only on 8.0.1; memory fixes from PR #3; Chromium e2e suite) is ready to release;
 no tag or GitHub release yet.
 
 ## Summary
@@ -69,5 +69,5 @@ Details:
   `dist/manifest.json`).
 - Author **Warstorm548**; repo/bugs → `Warstorm548/Acrchiver_Viewer`. README states the project is
   independent and not affiliated with OpenCloud GmbH.
-- Version `0.1.0` (never released; the old "1.0.0 Production Ready" changelog in
+- Version `0.2.2` (never released; the old "1.0.0 Production Ready" changelog in
   `docs/original-docs/` is historical and inaccurate).

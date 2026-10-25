@@ -14,3 +14,8 @@ coverage
 
 # release zips (pnpm package)
 release/
+
+# Playwright e2e output and saved login
+playwright-report/
+test-results/
+e2e/.auth/

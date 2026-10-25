@@ -18,28 +18,29 @@ whose npm build depends on Node's `Buffer` and can't run in a browser. License t
 
 ## devDependencies (installed versions from `pnpm-lock.yaml`)
 
-| Package                          | Range   | Installed | Role                                                                                          |
-| -------------------------------- | ------- | --------- | --------------------------------------------------------------------------------------------- |
-| `@opencloud-eu/web-pkg`          | ~8.0.0  | 8.0.0     | `defineWebApplication`, `AppWrapperRoute`, `formatFileSize`, types (host-provided at runtime) |
-| `@opencloud-eu/web-client`       | ~8.0.0  | 8.0.0     | `Resource` type, WebDAV client (host-provided)                                                |
-| `@opencloud-eu/extension-sdk`    | ~8.0.0  | 8.0.0     | `defineConfig` for Vite/Vitest                                                                |
-| `@opencloud-eu/tsconfig`         | ~8.0.0  | 8.0.0     | Base `tsconfig`                                                                               |
-| `@opencloud-eu/eslint-config`    | ~8.0.0  | 8.0.0     | ESLint rules                                                                                  |
-| `@opencloud-eu/prettier-config`  | ~8.0.0  | 8.0.0     | Prettier rules                                                                                |
-| `@opencloud-eu/web-test-helpers` | ~8.0.0  | 8.0.0     | `mount`, `defaultPlugins` for tests                                                           |
-| `vue`                            | ^3.5.10 | 3.5.44    | Host-provided at runtime                                                                      |
-| `vue3-gettext`                   | 4.0.1   | 4.0.1     | `useGettext` (host-provided)                                                                  |
-| `vite`                           | ^8.0.3  | 8.3.5     | Build                                                                                         |
-| `vitest`                         | ^5.0.0  | 5.0.5     | Tests                                                                                         |
-| `happy-dom`                      | ^20.0.0 | 20.14.6   | Test DOM                                                                                      |
-| `@vue/test-utils`                | ^2.4.6  | 2.5.1     | Component mounting                                                                            |
-| `vitest-mock-extended`           | ^5.0.0  | 5.1.1     | `mock<T>()`                                                                                   |
-| `typescript`                     | ^6.0.3  | 6.0.3     | Type-check                                                                                    |
-| `vue-tsc`                        | ^3.2.6  | 3.3.13    | `.vue` type-check                                                                             |
-| `eslint`                         | ^10.1.0 | 10.13.0   | Lint                                                                                          |
-| `prettier`                       | ^3.8.1  | 3.9.10    | Format                                                                                        |
-| `tailwindcss`                    | ^4.0.0  | 4.3.3     | Utility CSS (SDK runs `@tailwindcss/vite`)                                                    |
-| `@types/node`                    | ^24.0.0 | 24.19.2   | Node types for config files                                                                   |
+| Package                          | Range   | Installed | Role                                                                                           |
+| -------------------------------- | ------- | --------- | ---------------------------------------------------------------------------------------------- |
+| `@opencloud-eu/web-pkg`          | ~8.0.0  | 8.0.0     | `defineWebApplication`, `AppWrapperRoute`, `formatFileSize`, types (host-provided at runtime)  |
+| `@opencloud-eu/web-client`       | ~8.0.0  | 8.0.0     | `Resource` type, WebDAV client (host-provided)                                                 |
+| `@opencloud-eu/extension-sdk`    | ~8.0.0  | 8.0.0     | `defineConfig` for Vite/Vitest                                                                 |
+| `@opencloud-eu/tsconfig`         | ~8.0.0  | 8.0.0     | Base `tsconfig`                                                                                |
+| `@opencloud-eu/eslint-config`    | ~8.0.0  | 8.0.0     | ESLint rules                                                                                   |
+| `@opencloud-eu/prettier-config`  | ~8.0.0  | 8.0.0     | Prettier rules                                                                                 |
+| `@opencloud-eu/web-test-helpers` | ~8.0.0  | 8.0.0     | `mount`, `defaultPlugins` for tests                                                            |
+| `vue`                            | ^3.5.10 | 3.5.44    | Host-provided at runtime                                                                       |
+| `vue3-gettext`                   | 4.0.1   | 4.0.1     | `useGettext` (host-provided)                                                                   |
+| `vite`                           | ^8.0.3  | 8.3.5     | Build                                                                                          |
+| `vitest`                         | ^5.0.0  | 5.0.5     | Tests                                                                                          |
+| `happy-dom`                      | ^20.0.0 | 20.14.6   | Test DOM                                                                                       |
+| `@vue/test-utils`                | ^2.4.6  | 2.5.1     | Component mounting                                                                             |
+| `vitest-mock-extended`           | ^5.0.0  | 5.1.1     | `mock<T>()`                                                                                    |
+| `@playwright/test`               | 1.64.1  | 1.64.1    | E2E tests in Chromium 156 ([e2e](../testing/e2e.md)); exact pin, its Chromium is bundled to it |
+| `typescript`                     | ^6.0.3  | 6.0.3     | Type-check                                                                                     |
+| `vue-tsc`                        | ^3.2.6  | 3.3.13    | `.vue` type-check                                                                              |
+| `eslint`                         | ^10.1.0 | 10.13.0   | Lint                                                                                           |
+| `prettier`                       | ^3.8.1  | 3.9.10    | Format                                                                                         |
+| `tailwindcss`                    | ^4.0.0  | 4.3.3     | Utility CSS (SDK runs `@tailwindcss/vite`)                                                     |
+| `@types/node`                    | ^24.0.0 | 24.19.2   | Node types for config files                                                                    |
 
 ## OpenCloud version alignment
 

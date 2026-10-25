@@ -6,29 +6,32 @@ Every tracked file after rework step 6, what it is, and its line count. Generate
 
 | Path                     | Lines | Purpose                                                                                   |
 | ------------------------ | ----: | ----------------------------------------------------------------------------------------- |
-| `README.md`              |   128 | User-facing readme (rewritten in step 6)                                                  |
-| `CLAUDE.md`              |   127 | Index into `docs/`                                                                        |
+| `README.md`              |   141 | User-facing readme (rewritten in step 6)                                                  |
+| `CLAUDE.md`              |   138 | Index into `docs/`                                                                        |
 | `LICENSE`                |   661 | GNU AGPL-3.0 (canonical gnu.org text); copyright notice is in `README.md`                 |
 | `THIRD-PARTY-NOTICES.md` |   134 | Licenses of ported (seek-bzip) and bundled (zip.js) code                                  |
-| `package.json`           |    64 | Package metadata, scripts, `@zip.js/zip.js` dependency, devDependencies, `packageManager` |
-| `pnpm-lock.yaml`         |  5356 | Locked dependency tree                                                                    |
+| `package.json`           |    67 | Package metadata, scripts, `@zip.js/zip.js` dependency, devDependencies, `packageManager` |
+| `pnpm-lock.yaml`         |  5384 | Locked dependency tree                                                                    |
 | `.nvmrc`                 |     1 | Node version for nvm (`24`)                                                               |
-| `vite.config.ts`         |     5 | `defineConfig({ name: 'archive-viewer' })` from extension-sdk                             |
+| `CHANGELOG.md`           |    86 | SemVer rules and per-version changes                                                      |
+| `playwright.config.ts`   |    30 | E2E config: Chromium, one worker, login project, global setup/teardown                    |
+| `vite.config.ts`         |    17 | extension-sdk `defineConfig`, plus the version banner on compiled JS                      |
 | `gettext.config.cjs`     |    17 | vue3-gettext extract/compile config (de/es/fr)                                            |
 | `scripts/package.mjs`    |    64 | `pnpm package`: release zip + SHA-256 from `dist/`                                        |
 | `tsconfig.json`          |     4 | Extends `@opencloud-eu/tsconfig`                                                          |
 | `extension.d.ts`         |     1 | Vite client types                                                                         |
 | `eslint.config.js`       |     3 | OpenCloud ESLint config + ignores                                                         |
 | `.prettierrc.json`       |     1 | OpenCloud Prettier config                                                                 |
-| `.prettierignore`        |     9 | dist, coverage, lockfile, LICENSE, original docs, `.__mf__temp`                           |
-| `.gitignore`             |    16 | node_modules, dist, coverage, editor/env files, `.__mf__temp/`                            |
+| `.prettierignore`        |    14 | dist, coverage, lockfile, LICENSE, original docs, `.__mf__temp`, Playwright output        |
+| `.gitignore`             |    21 | node_modules, dist, coverage, editor/env files, `.__mf__temp/`, Playwright output + login |
 
 ## `src/`
 
 | Path                                | Lines | Purpose                                                                                          |
 | ----------------------------------- | ----: | ------------------------------------------------------------------------------------------------ |
-| `src/index.ts`                      |    66 | `defineWebApplication`: Tailwind import, file types, route via `AppWrapperRoute`, translations   |
-| `src/manifest.json`                 |    10 | Default `config` (6 size limits) merged into `dist/manifest.json`                                |
+| `src/index.ts`                      |    80 | `defineWebApplication`: version check, Tailwind import, file types, route, translations          |
+| `src/compatibility.ts`              |    91 | OpenCloud version check: supported versions, `waitForProductVersion`, `checkCompatibility`       |
+| `src/manifest.json`                 |    11 | Default `config` (6 size limits + `allowUnsupportedOpenCloud`) merged into `dist/manifest.json`  |
 | `src/limits.ts`                     |    65 | Desktop/mobile limits: `isMobileDevice`, `resolveLimits`, defaults rationale                     |
 | `src/App.vue`                       |   273 | Viewer shell: ZIP range mode, size check, capped streamed download, detect + open, errors        |
 | `src/components/ArchiveBrowser.vue` |   469 | File table: folders, breadcrumb, search, sort, selection, downloads, cap, progress               |
@@ -78,6 +81,8 @@ Details: [extension-entry](../source/extension-entry.md), [viewer-ui](../source/
 | `tests/unit/App.spec.ts`                 |   173 | Viewer flow: range mode, renewal, fallbacks, limits, errors      |
 | `tests/unit/ArchiveBrowser.spec.ts`      |   133 | Navigation, search, sort, downloads, entry cap, progress         |
 | `tests/unit/limits.spec.ts`              |    52 | Device detection, limit resolution, manifest = defaults          |
+| `tests/unit/compatibility.spec.ts`       |   101 | OpenCloud version check                                          |
+| `tests/unit/index.spec.ts`               |    44 | Entry module: register, hide, override                           |
 | `tests/unit/translations.spec.ts`        |    50 | Translation completeness and placeholders                        |
 | `tests/unit/download.spec.ts`            |    85 | Safe selection-zip paths                                         |
 | `tests/unit/rangeServer.ts`              |    38 | Test helper: `fetch` mock serving byte ranges                    |
@@ -96,6 +101,32 @@ Details: [extension-entry](../source/extension-entry.md), [viewer-ui](../source/
 | `tests/unit/engine/bzip2Samples.ts`      |    48 | Test data: libbz2 output (base64) + SHA-256                      |
 | `tests/unit/engine/xz.spec.ts`           |    94 | xz and legacy lzma decoders vs liblzma                           |
 | `tests/unit/engine/xzSamples.ts`         |   140 | Test data: liblzma output (base64) + SHA-256                     |
+
+## `e2e/`
+
+Playwright suite, see [e2e](../testing/e2e.md).
+
+| Path                              | Lines | Purpose                                                                              |
+| --------------------------------- | ----: | ------------------------------------------------------------------------------------ |
+| `e2e/test.ts`                     |   142 | Shared `test`: console guard, `Viewer` helpers, config/version/CSP rewrites, `phone` |
+| `e2e/env.ts`                      |    23 | Base URL, credentials, fixture dir, `E2E_SKIP_LARGE`                                 |
+| `e2e/login.setup.ts`              |    12 | Signs in once, saves the session                                                     |
+| `e2e/global-setup.ts`             |    53 | Checks the served build, uploads fixtures, generates mobile-limit archives           |
+| `e2e/global-teardown.ts`          |    12 | Deletes generated files, resets the language                                         |
+| `e2e/helpers/server.ts`           |   109 | WebDAV upload/delete, trash purge, language (node:https)                             |
+| `e2e/helpers/files.ts`            |    43 | SHA-256, archive contents via Python zipfile/tarfile                                 |
+| `e2e/helpers/generate.ts`         |    49 | Streamed tar(.gz) of zeros                                                           |
+| `e2e/helpers/memory.ts`           |    37 | Peak Chromium renderer RSS from /proc                                                |
+| `e2e/specs/compatibility.spec.ts` |    25 | Spec (table in e2e.md)                                                               |
+| `e2e/specs/browse.spec.ts`        |    80 | Spec (table in e2e.md)                                                               |
+| `e2e/specs/formats.spec.ts`       |    75 | Spec (table in e2e.md)                                                               |
+| `e2e/specs/preview.spec.ts`       |    44 | Spec (table in e2e.md)                                                               |
+| `e2e/specs/download.spec.ts`      |    70 | Spec (table in e2e.md)                                                               |
+| `e2e/specs/limits.spec.ts`        |    73 | Spec (table in e2e.md)                                                               |
+| `e2e/specs/csp-fallback.spec.ts`  |    30 | Spec (table in e2e.md)                                                               |
+| `e2e/specs/version-gate.spec.ts`  |    51 | Spec (table in e2e.md)                                                               |
+| `e2e/specs/i18n.spec.ts`          |    31 | Spec (table in e2e.md)                                                               |
+| `e2e/specs/large-zip.spec.ts`     |   143 | Spec (table in e2e.md)                                                               |
 
 ## `docs/`
 

@@ -1,10 +1,14 @@
 import '@opencloud-eu/extension-sdk/tailwind.css'
-import { AppWrapperRoute, defineWebApplication } from '@opencloud-eu/web-pkg'
+import { AppWrapperRoute, defineWebApplication, useCapabilityStore } from '@opencloud-eu/web-pkg'
 import { useGettext } from 'vue3-gettext'
 import App from './App.vue'
+import { checkCompatibility, waitForProductVersion } from './compatibility'
 import translations from '../l10n/translations.json'
 
 const applicationId = 'archive-viewer'
+
+// OpenCloud awaits this module before calling setup(), so the version is known there.
+const productVersion = await waitForProductVersion(useCapabilityStore())
 
 // File extensions opened by this app. OpenCloud treats 'tar.gz', 'tar.bz2' and 'tar.xz' as single
 // extensions (web-client extractExtensionFromFile), so they must be listed separately from 'gz' etc.
@@ -28,7 +32,17 @@ const supportedExtensions = [
 ]
 
 export default defineWebApplication({
-  setup() {
+  setup({ applicationConfig }) {
+    // Throwing here makes OpenCloud skip the app (registerAppLoadingFailure): no menu entry, no
+    // file types, no route.
+    const compatibility = checkCompatibility({ productVersion, config: applicationConfig })
+    if (!compatibility.supported) {
+      if (!compatibility.overridden) {
+        throw new Error(compatibility.message)
+      }
+      console.warn(compatibility.message)
+    }
+
     const { $gettext } = useGettext()
 
     const routes = [

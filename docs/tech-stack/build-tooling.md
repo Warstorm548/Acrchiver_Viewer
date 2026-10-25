@@ -14,22 +14,27 @@ repo. Everything below was run successfully in rework step 1.
 
 ## Scripts (`package.json`)
 
-| Script                          | Command                                 | Purpose                                            |
-| ------------------------------- | --------------------------------------- | -------------------------------------------------- |
-| `build`                         | `vite build`                            | Production build to `dist/`                        |
-| `build:w`                       | `vite build --watch --mode development` | Rebuild on change (for a mounted apps dir)         |
-| `check:types`                   | `vue-tsc --noEmit`                      | Type-check `.ts` and `.vue`                        |
-| `lint`                          | `eslint .`                              | `@opencloud-eu/eslint-config`                      |
-| `format:check` / `format:write` | `prettier . --check/--write`            | `@opencloud-eu/prettier-config`                    |
-| `test:unit`                     | `vitest`                                | Unit tests (watch; add `--run` for once)           |
-| `package`                       | `node scripts/package.mjs`              | Release zip from `dist/` (see below)               |
-| `l10n:extract`                  | `vue-gettext-extract`                   | Strings → `l10n/template.pot` + `.po` files        |
-| `l10n:compile`                  | `vue-gettext-compile` + Prettier        | `.po` files → `l10n/translations.json` (formatted) |
+| Script                          | Command                                 | Purpose                                                          |
+| ------------------------------- | --------------------------------------- | ---------------------------------------------------------------- |
+| `build`                         | `vite build`                            | Production build to `dist/`                                      |
+| `build:w`                       | `vite build --watch --mode development` | Rebuild on change (for a mounted apps dir)                       |
+| `check:types`                   | `vue-tsc --noEmit`                      | Type-check `.ts` and `.vue`                                      |
+| `lint`                          | `eslint .`                              | `@opencloud-eu/eslint-config`                                    |
+| `format:check` / `format:write` | `prettier . --check/--write`            | `@opencloud-eu/prettier-config`                                  |
+| `test:unit`                     | `vitest`                                | Unit tests (watch; add `--run` for once)                         |
+| `test:e2e`                      | `playwright test`                       | Chromium e2e tests on the local stack ([e2e](../testing/e2e.md)) |
+| `test:e2e:install`              | `playwright install chromium`           | Downloads Playwright's Chromium (once)                           |
+| `package`                       | `node scripts/package.mjs`              | Release zip from `dist/` (see below)                             |
+| `l10n:extract`                  | `vue-gettext-extract`                   | Strings → `l10n/template.pot` + `.po` files                      |
+| `l10n:compile`                  | `vue-gettext-compile` + Prettier        | `.po` files → `l10n/translations.json` (formatted)               |
 
 ## Vite — `vite.config.ts`
 
-`defineConfig({ name: 'archive-viewer' })` from
-`@opencloud-eu/extension-sdk` 8.0.0 (pinned to the server's 8.0 line). The SDK supplies:
+`defineConfig({ name: 'archive-viewer', build })` from
+`@opencloud-eu/extension-sdk` 8.0.0 (pinned to the server's 8.0 line). Our only override is
+`build.rollupOptions.output.postBanner`, which stamps `/*! archive-viewer v<version> */` (read from
+`package.json`) on every compiled JS file. It must be `postBanner`: Rolldown adds a plain `banner`
+before minifying, and the minifier strips it. The SDK supplies:
 
 - `@vitejs/plugin-vue`, `@tailwindcss/vite`, `@vitejs/plugin-basic-ssl` (dev server).
 - Module Federation (`@module-federation/vite`): exposes `./src/index.ts`, output

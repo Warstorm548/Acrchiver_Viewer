@@ -1,6 +1,6 @@
 {
   "name": "web-app-archive-viewer",
-  "version": "0.1.0",
+  "version": "0.2.2",
   "private": true,
   "description": "OpenCloud Web archive viewer - browse and preview archive contents",
   "type": "module",
@@ -32,6 +32,8 @@
     "format:check": "prettier . --check",
     "format:write": "prettier . --write",
     "test:unit": "vitest",
+    "test:e2e": "playwright test",
+    "test:e2e:install": "playwright install chromium",
     "l10n:extract": "vue-gettext-extract",
     "l10n:compile": "vue-gettext-compile && prettier --write l10n/translations.json"
   },
@@ -43,6 +45,7 @@
     "@opencloud-eu/web-client": "~8.0.0",
     "@opencloud-eu/web-pkg": "~8.0.0",
     "@opencloud-eu/web-test-helpers": "~8.0.0",
+    "@playwright/test": "1.64.1",
     "@types/node": "^24.0.0",
     "@vue/test-utils": "^2.4.6",
     "eslint": "^10.1.0",

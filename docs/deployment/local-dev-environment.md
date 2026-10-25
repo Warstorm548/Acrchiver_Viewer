@@ -120,6 +120,9 @@ curl -sk -D - -o /dev/null https://cloud.opencloud.test/      # Content-Security
 
 ## Browser checklist
 
+Automated by `pnpm test:e2e` (Chromium; see [e2e](../testing/e2e.md)); the manual list stays
+for a quick look in another browser.
+
 1. `https://cloud.opencloud.test`, accept the certificate warning, log in `admin` / `admin`.
 2. Personal files shows the fixtures.
 3. Right-click an archive → "Open in Archive Viewer" → file table (folders first).
@@ -235,3 +238,39 @@ https://keycloak.opencloud.test/` — no `'wasm-unsafe-eval'`, so WebAssembly is
   translated (checked by the user); switched back to English afterwards.
 - `pnpm l10n:extract` with GNU gettext installed: `template.pot` unchanged, `.po` files only
   re-wrapped by `msgmerge`, compiled translations identical.
+
+## OpenCloud version check results (0.2.0, 2026-10-25)
+
+- Server reports `productversion: 8.0.1` (`status.version` is the legacy `0.1.0.0`, correctly
+  ignored). The normal 0.2.0 build registers and "Open in Archive Viewer" works.
+- Unsupported: a temporary build with `SUPPORTED_OPENCLOUD_VERSIONS = ['8.0.0']` (not committed)
+  → no "Open in Archive Viewer"; the rest of OpenCloud unaffected.
+- Override: `allowUnsupportedOpenCloud: true` in `custom/apps.yaml` with that build → viewer back,
+  console warning "Archive Viewer 0.2.0 supports OpenCloud 8.0.0; this server runs 8.0.1. Running
+  anyway because allowUnsupportedOpenCloud is set in apps.yaml." Restored to `config: {}` and the
+  normal build afterwards.
+
+## 0.2.1 merge results (`release/0.2.0`, 2026-10-25)
+
+0.2.0 version check merged on top of the PR #3 memory fixes; tested in Firefox with the compose
+CSP (`worker-src 'self' blob:`, so bzip2/xz/lzma ran in the worker).
+
+- `/config.json` served `archive-viewer` 0.2.1 with mobile limits 128 / 384 / 256 MiB and
+  `allowUnsupportedOpenCloud: false`; the viewer registered on 8.0.1.
+- `large.tar.xz` → `big/` selection zip: CRC OK, all 5 files byte-identical. The server's
+  `large.tar.xz` is an older generation than the local fixture (random data differs), so compare
+  downloads with the **server copy** (WebDAV GET), not `test-fixtures/`.
+- `big-test.zip` (3.04 GiB): opened; the 200 MiB file and a 900 MiB file downloaded with matching
+  SHA-256 — peak tab memory for the 900 MiB download about 1 GB (2.4 GiB before PR #3); the
+  `small` selection zip held all 3,000 files byte-identical.
+- Mobile emulation: the 900 MiB file was refused (256 MiB per-file limit), nothing downloaded.
+- Console: only OpenCloud's own messages; nothing from the app, no CSP/worker/WebAssembly errors.
+- Desktop: the 1,200 MiB file and the `bulk` selection were refused (1 GiB cap); PNG and SVG
+  previews in `sample.zip` showed (checked by the user).
+- Cleanup confirmed: no share links, server file 404, trash empty, local and downloaded copies
+  deleted.
+
+## Chromium e2e results (0.2.1 build, 2026-10-25)
+
+- `pnpm test:e2e` (Playwright 1.64.1, Chromium 156): all 64 tests passed in 3.0 minutes, incl. the
+  3 GiB ZIP (900 MiB download peak 584–591 MiB). Details in [e2e](../testing/e2e.md#results).
