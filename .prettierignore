@@ -7,3 +7,8 @@ docs/original-docs
 release
 l10n/template.pot
 l10n/locale
+
+# Playwright e2e output and saved login
+playwright-report/
+test-results/
+e2e/.auth/
