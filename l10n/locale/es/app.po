@@ -27,6 +27,13 @@ msgstr "Descargando… %{percent}%"
 msgid "Downloading… %{size}"
 msgstr "Descargando… %{size}"
 
+msgid ""
+"This device does not have enough free memory to open this archive. You can "
+"download it instead."
+msgstr ""
+"Este dispositivo no tiene suficiente memoria libre para abrir este archivo "
+"comprimido. Puede descargarlo en su lugar."
+
 msgid "This archive format is not supported yet. You can download it instead."
 msgstr ""
 "Este formato de archivo comprimido aún no es compatible. Puede descargarlo "
@@ -104,6 +111,13 @@ msgstr ""
 "Los archivos de más de %{limit} no se pueden extraer en el navegador en este "
 "dispositivo. Descargue el archivo comprimido completo en su lugar."
 
+msgid ""
+"This device does not have enough free memory to extract this. Download the "
+"whole archive instead."
+msgstr ""
+"Este dispositivo no tiene suficiente memoria libre para extraer esto. "
+"Descargue el archivo comprimido completo en su lugar."
+
 msgid "Extracting %{name}…"
 msgstr "Extrayendo %{name}…"
 
@@ -145,6 +159,9 @@ msgstr ""
 
 msgid "The preview could not be loaded."
 msgstr "No se pudo cargar la vista previa."
+
+msgid "This image could not be displayed. Download it instead."
+msgstr "No se pudo mostrar esta imagen. Descárguela en su lugar."
 
 msgid "Archive Viewer"
 msgstr "Visor de archivos comprimidos"

@@ -1,3 +1,4 @@
+import { blobFromBytes } from './buffer'
 import { mimeTypeFor } from './fileTypes'
 import { ArchiveFormat, ArchiveHandle } from './types'
 
@@ -19,7 +20,7 @@ export const openSingleFile = (
   return {
     format,
     entries: [entry],
-    read: () => Promise.resolve(new Blob([data], { type: mimeTypeFor(name) })),
+    read: () => Promise.resolve(blobFromBytes(data, mimeTypeFor(name))),
     close: () => Promise.resolve()
   }
 }

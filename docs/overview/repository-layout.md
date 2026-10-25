@@ -6,7 +6,7 @@ Every tracked file after rework step 6, what it is, and its line count. Generate
 
 | Path                     | Lines | Purpose                                                                                   |
 | ------------------------ | ----: | ----------------------------------------------------------------------------------------- |
-| `README.md`              |   122 | User-facing readme (rewritten in step 6)                                                  |
+| `README.md`              |   128 | User-facing readme (rewritten in step 6)                                                  |
 | `CLAUDE.md`              |   127 | Index into `docs/`                                                                        |
 | `LICENSE`                |   661 | GNU AGPL-3.0 (canonical gnu.org text); copyright notice is in `README.md`                 |
 | `THIRD-PARTY-NOTICES.md` |   134 | Licenses of ported (seek-bzip) and bundled (zip.js) code                                  |
@@ -25,37 +25,38 @@ Every tracked file after rework step 6, what it is, and its line count. Generate
 
 ## `src/`
 
-| Path                                | Lines | Purpose                                                                                        |
-| ----------------------------------- | ----: | ---------------------------------------------------------------------------------------------- |
-| `src/index.ts`                      |    66 | `defineWebApplication`: Tailwind import, file types, route via `AppWrapperRoute`, translations |
-| `src/manifest.json`                 |    10 | Default `config` (6 size limits) merged into `dist/manifest.json`                              |
-| `src/limits.ts`                     |    59 | Desktop/mobile limits: `isMobileDevice`, `resolveLimits`                                       |
-| `src/App.vue`                       |   243 | Viewer shell: ZIP range mode, size check, streamed download, detect + open, error states       |
-| `src/components/ArchiveBrowser.vue` |   454 | File table: folders, breadcrumb, search, sort, selection, downloads, cap, progress             |
-| `src/components/PreviewModal.vue`   |   126 | Text/image preview in `oc-modal` (reads via the capped `read` prop)                            |
-| `src/download.ts`                   |    61 | `sanitizeFileName`, `triggerDownload`, `zipEntries` (selection → zip)                          |
-| `src/engine/index.ts`               |    67 | `openArchive` + re-exports (incl. range reader)                                                |
-| `src/engine/types.ts`               |    49 | Entry/handle/limit types, `ArchiveError` (incl. `range-unsupported`)                           |
-| `src/engine/detect.ts`              |   107 | Extension + signature → format                                                                 |
-| `src/engine/zip.ts`                 |   128 | ZIP via zip.js native build (no WebAssembly), Blob or range source, capped entry reads         |
-| `src/engine/rangeReader.ts`         |    79 | `HttpRangeReader`: zip.js Reader over HTTP Range, URL renewal                                  |
-| `src/engine/tar.ts`                 |   159 | Own TAR parser (ustar, pax, GNU long names)                                                    |
-| `src/engine/gzip.ts`                |    66 | Browser `DecompressionStream` gunzip with size limit                                           |
-| `src/engine/tree.ts`                |    78 | Path normalization and folder index                                                            |
-| `src/engine/fileTypes.ts`           |    44 | Text/image detection and MIME types                                                            |
-| `src/engine/bzip2.ts`               |   430 | bzip2 decoder, TypeScript port of seek-bzip (MIT)                                              |
-| `src/engine/decompress.worker.ts`   |    36 | Web Worker running bzip2/xz/lzma decoders                                                      |
-| `src/engine/workerClient.ts`        |    35 | `decompressAsync`: worker or main-thread fallback                                              |
-| `src/engine/single.ts`              |    35 | Single compressed file as a one-entry archive                                                  |
-| `src/engine/xz.ts`                  |   267 | XZ container decoder (from the spec)                                                           |
-| `src/engine/lzmaAlone.ts`           |    41 | Legacy .lzma reader                                                                            |
-| `src/engine/decompressors.ts`       |    25 | `decompress(kind)` for bzip2/xz/lzma                                                           |
-| `src/engine/lzma/lzmaDecoder.ts`    |   227 | LZMA decoder (adapted from xz-compat, MIT)                                                     |
-| `src/engine/lzma/lzma2.ts`          |    91 | LZMA2 chunk decoder                                                                            |
-| `src/engine/lzma/rangeDecoder.ts`   |   103 | Range decoder + bit trees                                                                      |
-| `src/engine/lzma/filters.ts`        |   182 | Delta + BCJ filters (liblzma logic)                                                            |
-| `src/engine/lzma/checks.ts`         |    70 | CRC32, CRC64, SHA-256                                                                          |
-| `src/engine/lzma/output.ts`         |    58 | Growable output / dictionary buffer                                                            |
+| Path                                | Lines | Purpose                                                                                          |
+| ----------------------------------- | ----: | ------------------------------------------------------------------------------------------------ |
+| `src/index.ts`                      |    66 | `defineWebApplication`: Tailwind import, file types, route via `AppWrapperRoute`, translations   |
+| `src/manifest.json`                 |    10 | Default `config` (6 size limits) merged into `dist/manifest.json`                                |
+| `src/limits.ts`                     |    65 | Desktop/mobile limits: `isMobileDevice`, `resolveLimits`, defaults rationale                     |
+| `src/App.vue`                       |   273 | Viewer shell: ZIP range mode, size check, capped streamed download, detect + open, errors        |
+| `src/components/ArchiveBrowser.vue` |   469 | File table: folders, breadcrumb, search, sort, selection, downloads, cap, progress               |
+| `src/components/PreviewModal.vue`   |   132 | Text/image preview in `oc-modal` (reads via the capped `read` prop)                              |
+| `src/download.ts`                   |    80 | `sanitizeFileName`, `triggerDownload`, `zipEntries` (selection → zip)                            |
+| `src/engine/index.ts`               |    72 | `openArchive` + re-exports (incl. range reader)                                                  |
+| `src/engine/types.ts`               |    55 | Entry/handle/limit types, `ArchiveError` (incl. `range-unsupported`, `out-of-memory`)            |
+| `src/engine/buffer.ts`              |   171 | `GrowableBuffer` (resizable, size hint), `BlobBuilder`, `MAX_BUFFER_SIZE`, out-of-memory mapping |
+| `src/engine/detect.ts`              |   107 | Extension + signature → format                                                                   |
+| `src/engine/zip.ts`                 |   125 | ZIP via zip.js native build (no WebAssembly), Blob or range source, capped entry reads           |
+| `src/engine/rangeReader.ts`         |    79 | `HttpRangeReader`: zip.js Reader over HTTP Range, URL renewal                                    |
+| `src/engine/tar.ts`                 |   162 | Own TAR parser (ustar, pax, GNU long names)                                                      |
+| `src/engine/gzip.ts`                |    66 | Browser `DecompressionStream` gunzip into one buffer sized from ISIZE, size limit                |
+| `src/engine/tree.ts`                |    78 | Path normalization and folder index                                                              |
+| `src/engine/fileTypes.ts`           |    44 | Text/image detection and MIME types                                                              |
+| `src/engine/bzip2.ts`               |   411 | bzip2 decoder, TypeScript port of seek-bzip (MIT)                                                |
+| `src/engine/decompress.worker.ts`   |    34 | Web Worker running bzip2/xz/lzma decoders                                                        |
+| `src/engine/workerClient.ts`        |    93 | `decompressAsync`: worker, main-thread fallback (no Worker / CSP), abort                         |
+| `src/engine/single.ts`              |    36 | Single compressed file as a one-entry archive                                                    |
+| `src/engine/xz.ts`                  |   306 | XZ container decoder (from the spec)                                                             |
+| `src/engine/lzmaAlone.ts`           |    41 | Legacy .lzma reader                                                                              |
+| `src/engine/decompressors.ts`       |    25 | `decompress(kind)` for bzip2/xz/lzma                                                             |
+| `src/engine/lzma/lzmaDecoder.ts`    |   227 | LZMA decoder (adapted from xz-compat, MIT)                                                       |
+| `src/engine/lzma/lzma2.ts`          |    91 | LZMA2 chunk decoder                                                                              |
+| `src/engine/lzma/rangeDecoder.ts`   |   103 | Range decoder + bit trees                                                                        |
+| `src/engine/lzma/filters.ts`        |   182 | Delta + BCJ filters (liblzma logic)                                                              |
+| `src/engine/lzma/checks.ts`         |    70 | CRC32, CRC64, SHA-256                                                                            |
+| `src/engine/lzma/output.ts`         |    26 | Output / dictionary buffer on `GrowableBuffer`                                                   |
 
 Details: [extension-entry](../source/extension-entry.md), [viewer-ui](../source/viewer-ui.md),
 [archive-engine](../source/archive-engine.md).
@@ -64,34 +65,37 @@ Details: [extension-entry](../source/extension-entry.md), [viewer-ui](../source/
 
 | Path                     | Lines | Purpose                                                                 |
 | ------------------------ | ----: | ----------------------------------------------------------------------- |
-| `l10n/translations.json` |   131 | Compiled de/es/fr translations (41 strings), imported by `src/index.ts` |
-| `l10n/template.pot`      |   171 | All msgids (`pnpm l10n:extract`)                                        |
-| `l10n/locale/de/app.po`  |   149 | German translations (AI-drafted)                                        |
-| `l10n/locale/es/app.po`  |   150 | Spanish translations (AI-drafted)                                       |
-| `l10n/locale/fr/app.po`  |   148 | French translations (AI-drafted)                                        |
+| `l10n/translations.json` |   140 | Compiled de/es/fr translations (44 strings), imported by `src/index.ts` |
+| `l10n/template.pot`      |   183 | All msgids (`pnpm l10n:extract`)                                        |
+| `l10n/locale/de/app.po`  |   167 | German translations (AI-drafted)                                        |
+| `l10n/locale/es/app.po`  |   167 | Spanish translations (AI-drafted)                                       |
+| `l10n/locale/fr/app.po`  |   165 | French translations (AI-drafted)                                        |
 
 ## `tests/`
 
-| Path                                    | Lines | Purpose                                                     |
-| --------------------------------------- | ----: | ----------------------------------------------------------- |
-| `tests/unit/App.spec.ts`                |   167 | Viewer flow: range mode, renewal, fallbacks, limits, errors |
-| `tests/unit/ArchiveBrowser.spec.ts`     |   131 | Navigation, search, sort, downloads, entry cap, progress    |
-| `tests/unit/limits.spec.ts`             |    46 | Device detection and limit resolution                       |
-| `tests/unit/translations.spec.ts`       |    50 | Translation completeness and placeholders                   |
-| `tests/unit/download.spec.ts`           |    48 | Safe selection-zip paths                                    |
-| `tests/unit/rangeServer.ts`             |    38 | Test helper: `fetch` mock serving byte ranges               |
-| `tests/unit/engine/tar.spec.ts`         |    84 | TAR parser                                                  |
-| `tests/unit/engine/zip.spec.ts`         |    87 | ZIP reader, range source, entry cap                         |
-| `tests/unit/engine/rangeReader.spec.ts` |    80 | Range reader: 206/200/401/errors/abort                      |
-| `tests/unit/engine/gzip.spec.ts`        |    56 | gunzip + limit                                              |
-| `tests/unit/engine/tree.spec.ts`        |    71 | Folder index                                                |
-| `tests/unit/engine/detect.spec.ts`      |    66 | Format detection                                            |
-| `tests/unit/engine/tarBuilder.ts`       |    94 | Test helper: builds tar/gzip bytes                          |
-| `tests/unit/engine/bzip2.spec.ts`       |    49 | bzip2 decoder vs libbz2 samples                             |
-| `tests/unit/engine/single.spec.ts`      |    66 | Single compressed files, .bz2/.tar.bz2 via openArchive      |
-| `tests/unit/engine/bzip2Samples.ts`     |    48 | Test data: libbz2 output (base64) + SHA-256                 |
-| `tests/unit/engine/xz.spec.ts`          |    86 | xz and legacy lzma decoders vs liblzma                      |
-| `tests/unit/engine/xzSamples.ts`        |   140 | Test data: liblzma output (base64) + SHA-256                |
+| Path                                     | Lines | Purpose                                                          |
+| ---------------------------------------- | ----: | ---------------------------------------------------------------- |
+| `tests/unit/App.spec.ts`                 |   173 | Viewer flow: range mode, renewal, fallbacks, limits, errors      |
+| `tests/unit/ArchiveBrowser.spec.ts`      |   133 | Navigation, search, sort, downloads, entry cap, progress         |
+| `tests/unit/limits.spec.ts`              |    52 | Device detection, limit resolution, manifest = defaults          |
+| `tests/unit/translations.spec.ts`        |    50 | Translation completeness and placeholders                        |
+| `tests/unit/download.spec.ts`            |    85 | Safe selection-zip paths                                         |
+| `tests/unit/rangeServer.ts`              |    38 | Test helper: `fetch` mock serving byte ranges                    |
+| `tests/unit/engine/tar.spec.ts`          |    84 | TAR parser                                                       |
+| `tests/unit/engine/zip.spec.ts`          |    95 | ZIP reader, range source, entry cap                              |
+| `tests/unit/engine/rangeReader.spec.ts`  |    80 | Range reader: 206/200/401/errors/abort                           |
+| `tests/unit/engine/gzip.spec.ts`         |    67 | gunzip + limit                                                   |
+| `tests/unit/engine/buffer.spec.ts`       |   118 | Buffers, blob builder, out-of-memory mapping                     |
+| `tests/unit/engine/workerClient.spec.ts` |    81 | Worker fallback (CSP), errors, abort                             |
+| `tests/unit/engine/resizable.spec.ts`    |    78 | Engine on resizable buffers with browser-strict Blob/TextDecoder |
+| `tests/unit/engine/tree.spec.ts`         |    71 | Folder index                                                     |
+| `tests/unit/engine/detect.spec.ts`       |    66 | Format detection                                                 |
+| `tests/unit/engine/tarBuilder.ts`        |    94 | Test helper: builds tar/gzip bytes                               |
+| `tests/unit/engine/bzip2.spec.ts`        |    49 | bzip2 decoder vs libbz2 samples                                  |
+| `tests/unit/engine/single.spec.ts`       |    66 | Single compressed files, .bz2/.tar.bz2 via openArchive           |
+| `tests/unit/engine/bzip2Samples.ts`      |    48 | Test data: libbz2 output (base64) + SHA-256                      |
+| `tests/unit/engine/xz.spec.ts`           |    94 | xz and legacy lzma decoders vs liblzma                           |
+| `tests/unit/engine/xzSamples.ts`         |   140 | Test data: liblzma output (base64) + SHA-256                     |
 
 ## `docs/`
 

@@ -35,8 +35,8 @@ No `extensions` (registry) key — no menu items or file actions.
     "maxArchiveSize": 1073741824,
     "maxUncompressedSize": 2147483648,
     "maxEntrySize": 1073741824,
-    "maxArchiveSizeMobile": 268435456,
-    "maxUncompressedSizeMobile": 536870912,
+    "maxArchiveSizeMobile": 134217728,
+    "maxUncompressedSizeMobile": 402653184,
     "maxEntrySizeMobile": 268435456
   }
 }

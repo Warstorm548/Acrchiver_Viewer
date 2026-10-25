@@ -8,6 +8,7 @@ import { openZip } from './zip'
 
 export * from './types'
 export { archiveExtension, resolveFormat, SIGNATURE_LENGTH } from './detect'
+export { BlobBuilder, isOutOfMemory, MAX_BUFFER_SIZE } from './buffer'
 export { buildIndex, parentPath } from './tree'
 export { HttpRangeReader, RangeRequestError } from './rangeReader'
 export { openZip } from './zip'
@@ -38,7 +39,8 @@ export const openArchive = async (
   blob: Blob,
   format: ArchiveFormat,
   limits: ArchiveLimits,
-  archiveName = ''
+  archiveName = '',
+  signal?: AbortSignal
 ): Promise<ArchiveHandle> => {
   switch (format) {
     case 'zip':
@@ -48,9 +50,12 @@ export const openArchive = async (
     case 'tar.gz':
       return openTar(await gunzip(blob, limits.maxUncompressedSize), format)
     case 'tar.bz2':
-      return openTar(await decompressAsync('bzip2', blob, limits.maxUncompressedSize), format)
+      return openTar(
+        await decompressAsync('bzip2', blob, limits.maxUncompressedSize, signal),
+        format
+      )
     case 'tar.xz':
-      return openTar(await decompressAsync('xz', blob, limits.maxUncompressedSize), format)
+      return openTar(await decompressAsync('xz', blob, limits.maxUncompressedSize, signal), format)
     case 'gz': {
       const header = readGzipHeader(new Uint8Array(await blob.slice(0, 1024).arrayBuffer()))
       const data = await gunzip(blob, limits.maxUncompressedSize)
@@ -60,7 +65,7 @@ export const openArchive = async (
     case 'xz':
     case 'lzma': {
       const kind = format === 'bz2' ? 'bzip2' : format
-      const data = await decompressAsync(kind, blob, limits.maxUncompressedSize)
+      const data = await decompressAsync(kind, blob, limits.maxUncompressedSize, signal)
       return openDecompressed(data, format, archiveName)
     }
   }

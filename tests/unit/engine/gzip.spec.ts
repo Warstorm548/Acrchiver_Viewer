@@ -9,6 +9,17 @@ describe('gunzip', () => {
     expect(new TextDecoder().decode(result)).toBe('hello gzip')
   })
 
+  it('decompresses an empty file', async () => {
+    expect((await gunzip(await gzipBytes(new Uint8Array(0)), 1024)).length).toBe(0)
+  })
+
+  it('decompresses larger data in one buffer of the recorded size', async () => {
+    const original = new Uint8Array(300_000).map((_, i) => i % 251)
+    const result = await gunzip(await gzipBytes(original), 1_000_000)
+    expect(result.buffer.byteLength).toBe(original.length)
+    expect(result).toEqual(original)
+  })
+
   it('stops when the output exceeds the limit', async () => {
     const big = new Uint8Array(100_000)
     await expect(gunzip(await gzipBytes(big), 1000)).rejects.toMatchObject({ code: 'too-large' })

@@ -81,6 +81,14 @@ describe('openZip', () => {
     await expect(handle.read(handle.entries[0])).rejects.toMatchObject({ code: 'corrupt' })
   })
 
+  it('applies a lower cap passed to a single read', async () => {
+    const handle = await openZip(await makeZip({ 'a.txt': 'x'.repeat(100) }), {
+      maxEntrySize: 1000
+    })
+    await expect(handle.read(handle.entries[0], 50)).rejects.toMatchObject({ code: 'too-large' })
+    expect((await handle.read(handle.entries[0], 100)).size).toBe(100)
+  })
+
   it('rejects data that is not a zip', async () => {
     await expect(openZip(new Blob(['not a zip at all']))).rejects.toBeInstanceOf(ArchiveError)
   })

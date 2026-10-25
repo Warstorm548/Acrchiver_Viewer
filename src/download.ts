@@ -1,5 +1,5 @@
 import { BlobReader, BlobWriter, ZipWriter } from '@zip.js/zip.js/lib/zip-native.js'
-import { ArchiveEntry, ArchiveHandle } from './engine'
+import { ArchiveEntry, ArchiveError, ArchiveHandle } from './engine'
 
 /** Removes path separators and control characters, since names come from untrusted archives. */
 export const sanitizeFileName = (name: string): string => {
@@ -50,12 +50,31 @@ export const selectionPath = (path: string, used: Set<string>): string => {
   return candidate
 }
 
-/** Packs the given archive files into a new zip, one at a time to limit memory use. */
-export const zipEntries = async (handle: ArchiveHandle, files: ArchiveEntry[]): Promise<Blob> => {
+/**
+ * Packs the given archive files into a new zip, one at a time to limit memory use. Stops with
+ * `ArchiveError('too-large')` once the files' real content exceeds `maxTotal`: the sizes an
+ * archive declares can't be trusted, so each read only gets what is left of the allowance.
+ */
+export const zipEntries = async (
+  handle: ArchiveHandle,
+  files: ArchiveEntry[],
+  maxTotal = Number.MAX_SAFE_INTEGER
+): Promise<Blob> => {
   const writer = new ZipWriter(new BlobWriter('application/zip'))
   const used = new Set<string>()
-  for (const file of files) {
-    await writer.add(selectionPath(file.path, used), new BlobReader(await handle.read(file)))
+  let total = 0
+  try {
+    for (const file of files) {
+      const blob = await handle.read(file, maxTotal - total)
+      total += blob.size
+      if (total > maxTotal) {
+        throw new ArchiveError('too-large', `The selection is larger than ${maxTotal} bytes`)
+      }
+      await writer.add(selectionPath(file.path, used), new BlobReader(blob))
+    }
+  } catch (error) {
+    await writer.close().catch(() => {})
+    throw error
   }
   return writer.close()
 }

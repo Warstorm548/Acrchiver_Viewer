@@ -1,3 +1,4 @@
+import manifest from '../../src/manifest.json'
 import { DEFAULT_LIMITS, isMobileDevice, resolveLimits } from '../../src/limits'
 
 const MiB = 1024 * 1024
@@ -23,6 +24,11 @@ describe('isMobileDevice', () => {
 })
 
 describe('resolveLimits', () => {
+  it('matches the defaults published in the manifest (which OpenCloud passes as config)', () => {
+    expect(resolveLimits(manifest.config, false)).toEqual(DEFAULT_LIMITS.desktop)
+    expect(resolveLimits(manifest.config, true)).toEqual(DEFAULT_LIMITS.mobile)
+  })
+
   it('uses the defaults for each device class', () => {
     expect(resolveLimits({}, false)).toEqual(DEFAULT_LIMITS.desktop)
     expect(resolveLimits(undefined, true)).toEqual(DEFAULT_LIMITS.mobile)

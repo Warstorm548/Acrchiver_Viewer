@@ -7,14 +7,32 @@ docs); `PLAUSIBLE` = needs a test. Remove entries when fixed (and say so in the 
 
 No known bugs. Known limitations (by design for now):
 
-| #   | Limitation                                                                                                                                                                       | Planned                      |
-| --- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------- |
-| K1  | 7z and RAR show "not supported yet" (download offered); xz files using the ARM64 or RISC-V filter report "unsupported filter"                                                    | roadmap                      |
-| K2  | Non-ZIP archives are downloaded whole into browser memory (up to `maxArchiveSize`, 1 GiB desktop / 256 MiB mobile); ZIPs are read by range since step 5                          | roadmap (TAR header hopping) |
-| K3  | Password-protected ZIP entries are listed but can't be previewed or downloaded                                                                                                   | roadmap                      |
-| K4  | An extracted file is held in memory, so single files and selections are capped at `maxEntrySize` (1 GiB / 256 MiB); bigger ones must be fetched by downloading the whole archive | —                            |
-| K5  | Deflate64 / bzip2 / LZMA compression _inside_ ZIP is unsupported (native zip.js build)                                                                                           | —                            |
-| K7  | bzip2/xz/lzma are decoded in full in memory (no streaming); large files take seconds (in a worker)                                                                               | —                            |
+| #   | Limitation                                                                                                                                                                                                                                                | Planned                      |
+| --- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------- |
+| K1  | 7z and RAR show "not supported yet" (download offered); xz files using the ARM64 or RISC-V filter report "unsupported filter"                                                                                                                             | roadmap                      |
+| K2  | Non-ZIP archives are downloaded whole into browser memory (up to `maxArchiveSize`, 1 GiB desktop / 128 MiB mobile); ZIPs are read by range since step 5                                                                                                   | roadmap (TAR header hopping) |
+| K3  | Password-protected ZIP entries are listed but can't be previewed or downloaded                                                                                                                                                                            | roadmap                      |
+| K4  | An extracted file is collected into one Blob, so single files and selections are capped at `maxEntrySize` (1 GiB / 256 MiB); bigger ones must be fetched by downloading the whole archive                                                                 | —                            |
+| K5  | Deflate64 / bzip2 / LZMA compression _inside_ ZIP is unsupported (native zip.js build)                                                                                                                                                                    | —                            |
+| K7  | Compressed formats are decoded in full in memory (no streaming): at most just under 2 GiB decompressed (`MAX_BUFFER_SIZE`, a browser limit); bzip2/xz/lzma take seconds — in a worker, or on the main thread (page frozen) under OpenCloud's built-in CSP | —                            |
+| K8  | A tab that runs out of memory is killed by the OS ("Aw, Snap"); no error can be shown. The limits keep the peak near `archive + uncompressed` (gzip: 1.5 × `uncompressed`; about 512 MiB on mobile), but a busy low-memory device can still hit it        | —                            |
+
+## Memory bugs found by browser testing (fixed)
+
+Found by opening large archives in OpenCloud 8.0.1 with Chromium (see
+[tests](../testing/tests.md#browser-memory-tests)):
+
+- **M-1** xz/bzip2/lzma output over 1 GiB always failed: the buffer doubled to 2 GiB, which
+  Chromium refuses → capped growth (`MAX_BUFFER_SIZE`), resizable buffers.
+- **M-2** Failed allocations and blocked workers were reported as "damaged archive" → own
+  `out-of-memory` message; blocked worker → main-thread fallback.
+- **M-3** Under OpenCloud's built-in CSP, bzip2/xz/lzma never opened (blob worker blocked) →
+  main-thread fallback.
+- **M-4** A full download was only checked against the metadata size → bytes counted while
+  downloading.
+- **M-5** Peaks of 2–2.5× the limits (chunks + Blob + copies) crashed tabs on a 2 GB device →
+  `BlobBuilder`, size hints, in-place growth; lower mobile limits.
+- **M-6** Image previews the browser can't decode left an empty modal → `@error` message.
 
 ## Old viewer bugs (resolved)
 

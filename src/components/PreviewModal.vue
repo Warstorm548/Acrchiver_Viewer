@@ -21,6 +21,7 @@
           class="archive-preview-image ext:max-h-[60vh] ext:max-w-full ext:mx-auto"
           :src="imageUrl"
           :alt="entry.name"
+          @error="imageFailed"
         />
         <p
           v-if="truncated"
@@ -114,13 +115,18 @@ export default defineComponent({
       }
     })
 
+    /** The browser refused to decode the image (damaged, or too many pixels to hold in memory). */
+    const imageFailed = () => {
+      message.value = $gettext('This image could not be displayed. Download it instead.')
+    }
+
     onBeforeUnmount(() => {
       if (imageUrl.value) {
         URL.revokeObjectURL(imageUrl.value)
       }
     })
 
-    return { loading, message, text, imageUrl, truncated }
+    return { loading, message, text, imageUrl, truncated, imageFailed }
   }
 })
 </script>

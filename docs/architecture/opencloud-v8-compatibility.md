@@ -143,11 +143,11 @@ export default defineWebApplication({
 4. **Done (step 4):** bzip2 via a ported pure-JS decoder in an inline worker; single `.gz`/`.bz2`
    files; size limits from `apps.yaml` (since step 3). Step 4b: XZ.
 5. **Done (step 5):** large ZIPs via Range reads with signed-URL renewal; device-aware limits
-   (1 GiB desktop / 256 MiB mobile).
+   (1 GiB desktop / 256 MiB mobile; mobile lowered to 128 MiB after memory testing).
 6. **Done (step 6):** de/es/fr translations with vue3-gettext tooling, README rewrite, release zip
    (`pnpm package`), final docs pass.
 
-Decided: approach A (pure JS), view + download, range reads for ZIP, 1 GiB / 256 MiB limits. Alternatives (server
+Decided: approach A (pure JS), view + download, range reads for ZIP, 1 GiB / 128 MiB limits. Alternatives (server
 helper, libarchive as plain JS, extract-to-folder) are parked in
 [roadmap-considerations](../overview/roadmap-considerations.md).
 

@@ -47,8 +47,10 @@ import {
   archiveExtension,
   ArchiveError,
   ArchiveHandle,
+  BlobBuilder,
   HttpRangeReader,
   isCompressedFormat,
+  isOutOfMemory,
   openArchive,
   openZip,
   resolveFormat,
@@ -106,6 +108,12 @@ export default defineComponent({
     })
 
     const messageFor = (error: unknown): string => {
+      const outOfMemory = $gettext(
+        'This device does not have enough free memory to open this archive. You can download it instead.'
+      )
+      if (isOutOfMemory(error)) {
+        return outOfMemory
+      }
       if (error instanceof ArchiveError) {
         switch (error.code) {
           case 'unsupported-format':
@@ -114,6 +122,8 @@ export default defineComponent({
             )
           case 'too-large':
             return $gettext('The archive expands to more data than the browser is allowed to open.')
+          case 'out-of-memory':
+            return outOfMemory
           default:
             return $gettext('The archive seems to be damaged or is not a valid archive.')
         }
@@ -121,22 +131,34 @@ export default defineComponent({
       return $gettext('The archive could not be loaded.')
     }
 
-    const download = async (url: string, signal: AbortSignal): Promise<Blob> => {
+    /**
+     * Downloads the whole archive into the blob store, or returns null as soon as it turns out
+     * larger than `maxSize` (the size in the file's metadata may be wrong or missing).
+     */
+    const download = async (
+      url: string,
+      signal: AbortSignal,
+      maxSize: number
+    ): Promise<Blob | null> => {
       const response = await fetch(url, { signal })
       if (!response.ok || !response.body) {
         throw new Error(`Download failed with HTTP ${response.status}`)
       }
       const reader = response.body.getReader()
-      const chunks: Uint8Array<ArrayBuffer>[] = []
+      const output = new BlobBuilder()
       for (;;) {
         const { done, value } = await reader.read()
         if (done) {
           break
         }
-        chunks.push(value as Uint8Array<ArrayBuffer>)
+        if (output.size + value.length > maxSize) {
+          await reader.cancel()
+          return null
+        }
+        output.append(value)
         loaded.value += value.length
       }
-      return new Blob(chunks)
+      return output.build()
     }
 
     const closeArchive = () => {
@@ -176,17 +198,24 @@ export default defineComponent({
       }
     }
 
+    const tooLarge = (): null => {
+      state.value = 'too-large'
+      message.value = $gettext(
+        'This archive is larger than %{limit}, the most this viewer opens in the browser on this device. You can download it instead.',
+        { limit: format(limits.value.archive) }
+      )
+      return null
+    }
+
     const openByDownload = async (signal: AbortSignal): Promise<ArchiveHandle | null> => {
       if (Number(props.resource.size) > limits.value.archive) {
-        state.value = 'too-large'
-        message.value = $gettext(
-          'This archive is larger than %{limit}, the most this viewer opens in the browser on this device. You can download it instead.',
-          { limit: format(limits.value.archive) }
-        )
-        return null
+        return tooLarge()
       }
       phase.value = 'download'
-      const blob = await download(props.url, signal)
+      const blob = await download(props.url, signal, limits.value.archive)
+      if (!blob) {
+        return tooLarge()
+      }
       const head = new Uint8Array(await blob.slice(0, SIGNATURE_LENGTH).arrayBuffer())
       const archiveFormat = resolveFormat(archiveExtension(props.resource.name), head)
       if (isCompressedFormat(archiveFormat)) {
@@ -196,7 +225,8 @@ export default defineComponent({
         blob,
         archiveFormat,
         { maxUncompressedSize: limits.value.uncompressed, maxEntrySize: limits.value.entry },
-        props.resource.name
+        props.resource.name,
+        signal
       )
     }
 

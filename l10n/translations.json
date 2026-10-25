@@ -6,6 +6,7 @@
     "Decompressing…": "Wird entpackt…",
     "Downloading… %{percent}%": "Wird heruntergeladen… %{percent}%",
     "Downloading… %{size}": "Wird heruntergeladen… %{size}",
+    "This device does not have enough free memory to open this archive. You can download it instead.": "Dieses Gerät hat nicht genug freien Speicher, um dieses Archiv zu öffnen. Sie können es stattdessen herunterladen.",
     "This archive format is not supported yet. You can download it instead.": "Dieses Archivformat wird noch nicht unterstützt. Sie können es stattdessen herunterladen.",
     "The archive expands to more data than the browser is allowed to open.": "Das Archiv entpackt sich zu mehr Daten, als der Browser öffnen darf.",
     "The archive seems to be damaged or is not a valid archive.": "Das Archiv scheint beschädigt oder kein gültiges Archiv zu sein.",
@@ -27,6 +28,7 @@
     "Download selected (%{count})": "Auswahl herunterladen (%{count})",
     "Download selected": "Auswahl herunterladen",
     "Files larger than %{limit} cannot be extracted in the browser on this device. Download the whole archive instead.": "Dateien über %{limit} können auf diesem Gerät nicht im Browser entpackt werden. Laden Sie stattdessen das ganze Archiv herunter.",
+    "This device does not have enough free memory to extract this. Download the whole archive instead.": "Dieses Gerät hat nicht genug freien Speicher, um dies zu entpacken. Laden Sie stattdessen das ganze Archiv herunter.",
     "Extracting %{name}…": "%{name} wird entpackt…",
     "Extracting %{name}… %{percent}%": "%{name} wird entpackt… %{percent}%",
     "Failed to download \"%{name}\"": "„%{name}“ konnte nicht heruntergeladen werden",
@@ -40,6 +42,7 @@
     "No preview available for this file type.": "Für diesen Dateityp ist keine Vorschau verfügbar.",
     "This file is too large to preview. Download it instead.": "Diese Datei ist zu groß für eine Vorschau. Laden Sie sie stattdessen herunter.",
     "The preview could not be loaded.": "Die Vorschau konnte nicht geladen werden.",
+    "This image could not be displayed. Download it instead.": "Dieses Bild konnte nicht angezeigt werden. Laden Sie es stattdessen herunter.",
     "Archive Viewer": "Archiv-Betrachter"
   },
   "es": {
@@ -49,6 +52,7 @@
     "Decompressing…": "Descomprimiendo…",
     "Downloading… %{percent}%": "Descargando… %{percent}%",
     "Downloading… %{size}": "Descargando… %{size}",
+    "This device does not have enough free memory to open this archive. You can download it instead.": "Este dispositivo no tiene suficiente memoria libre para abrir este archivo comprimido. Puede descargarlo en su lugar.",
     "This archive format is not supported yet. You can download it instead.": "Este formato de archivo comprimido aún no es compatible. Puede descargarlo en su lugar.",
     "The archive expands to more data than the browser is allowed to open.": "El archivo comprimido se descomprime en más datos de los que el navegador puede abrir.",
     "The archive seems to be damaged or is not a valid archive.": "El archivo comprimido parece estar dañado o no es válido.",
@@ -70,6 +74,7 @@
     "Download selected (%{count})": "Descargar selección (%{count})",
     "Download selected": "Descargar selección",
     "Files larger than %{limit} cannot be extracted in the browser on this device. Download the whole archive instead.": "Los archivos de más de %{limit} no se pueden extraer en el navegador en este dispositivo. Descargue el archivo comprimido completo en su lugar.",
+    "This device does not have enough free memory to extract this. Download the whole archive instead.": "Este dispositivo no tiene suficiente memoria libre para extraer esto. Descargue el archivo comprimido completo en su lugar.",
     "Extracting %{name}…": "Extrayendo %{name}…",
     "Extracting %{name}… %{percent}%": "Extrayendo %{name}… %{percent}%",
     "Failed to download \"%{name}\"": "No se pudo descargar «%{name}»",
@@ -83,6 +88,7 @@
     "No preview available for this file type.": "No hay vista previa disponible para este tipo de archivo.",
     "This file is too large to preview. Download it instead.": "Este archivo es demasiado grande para la vista previa. Descárguelo en su lugar.",
     "The preview could not be loaded.": "No se pudo cargar la vista previa.",
+    "This image could not be displayed. Download it instead.": "No se pudo mostrar esta imagen. Descárguela en su lugar.",
     "Archive Viewer": "Visor de archivos comprimidos"
   },
   "fr": {
@@ -92,6 +98,7 @@
     "Decompressing…": "Décompression…",
     "Downloading… %{percent}%": "Téléchargement… %{percent} %",
     "Downloading… %{size}": "Téléchargement… %{size}",
+    "This device does not have enough free memory to open this archive. You can download it instead.": "Cet appareil n'a pas assez de mémoire libre pour ouvrir cette archive. Vous pouvez la télécharger à la place.",
     "This archive format is not supported yet. You can download it instead.": "Ce format d'archive n'est pas encore pris en charge. Vous pouvez la télécharger à la place.",
     "The archive expands to more data than the browser is allowed to open.": "L'archive se décompresse en plus de données que le navigateur n'est autorisé à ouvrir.",
     "The archive seems to be damaged or is not a valid archive.": "L'archive semble endommagée ou n'est pas une archive valide.",
@@ -113,6 +120,7 @@
     "Download selected (%{count})": "Télécharger la sélection (%{count})",
     "Download selected": "Télécharger la sélection",
     "Files larger than %{limit} cannot be extracted in the browser on this device. Download the whole archive instead.": "Les fichiers de plus de %{limit} ne peuvent pas être extraits dans le navigateur sur cet appareil. Téléchargez plutôt l'archive complète.",
+    "This device does not have enough free memory to extract this. Download the whole archive instead.": "Cet appareil n'a pas assez de mémoire libre pour extraire ceci. Téléchargez plutôt l'archive complète.",
     "Extracting %{name}…": "Extraction de %{name}…",
     "Extracting %{name}… %{percent}%": "Extraction de %{name}… %{percent} %",
     "Failed to download \"%{name}\"": "Impossible de télécharger « %{name} »",
@@ -126,6 +134,7 @@
     "No preview available for this file type.": "Aucun aperçu disponible pour ce type de fichier.",
     "This file is too large to preview. Download it instead.": "Ce fichier est trop volumineux pour un aperçu. Téléchargez-le plutôt.",
     "The preview could not be loaded.": "L'aperçu n'a pas pu être chargé.",
+    "This image could not be displayed. Download it instead.": "Cette image n'a pas pu être affichée. Téléchargez-la plutôt.",
     "Archive Viewer": "Visionneuse d'archives"
   }
 }

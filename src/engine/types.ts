@@ -19,7 +19,11 @@ export interface ArchiveEntry {
 export interface ArchiveHandle {
   format: ArchiveFormat
   entries: ArchiveEntry[]
-  read(entry: ArchiveEntry): Promise<Blob>
+  /**
+   * Reads an entry's content. `maxSize` lowers the size cap for this read (e.g. what is left of a
+   * selection's allowance); formats whose sizes can't lie (tar, single files) may ignore it.
+   */
+  read(entry: ArchiveEntry, maxSize?: number): Promise<Blob>
   close(): Promise<void>
 }
 
@@ -37,6 +41,8 @@ export type ArchiveErrorCode =
   | 'unreadable-entry'
   /** The server ignored an HTTP Range request (answered 200 instead of 206). */
   | 'range-unsupported'
+  /** The browser could not allocate the memory needed (the device has too little free). */
+  | 'out-of-memory'
 
 export class ArchiveError extends Error {
   readonly code: ArchiveErrorCode

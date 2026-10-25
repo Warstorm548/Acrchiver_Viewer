@@ -246,11 +246,50 @@ const decodeStream = async (data: Uint8Array, pos: number, out: Output): Promise
 }
 
 /**
+ * Total decompressed size recorded in the streams' indexes, read backwards from the end of the
+ * file; undefined when the layout looks wrong. Only sizes the output buffer up front: every index
+ * is checked again while decoding.
+ */
+export const recordedSize = (data: Uint8Array): number | undefined => {
+  let end = data.length
+  let total = 0
+  try {
+    while (end > 0) {
+      while (end >= 4 && readUint32(data, end - 4) === 0) {
+        end -= 4
+      }
+      if (end < 24 || !matches(data, end - 2, FOOTER_MAGIC)) {
+        return undefined
+      }
+      const footer = end - 12
+      const indexStart = footer - (readUint32(data, footer + 4) + 1) * 4
+      if (indexStart < 12 || data[indexStart] !== 0) {
+        return undefined
+      }
+      const cursor = { pos: indexStart + 1 }
+      const count = readVarInt(data, cursor, footer)
+      let blocksSize = 0
+      for (let i = 0; i < count; i++) {
+        blocksSize += Math.ceil(readVarInt(data, cursor, footer) / 4) * 4
+        total += readVarInt(data, cursor, footer)
+      }
+      end = indexStart - blocksSize - 12
+      if (end < 0 || !matches(data, end, HEADER_MAGIC)) {
+        return undefined
+      }
+    }
+    return total
+  } catch {
+    return undefined
+  }
+}
+
+/**
  * Decompresses .xz data (one or more concatenated streams, with optional stream padding).
  * Throws `ArchiveError('too-large')` once the output would exceed `maxSize`.
  */
 export const unxz = async (data: Uint8Array, maxSize: number): Promise<Uint8Array<ArrayBuffer>> => {
-  const out = new Output(maxSize)
+  const out = new Output(maxSize, recordedSize(data))
   let pos = await decodeStream(data, 0, out)
   while (pos < data.length) {
     // Stream padding: groups of four zero bytes, then possibly another stream.

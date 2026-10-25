@@ -10,6 +10,7 @@
  * input is an error; output size is capped (zip-bomb guard); errors are `ArchiveError`s;
  * random-access/seek and streaming APIs dropped.
  */
+import { GrowableBuffer } from './buffer'
 import { ArchiveError } from './types'
 
 const MAX_HUFCODE_BITS = 20
@@ -98,11 +99,7 @@ class BitReader {
   }
 }
 
-class Output {
-  buffer = new Uint8Array(1 << 16)
-  length = 0
-  constructor(private readonly maxSize: number) {}
-
+class Output extends GrowableBuffer {
   writeByte(byte: number) {
     if (this.length < this.buffer.length) {
       this.buffer[this.length++] = byte
@@ -112,25 +109,9 @@ class Output {
   }
 
   writeRun(byte: number, count: number) {
-    const needed = this.length + count
-    if (needed > this.maxSize) {
-      throw new ArchiveError('too-large', `Decompressed size exceeds ${this.maxSize} bytes`)
-    }
-    if (needed > this.buffer.length) {
-      let size = this.buffer.length * 2
-      while (size < needed) {
-        size *= 2
-      }
-      const grown = new Uint8Array(Math.min(size, Math.max(needed, this.maxSize)))
-      grown.set(this.buffer.subarray(0, this.length))
-      this.buffer = grown
-    }
-    this.buffer.fill(byte, this.length, needed)
-    this.length = needed
-  }
-
-  result(): Uint8Array<ArrayBuffer> {
-    return this.buffer.slice(0, this.length)
+    this.reserve(count)
+    this.buffer.fill(byte, this.length, this.length + count)
+    this.length += count
   }
 }
 
