@@ -14,11 +14,12 @@ and what is still missing: [opencloud-v8-compatibility](opencloud-v8-compatibili
 
 ## File types
 
-`appInfo.extensions` registers `zip, tar, gz, tgz, bz2, xz, 7z, rar`, each
+`appInfo.extensions` registers `zip, tar, tar.gz, tar.bz2, tar.xz, tgz, gz, bz2, xz, 7z, rar`, each
 `{ extension, routeName: 'archive-viewer' }`. This is what puts "Open with Archive Viewer" on
 those files and allows the app to be the default for them. MIME types are not declared; OpenCloud
-matches by extension. Compound extensions (`tar.gz`, `tar.bz2`, `tar.xz`) are an open question —
-`.tar.gz` files may only match via `gz`.
+matches by extension as computed by web-client `extractExtensionFromFile`, which treats
+`tar.gz`, `tar.bz2`, `tar.xz` as single extensions — hence they're listed separately. Verified on
+8.0.1 for zip, tar and tar.gz.
 
 ## Route and wrapper
 

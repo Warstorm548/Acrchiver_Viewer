@@ -38,7 +38,8 @@ ported viewer in step 3 using the pattern above.
 ## Not covered yet
 
 `src/index.ts` (app registration), archive listing/preview (step 3), e2e tests (OpenCloud uses
-Playwright in `web-extensions`; consider after step 2).
+Playwright in `web-extensions`; the local stack from step 2 could host them later). Manual
+in-OpenCloud checks: [local-dev-environment](../deployment/local-dev-environment.md).
 
 ## When changing tests
 

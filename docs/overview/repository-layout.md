@@ -7,11 +7,11 @@ Every tracked file after rework step 1, what it is, and its line count. `REF` = 
 
 | Path               | Lines | Purpose                                                                    |
 | ------------------ | ----: | -------------------------------------------------------------------------- |
-| `README.md`        |   339 | Project readme (still describes the original feature set; rewrite pending) |
-| `CLAUDE.md`        |   100 | Index into `docs/`                                                         |
+| `README.md`        |   347 | Project readme (still describes the original feature set; rewrite pending) |
+| `CLAUDE.md`        |   114 | Index into `docs/`                                                         |
 | `LICENSE`          |   661 | GNU AGPL-3.0 (canonical gnu.org text); copyright notice is in `README.md`  |
 | `package.json`     |    58 | Package metadata, scripts, devDependencies, `packageManager`               |
-| `pnpm-lock.yaml`   |  5360 | Locked dependency tree                                                     |
+| `pnpm-lock.yaml`   |  5346 | Locked dependency tree                                                     |
 | `.nvmrc`           |     1 | Node version for nvm (`24`)                                                |
 | `vite.config.ts`   |     9 | `defineConfig` from extension-sdk (+ excludes `reference/` from tests)     |
 | `tsconfig.json`    |     4 | Extends `@opencloud-eu/tsconfig`; excludes `reference/`                    |
@@ -25,7 +25,7 @@ Every tracked file after rework step 1, what it is, and its line count. `REF` = 
 
 | Path           | Lines | Purpose                                                                       |
 | -------------- | ----: | ----------------------------------------------------------------------------- |
-| `src/index.ts` |    48 | `defineWebApplication`: file types, route via `AppWrapperRoute`, translations |
+| `src/index.ts` |    60 | `defineWebApplication`: file types, route via `AppWrapperRoute`, translations |
 | `src/App.vue`  |    32 | Placeholder viewer (name + size)                                              |
 
 Details: [extension-entry](../source/extension-entry.md).
@@ -56,6 +56,12 @@ Details: [extension-entry](../source/extension-entry.md).
 
 This knowledge base; see `CLAUDE.md`. `docs/original-docs/` holds the original uploaded docs
 (historical, unverified).
+
+## Outside the repo
+
+The local OpenCloud test stack lives next to the repo in `~/Projects/OpenCloud/`
+(`opencloud-compose/`, `test-fixtures/`, `README.md`) and is not versioned here; see
+[local-dev-environment](../deployment/local-dev-environment.md).
 
 ## Removed in step 1
 

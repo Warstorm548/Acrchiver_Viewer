@@ -1,6 +1,6 @@
 # Dependencies
 
-State after rework step 1. All packages are **devDependencies**, matching OpenCloud's extensions:
+State after rework step 2. All packages are **devDependencies**, matching OpenCloud's extensions:
 the host provides the shared runtime modules, and the build bundles anything else that's used.
 There are **no runtime dependencies yet** — the archive engine (libarchive.js and/or zip.js) is
 added in step 3/4.
@@ -9,13 +9,13 @@ added in step 3/4.
 
 | Package                          | Range   | Installed | Role                                                                                          |
 | -------------------------------- | ------- | --------- | --------------------------------------------------------------------------------------------- |
-| `@opencloud-eu/web-pkg`          | ^8.1.0  | 8.1.0     | `defineWebApplication`, `AppWrapperRoute`, `formatFileSize`, types (host-provided at runtime) |
-| `@opencloud-eu/web-client`       | ^8.1.0  | 8.1.0     | `Resource` type, WebDAV client (host-provided)                                                |
-| `@opencloud-eu/extension-sdk`    | ^8.1.0  | 8.1.0     | `defineConfig` for Vite/Vitest                                                                |
-| `@opencloud-eu/tsconfig`         | ^8.1.0  | 8.1.0     | Base `tsconfig`                                                                               |
-| `@opencloud-eu/eslint-config`    | ^8.1.0  | 8.1.0     | ESLint rules                                                                                  |
-| `@opencloud-eu/prettier-config`  | ^8.1.0  | 8.1.0     | Prettier rules                                                                                |
-| `@opencloud-eu/web-test-helpers` | ^8.1.0  | 8.1.0     | `mount`, `defaultPlugins` for tests                                                           |
+| `@opencloud-eu/web-pkg`          | ~8.0.0  | 8.0.0     | `defineWebApplication`, `AppWrapperRoute`, `formatFileSize`, types (host-provided at runtime) |
+| `@opencloud-eu/web-client`       | ~8.0.0  | 8.0.0     | `Resource` type, WebDAV client (host-provided)                                                |
+| `@opencloud-eu/extension-sdk`    | ~8.0.0  | 8.0.0     | `defineConfig` for Vite/Vitest                                                                |
+| `@opencloud-eu/tsconfig`         | ~8.0.0  | 8.0.0     | Base `tsconfig`                                                                               |
+| `@opencloud-eu/eslint-config`    | ~8.0.0  | 8.0.0     | ESLint rules                                                                                  |
+| `@opencloud-eu/prettier-config`  | ~8.0.0  | 8.0.0     | Prettier rules                                                                                |
+| `@opencloud-eu/web-test-helpers` | ~8.0.0  | 8.0.0     | `mount`, `defaultPlugins` for tests                                                           |
 | `vue`                            | ^3.5.10 | 3.5.44    | Host-provided at runtime                                                                      |
 | `vue3-gettext`                   | 4.0.1   | 4.0.1     | `useGettext` (host-provided)                                                                  |
 | `vite`                           | ^8.0.3  | 8.3.5     | Build                                                                                         |
@@ -29,6 +29,14 @@ added in step 3/4.
 | `prettier`                       | ^3.8.1  | 3.9.10    | Format                                                                                        |
 | `tailwindcss`                    | ^4.0.0  | 4.3.3     | Utility CSS (SDK runs `@tailwindcss/vite`)                                                    |
 | `@types/node`                    | ^24.0.0 | 24.19.2   | Node types for config files                                                                   |
+
+## OpenCloud version alignment
+
+The main server runs OpenCloud rolling **8.0.1**, so the `@opencloud-eu/*` packages are pinned to
+`~8.0.0` (npm has 8.0.0 and 8.1.0; 8.0.0 is the 8.0 line). Rule: build against the **oldest
+OpenCloud version the app is deployed to**, and bump the pins when the server is upgraded.
+8.0.0 and 8.1.0 use the same Vite/Vitest ranges and `@module-federation/vite` 1.14.2. All checks
+pass on 8.0.0, which confirms `AppWrapperRoute`, `formatFileSize` and `AppConfigObject` exist in 8.0.
 
 ## Known install warnings (harmless, upstream)
 

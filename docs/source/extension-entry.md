@@ -10,8 +10,9 @@ file types and shows a placeholder. The archive engine and real UI arrive in ste
 `web-app-json-viewer`:
 
 - `applicationId = 'archive-viewer'` (also the `defineConfig({ name })` in `vite.config.ts`).
-- `supportedExtensions = ['zip', 'tar', 'gz', 'tgz', 'bz2', 'xz', '7z', 'rar']`. Compound
-  extensions (`tar.gz`, …) are not listed; whether OpenCloud matches them is an open question.
+- `supportedExtensions = ['zip', 'tar', 'tar.gz', 'tar.bz2', 'tar.xz', 'tgz', 'gz', 'bz2', 'xz',
+'7z', 'rar']`. OpenCloud treats `tar.gz`/`tar.bz2`/`tar.xz` as single extensions, so they are
+  listed explicitly (found in step 2: `sample.tar.gz` didn't match `gz`).
 - `useGettext()` from `vue3-gettext` for `$gettext`.
 - `routes`: one route, `name 'archive-viewer'`, `path '/:driveAliasAndItem(.*)?'`,
   `component: AppWrapperRoute(App, { applicationId })`,

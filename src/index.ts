@@ -5,9 +5,21 @@ import translations from '../l10n/translations.json'
 
 const applicationId = 'archive-viewer'
 
-// File extensions opened by this app. Compound extensions (e.g. tar.gz) are not listed yet;
-// whether OpenCloud matches them is an open question (see docs/architecture/opencloud-v8-compatibility.md).
-const supportedExtensions = ['zip', 'tar', 'gz', 'tgz', 'bz2', 'xz', '7z', 'rar']
+// File extensions opened by this app. OpenCloud treats 'tar.gz', 'tar.bz2' and 'tar.xz' as single
+// extensions (web-client extractExtensionFromFile), so they must be listed separately from 'gz' etc.
+const supportedExtensions = [
+  'zip',
+  'tar',
+  'tar.gz',
+  'tar.bz2',
+  'tar.xz',
+  'tgz',
+  'gz',
+  'bz2',
+  'xz',
+  '7z',
+  'rar'
+]
 
 export default defineWebApplication({
   setup() {

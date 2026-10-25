@@ -26,7 +26,7 @@ repo. Everything below was run successfully in rework step 1.
 ## Vite — `vite.config.ts`
 
 `defineConfig({ name: 'archive-viewer', test: { exclude: ['reference/**'] } })` from
-`@opencloud-eu/extension-sdk` 8.1.0. The SDK supplies:
+`@opencloud-eu/extension-sdk` 8.0.0 (pinned to the server's 8.0 line). The SDK supplies:
 
 - `@vitejs/plugin-vue`, `@tailwindcss/vite`, `@vitejs/plugin-basic-ssl` (dev server).
 - Module Federation (`@module-federation/vite`): exposes `./src/index.ts`, output
@@ -34,7 +34,8 @@ repo. Everything below was run successfully in rework step 1.
   `@opencloud-eu/web-pkg`, `@opencloud-eu/web-client/*`, `yjs` as singletons (not bundled).
 - Manifest generation (`dist/manifest.json`), see [deploying-to-opencloud](../deployment/deploying-to-opencloud.md).
 - Dev server at `https://host.docker.internal:9210`, registering with an OpenCloud web host at
-  `https://host.docker.internal:9201` (`OPENCLOUD_WEB_HOST_URL`) — used in step 2.
+  `https://host.docker.internal:9201` (`OPENCLOUD_WEB_HOST_URL`) — not used; the local stack
+  ([local-dev-environment](../deployment/local-dev-environment.md)) mounts `dist/` instead.
 - Vitest config: `happy-dom`, globals, `clearMocks`, `**/*.spec.ts`, v8 coverage to `./coverage`.
   Overrides are merged with Vite's `mergeConfig`, so `test.exclude` **adds** `reference/**` to the
   SDK's excludes.

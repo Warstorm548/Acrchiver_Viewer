@@ -1,8 +1,9 @@
 # Deploying to OpenCloud v8
 
-How a built extension gets into OpenCloud. Rework step 2 adds a local dev environment and
-expands this doc. The old Docker/nginx/`install.sh` deployment was removed in step 1 (it served
-the app from a separate nginx and never registered it with OpenCloud).
+How a built extension gets into an OpenCloud server. Verified in rework step 2 against the
+production compose stack on rolling 8.0.1 (local setup:
+[local-dev-environment](local-dev-environment.md)). The old Docker/nginx/`install.sh` deployment
+was removed in step 1.
 
 ## Build output
 
@@ -17,17 +18,30 @@ the app from a separate nginx and never registered it with OpenCloud).
 
 ## Installing
 
-Per the OpenCloud admin docs (web applications):
+1. Put the contents of `dist/` in a folder named **`archive-viewer`** (the folder name becomes the
+   app id) inside the server's web apps directory:
+   - **opencloud-compose** (the main server's setup): `config/opencloud/apps/archive-viewer/`,
+     or wherever `OC_APPS_DIR` in `.env` points. It's mounted at
+     `/var/lib/opencloud/web/assets/apps` in the container.
+   - Plain install: `$OC_BASE_DATA_PATH/web/assets/apps` by default, changed with
+     `WEB_ASSET_APPS_PATH`.
+2. Restart OpenCloud (`docker compose restart opencloud`). New apps and `apps.yaml` changes are
+   only read at startup.
 
-1. Copy the `dist/` folder as `archive-viewer/` into the web apps directory —
-   `$OC_DATA_DIR/web/assets/apps` by default (create it if missing), or
-   `opencloud-compose/config/opencloud/apps` with opencloud-compose. `WEB_ASSET_APPS_PATH`
-   changes the location (OpenCloud's own dev compose uses `/web/apps`).
-2. Restart OpenCloud (`docker compose restart`). The app appears automatically.
+Requirements from the OpenCloud web service: each app has its own directory, contains a
+`manifest.json` with `entrypoint`, and may contain a `config.json`.
+
+## How to check it's installed
+
+- `https://<server>/config.json` → `external_apps` lists
+  `{ "id": "archive-viewer", "path": "/assets/apps/archive-viewer/js/remoteEntry-<hash>.mjs", "version": "…" }`.
+- Files are served under `https://<server>/assets/apps/archive-viewer/`.
+- In Files, right-click a `.zip` → "Open in Archive Viewer".
 
 ## Configuring
 
-`$OC_CONFIG_DIR/apps.yaml` (survives updates), keyed by app id:
+`apps.yaml` (opencloud-compose: `config/opencloud/apps.yaml`, mounted to `/etc/opencloud/apps.yaml`),
+keyed by app id:
 
 ```yaml
 archive-viewer:
@@ -35,15 +49,27 @@ archive-viewer:
     # future options, e.g. a maximum archive size
 ```
 
-Values reach the component as the `applicationConfig` prop. Alternative: a `config.json` inside the
-app folder.
+Values are merged with the manifest's `config` and reach the component as the
+`applicationConfig` prop. `disabled: true` (in `apps.yaml` or the app's `config.json`) stops the
+app from loading.
 
-## Not yet verified
+## Production security policy (CSP)
 
-The app has not been loaded into a running OpenCloud yet — that is rework step 2.
+opencloud-compose serves the CSP from `config/opencloud/csp.yaml`. Observed on 8.0.1:
+`worker-src 'self' blob:` (web workers allowed) but `script-src` without `'wasm-unsafe-eval'`, so
+**WebAssembly is blocked**. A WASM-based archive engine would need the server's `csp.yaml`
+changed; a pure-JS engine works as is. See
+[opencloud-v8-compatibility](../architecture/opencloud-v8-compatibility.md).
+
+## Version alignment
+
+The app's `@opencloud-eu/*` packages are pinned to the server's line (`~8.0.0` for an 8.0.x
+server); see [dependencies](../tech-stack/dependencies.md).
 
 ## Sources
 
 - https://docs.opencloud.eu/docs/admin/configuration/web-applications
-- `opencloud-eu/web-extensions` `docker-compose.yml` (dev setup mounting `dist/` into `/web/apps/<id>`)
+- `opencloud-eu/opencloud` `services/web/README.md` and `services/web/pkg/server/http/server.go`
+  (`/assets/apps` endpoint, `external_apps`)
+- `opencloud-eu/opencloud-compose` `docker-compose.yml`, `.env.example`
 - `opencloud-eu/web` `packages/extension-sdk/src/plugins/manifest.ts`

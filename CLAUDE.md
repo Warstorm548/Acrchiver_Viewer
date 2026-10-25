@@ -2,8 +2,10 @@
 
 Archive viewer extension for **OpenCloud Web v8** (browse/preview/download ZIP, TAR, etc. inside
 OpenCloud). Standalone extension at the repo root, built with OpenCloud's toolchain
-(`@opencloud-eu/extension-sdk`, Vite, Vue 3, TypeScript, pnpm, Node 24). Rework step 1 of 6 is
-done: it builds and tests pass, but the viewer is still a placeholder. Old pre-v8 viewer code is
+(`@opencloud-eu/extension-sdk`, Vite, Vue 3, TypeScript, pnpm, Node 24), pinned to OpenCloud
+**8.0** to match the main server (rolling 8.0.1). Rework steps 1–2 of 6 are done: it builds,
+tests pass, and it installs and opens in a local production stack; the viewer is still a
+placeholder. Old pre-v8 viewer code is
 parked in `reference/` for porting. Start with [project status](docs/overview/project-status.md).
 
 Commands: `pnpm install`, `pnpm build`, `pnpm check:types`, `pnpm lint`, `pnpm format:check`,
@@ -78,7 +80,10 @@ Commands: `pnpm install`, `pnpm build`, `pnpm check:types`, `pnpm lint`, `pnpm f
 ### Deployment
 
 - [docs/deployment/deploying-to-opencloud.md](docs/deployment/deploying-to-opencloud.md) — build
-  output, installing into the OpenCloud apps dir, `apps.yaml` config.
+  output, installing on a server (opencloud-compose), install checks, `apps.yaml`, production CSP.
+- [docs/deployment/local-dev-environment.md](docs/deployment/local-dev-environment.md) — the local
+  opencloud-compose stack (rolling 8.0.1) outside the repo: setup to recreate it, sudo commands,
+  dev loop, fixtures, checks, step 2 results, troubleshooting.
 
 ### Known issues
 

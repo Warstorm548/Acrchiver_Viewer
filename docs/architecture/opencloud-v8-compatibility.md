@@ -1,9 +1,10 @@
 # OpenCloud v8 Compatibility
 
-**Verdict (after rework step 1): builds against v8, not yet functional.** The toolchain, app
-registration and route wiring now match OpenCloud v8.1.0 (latest, released 2026-10-05); the
-viewer is a placeholder until step 3, and nothing has been loaded into a running OpenCloud yet
-(step 2). Researched 2026-10-25 against `opencloud-eu/web-extensions` (`web-app-json-viewer`,
+**Verdict (after rework step 2): installs and opens in OpenCloud 8.0.1; viewer not functional
+yet.** The toolchain, app registration and route wiring match OpenCloud v8. The app is built
+against the 8.0 packages (the main server runs rolling **8.0.1**; latest is 8.1.0) and was
+verified on a local opencloud-compose stack: "Open in Archive Viewer" works for zip, tar and
+tar.gz, and the placeholder viewer renders. Reading archives comes in step 3. Researched 2026-10-25 against `opencloud-eu/web-extensions` (`web-app-json-viewer`,
 `web-app-unzip`) and the `opencloud-eu/web` source (`packages/extension-sdk`,
 `packages/web-client`, `packages/web-pkg`).
 
@@ -113,24 +114,34 @@ export default defineWebApplication({
 `vue3-gettext ^4`. Monorepo root adds `extension-sdk ^8.1.0`, `vite ^8`, `vitest ^5`,
 `vue-tsc ^3`, `typescript ^6`, `happy-dom`, `@opencloud-eu/web-test-helpers`; `pnpm@11`.
 
+## Answered in step 2
+
+- **Compound extensions**: OpenCloud's `extractExtensionFromFile` (web-client
+  `helpers/resource/functions.ts`) treats `tar.bz2`, `tar.gz`, `tar.xz` as single extensions, so
+  `sample.tar.gz` did _not_ match `gz`. They are now registered explicitly; verified.
+- **Production CSP** (opencloud-compose `config/opencloud/csp.yaml`, seen on 8.0.1):
+  `worker-src 'self' blob:`, but `script-src 'self' 'unsafe-inline' https://keycloak…` — no
+  `'wasm-unsafe-eval'`. **WebAssembly is blocked** on a default production server, so
+  libarchive.js (WASM) would need a server CSP change; a pure-JS engine (zip.js) works as is.
+
 ## Open questions to test
 
-- Do compound extensions (`tar.gz`) match in `appInfo.extensions`, or only the last part (`gz`)?
-- Does the signed URL from the `url` prop honour HTTP `Range` requests?
-- Can libarchive.js's WASM worker load under Module Federation from the apps directory?
+- Does the signed URL from the `url` prop honour HTTP `Range` requests (through Traefik)?
+- If a WASM engine is chosen: does it work once `'wasm-unsafe-eval'` is added to the server CSP?
 
 ## Migration outline (decisions pending)
 
 1. **Done (step 1):** stripped legacy app/webpack/appinfo/nginx; v8 `package.json`,
    `vite.config.ts`, lockfile; minimal viewer builds, type-checks, lints and passes tests.
-2. Run OpenCloud v8 locally (opencloud-compose), install it, confirm "Open with" for `.zip`.
+2. **Done (step 2):** local opencloud-compose stack on rolling 8.0.1, packages pinned to 8.0,
+   app installed, "Open in Archive Viewer" verified (zip, tar, tar.gz).
 3. Port the UI onto `AppWrapperRoute` props; fix V1, V5, V6, V14 from [bugs](../known-issues/bugs.md).
 4. Add remaining formats with size limits from `apps.yaml`.
 5. Large ZIPs via the `url` prop + Range reads, if the open question above checks out.
 6. Tests (`web-test-helpers`), translations, docs, README.
 
-Pending decisions: scope (viewer vs. also extract), engine (libarchive.js, zip.js, or both),
-size limits, repo layout.
+Pending decisions: scope (viewer vs. also extract), engine (libarchive.js, zip.js, or both —
+note the CSP finding above), size limits.
 
 ## Sources
 
