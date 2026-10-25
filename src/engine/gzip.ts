@@ -37,3 +37,30 @@ export const gunzip = async (blob: Blob, maxSize: number): Promise<Uint8Array<Ar
   }
   return result
 }
+
+export interface GzipHeader {
+  /** Original file name stored by `gzip` (FNAME field), if any. */
+  fileName?: string
+  modified?: Date
+}
+
+/** Reads the optional original name and modification time from a gzip header (RFC 1952). */
+export const readGzipHeader = (bytes: Uint8Array): GzipHeader => {
+  if (bytes.length < 10 || bytes[0] !== 0x1f || bytes[1] !== 0x8b) {
+    return {}
+  }
+  const flags = bytes[3]
+  const mtime = bytes[4] | (bytes[5] << 8) | (bytes[6] << 16) | (bytes[7] << 24)
+  const header: GzipHeader = { modified: mtime ? new Date((mtime >>> 0) * 1000) : undefined }
+  let position = 10
+  if (flags & 0x04) {
+    position += 2 + (bytes[position] | (bytes[position + 1] << 8))
+  }
+  if (flags & 0x08) {
+    const end = bytes.indexOf(0, position)
+    if (end > position) {
+      header.fileName = new TextDecoder('latin1').decode(bytes.subarray(position, end))
+    }
+  }
+  return header
+}

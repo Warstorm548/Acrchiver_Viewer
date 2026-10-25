@@ -154,7 +154,7 @@
 import { computed, defineComponent, PropType, ref } from 'vue'
 import { useGettext } from 'vue3-gettext'
 import { formatFileSize, useMessages } from '@opencloud-eu/web-pkg'
-import { ArchiveEntry, ArchiveHandle, buildIndex, parentPath } from '../engine'
+import { ArchiveEntry, ArchiveHandle, archiveExtension, buildIndex, parentPath } from '../engine'
 import { isImageFile, isTextFile } from '../engine/fileTypes'
 import { triggerDownload, zipEntries } from '../download'
 import PreviewModal from './PreviewModal.vue'
@@ -304,7 +304,10 @@ export default defineComponent({
         if (files.length === 1) {
           triggerDownload(await props.handle.read(files[0]), files[0].name)
         } else {
-          const baseName = props.archiveName.replace(/\.(zip|tar|tgz|tar\.gz)$/i, '')
+          const extension = archiveExtension(props.archiveName)
+          const baseName = extension
+            ? props.archiveName.slice(0, -(extension.length + 1))
+            : props.archiveName
           triggerDownload(await zipEntries(props.handle, files), `${baseName}-selection.zip`)
         }
       } catch (error) {

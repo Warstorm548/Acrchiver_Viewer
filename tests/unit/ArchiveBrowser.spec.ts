@@ -15,9 +15,9 @@ const handle = () =>
     ])
   )
 
-const createWrapper = () =>
+const createWrapper = (archiveName = 'sample.tar') =>
   mount(ArchiveBrowser, {
-    props: { handle: handle(), archiveName: 'sample.tar' },
+    props: { handle: handle(), archiveName },
     global: { plugins: [...defaultPlugins()], stubs: { OcIcon: true, PreviewModal: true } }
   })
 
@@ -79,5 +79,18 @@ describe('ArchiveBrowser', () => {
       'docs/deep/data.json'
     ])
     expect(trigger).toHaveBeenCalledWith(expect.any(Blob), 'sample-selection.zip')
+  })
+
+  it.each([
+    ['large.tar.bz2', 'large-selection.zip'],
+    ['photos.tgz', 'photos-selection.zip'],
+    ['backup.zip', 'backup-selection.zip']
+  ])('names the selection zip of %s %s', async (archiveName, expected) => {
+    const trigger = vi.spyOn(download, 'triggerDownload').mockImplementation(() => {})
+    vi.spyOn(download, 'zipEntries').mockResolvedValue(new Blob(['zip']))
+    const wrapper = createWrapper(archiveName)
+    wrapper.vm.toggleSelection(wrapper.vm.rows[0])
+    await wrapper.vm.downloadSelection()
+    expect(trigger).toHaveBeenCalledWith(expect.any(Blob), expected)
   })
 })

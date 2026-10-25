@@ -41,6 +41,7 @@ import {
   archiveExtension,
   ArchiveError,
   ArchiveHandle,
+  isCompressedFormat,
   openArchive,
   resolveFormat,
   SIGNATURE_LENGTH
@@ -69,6 +70,7 @@ export default defineComponent({
     const state = ref<State>('loading')
     const message = ref('')
     const loaded = ref(0)
+    const decompressing = ref(false)
     const handle = shallowRef<ArchiveHandle | null>(null)
     let abortController: AbortController | null = null
 
@@ -82,6 +84,9 @@ export default defineComponent({
     const format = (size: number) => formatFileSize(size, currentLanguage)
     const fileSize = computed(() => format(props.resource.size as number))
     const progressText = computed(() => {
+      if (decompressing.value) {
+        return $gettext('Decompressing…')
+      }
       const total = Number(props.resource.size)
       return total > 0
         ? $gettext('Downloading… %{percent}%', {
@@ -134,6 +139,7 @@ export default defineComponent({
     const load = async () => {
       closeArchive()
       loaded.value = 0
+      decompressing.value = false
       if (Number(props.resource.size) > maxArchiveSize.value) {
         state.value = 'too-large'
         message.value = $gettext(
@@ -153,9 +159,13 @@ export default defineComponent({
         const blob = await download(props.url, controller.signal)
         const head = new Uint8Array(await blob.slice(0, SIGNATURE_LENGTH).arrayBuffer())
         const archiveFormat = resolveFormat(archiveExtension(props.resource.name), head)
-        const opened = await openArchive(blob, archiveFormat, {
-          maxUncompressedSize: maxUncompressedSize.value
-        })
+        decompressing.value = isCompressedFormat(archiveFormat)
+        const opened = await openArchive(
+          blob,
+          archiveFormat,
+          { maxUncompressedSize: maxUncompressedSize.value },
+          props.resource.name
+        )
         if (controller.signal.aborted) {
           await opened.close()
           return

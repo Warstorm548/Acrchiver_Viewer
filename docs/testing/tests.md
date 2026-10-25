@@ -9,38 +9,55 @@ pnpm test:unit --run --coverage
 ```
 
 Config comes from `@opencloud-eu/extension-sdk` (`defineConfig` in `vite.config.ts`): `happy-dom`,
-globals, `clearMocks`, includes `**/*.spec.ts`, excludes `node_modules`, `dist`, `e2e` and (our
-override) `reference/**`. The SDK's setup file adds a `<base href="/">` to the document.
+globals, `clearMocks`, includes `**/*.spec.ts`, excludes `node_modules`, `dist`, `e2e`. The SDK's
+setup file adds a `<base href="/">` to the document. Node 24 provides `CompressionStream` /
+`DecompressionStream`, which the engine and tests rely on.
 
-## Current specs
+## Specs (69 tests, all passing after step 4)
 
-`tests/unit/App.spec.ts` — 2 tests, both passing (rework step 1):
+| File                                | Covers                                                                                                                                                                                         |
+| ----------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `tests/unit/engine/tar.spec.ts`     | listing, sizes/dates, reading, GNU long names, pax paths, symlinks unsupported, corrupt and truncated archives                                                                                 |
+| `tests/unit/engine/zip.spec.ts`     | listing with folders, reading with MIME type, encrypted entries unsupported, non-zip rejected                                                                                                  |
+| `tests/unit/engine/gzip.spec.ts`    | decompression, size-limit abort (`too-large`), corrupt data, gzip header name/date                                                                                                             |
+| `tests/unit/engine/bzip2.spec.ts`   | 8 libbz2-generated samples (text at block sizes 1 and 9, runs, random, empty, multi-stream, tar, 1 MB of zeros) byte-identical; trailing bytes; size limit; bad magic; damaged CRC; truncation |
+| `tests/unit/engine/single.spec.ts`  | single-file naming, one-entry handle, `.gz` → one file, gzipped tar without `.tar`, `.bz2` and `.tar.bz2` via `openArchive`                                                                    |
+| `tests/unit/engine/tree.spec.ts`    | path normalization, parent paths, synthesized folders, direct children, `filesBelow`, duplicates                                                                                               |
+| `tests/unit/engine/detect.spec.ts`  | zip/gzip/bzip2/tar signatures, extension + content resolution, unsupported formats                                                                                                             |
+| `tests/unit/ArchiveBrowser.spec.ts` | folders first, folder navigation + breadcrumb, whole-archive search with folder path, size sort toggle, single download, selected folder → one zip, selection-zip naming for zip/tgz/tar.bz2   |
+| `tests/unit/App.spec.ts`            | size limit blocks download, download → open → list, single `.gz` file, damaged archive, unsupported format, HTTP failure                                                                       |
 
-| Test                     | Checks                                             |
-| ------------------------ | -------------------------------------------------- |
-| renders the archive name | `.archive-viewer-name` text equals `resource.name` |
-| renders the archive size | `.archive-viewer-size` is non-empty                |
+Helpers:
 
-Pattern (same as `web-app-json-viewer`): `mount` and `defaultPlugins()` from
-`@opencloud-eu/web-test-helpers`, `mock<Resource>()` / `mock<AppConfigObject>()` from
-`vitest-mock-extended`, props passed directly (no router needed).
+- `tests/unit/engine/tarBuilder.ts` builds tar bytes (ustar, GNU `L`, pax `x`) and gzips them with
+  `CompressionStream`.
+- `tests/unit/engine/bzip2Samples.ts` holds bzip2 data produced by Python's `bz2` module (the
+  reference libbz2) as base64, plus the SHA-256 and size of the original data.
+- ZIP archives are built in tests with zip.js `ZipWriter`.
 
-`OcIcon` is stubbed (`global.stubs: { OcIcon: true }`): the real component fetches its SVG over
-HTTP, which in happy-dom fails with `ECONNREFUSED 127.0.0.1:3000` noise.
+A one-off multi-block stress check (1.8 MB of mixed data at block sizes 100k and 900k) also matched
+libbz2 byte-for-byte during step 4; it isn't kept as a test.
 
-## Old tests (parked)
+## Patterns
 
-`reference/old-tests/setup.ts` and `ArchiveViewer.spec.ts` tested the old viewer with hand-written
-mocks of libarchive.js, web-pkg and vue-router. They are excluded from the run. Two of them could
-never have passed (they assigned `archiveFiles`, which wasn't exposed). Rewrite tests for the
-ported viewer in step 3 using the pattern above.
+- Components: `mount` + `defaultPlugins()` from `@opencloud-eu/web-test-helpers` (provides pinia
+  for `useMessages`, gettext, design system), `mock<T>()` from `vitest-mock-extended`.
+- `OcIcon` is stubbed (`global.stubs: { OcIcon: true }`): the real component fetches its SVG over
+  HTTP, which fails in happy-dom with `ECONNREFUSED 127.0.0.1:3000` noise. `PreviewModal` is
+  stubbed in browser tests.
+- zip.js: `configureZip({ useWebWorkers: false })` in `beforeAll` (no workers in happy-dom).
+  `bunzip2Async` falls back to the main thread there, so the bzip2 worker itself is only
+  exercised in the browser checklist.
+- Network: `vi.spyOn(globalThis, 'fetch')` returning a `Response`.
+- Downloads: `vi.spyOn(download, 'triggerDownload' | 'zipEntries')`.
 
-## Not covered yet
+## Not covered by unit tests
 
-`src/index.ts` (app registration), archive listing/preview (step 3), e2e tests (OpenCloud uses
-Playwright in `web-extensions`; the local stack from step 2 could host them later). Manual
-in-OpenCloud checks: [local-dev-environment](../deployment/local-dev-environment.md).
+`PreviewModal.vue` rendering, the bzip2 Web Worker, `download.ts` in a real browser and
+`src/index.ts` registration. These are covered by the manual checklist on the local stack
+([local-dev-environment](../deployment/local-dev-environment.md)). E2E tests (Playwright, as in
+`web-extensions`) could automate it later.
 
 ## When changing tests
 
-Update the table above with each new spec.
+Update the table above with each new spec and the total count.

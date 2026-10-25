@@ -1,8 +1,8 @@
 # OpenCloud v8 Compatibility
 
-**Verdict (after rework step 3): compatible and functional on OpenCloud 8.0.1** for ZIP, TAR and
-TAR.GZ/TGZ (pure JavaScript, no CSP change). Other formats and large-archive streaming follow in
-steps 4–5. The toolchain, app registration and route wiring match OpenCloud v8. The app is built
+**Verdict (after rework step 4): compatible and functional on OpenCloud 8.0.1** for ZIP, TAR,
+TAR.GZ/TGZ, TAR.BZ2/TBZ2 and single .gz/.bz2 files (pure JavaScript, no CSP change; bzip2 runs in
+a `blob:` Web Worker). XZ follows in step 4b, large-archive streaming in step 5. The toolchain, app registration and route wiring match OpenCloud v8. The app is built
 against the 8.0 packages (the main server runs rolling **8.0.1**; latest is 8.1.0) and was
 verified on a local opencloud-compose stack: "Open in Archive Viewer" works for zip, tar and
 tar.gz. Researched 2026-10-25 against `opencloud-eu/web-extensions` (`web-app-json-viewer`,
@@ -138,7 +138,8 @@ export default defineWebApplication({
    app installed, "Open in Archive Viewer" verified (zip, tar, tar.gz).
 3. **Done (step 3):** pure-JS engine (zip.js native, own TAR reader, browser gzip) and ported
    viewer UI on the `url` prop; old bugs V1, V5, V6, V14 fixed by design.
-4. Add remaining formats with size limits from `apps.yaml`.
+4. **Done (step 4):** bzip2 via a ported pure-JS decoder in an inline worker; single `.gz`/`.bz2`
+   files; size limits from `apps.yaml` (since step 3). Step 4b: XZ.
 5. Large ZIPs via the `url` prop + Range reads, if the open question above checks out.
 6. Tests (`web-test-helpers`), translations, docs, README.
 

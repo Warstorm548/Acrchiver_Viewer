@@ -62,6 +62,18 @@ describe('App', () => {
     expect(wrapper.findAll('.archive-name').map((n) => n.text())).toEqual(['docs', 'root.txt'])
   })
 
+  it('opens a single .gz file as a one-file archive', async () => {
+    const gz = await new Response(
+      new Blob(['hello']).stream().pipeThrough(new CompressionStream('gzip'))
+    ).blob()
+    respondWith(gz)
+    const wrapper = createWrapper({ name: 'notes.txt.gz', size: gz.size })
+    await vi.waitFor(async () => {
+      await flushPromises()
+      expect(wrapper.findAll('.archive-name').map((n) => n.text())).toEqual(['notes.txt'])
+    })
+  })
+
   it('shows an error for damaged archives', async () => {
     respondWith(new Blob(['PK\u0003\u0004 not really a zip']))
     const wrapper = createWrapper()

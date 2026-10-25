@@ -7,14 +7,15 @@ docs); `PLAUSIBLE` = needs a test. Remove entries when fixed (and say so in the 
 
 No known bugs. Known limitations (by design for now):
 
-| #   | Limitation                                                                                                           | Planned          |
-| --- | -------------------------------------------------------------------------------------------------------------------- | ---------------- |
-| K1  | BZ2, XZ, plain GZ, TAR.BZ2, TAR.XZ, 7z, RAR show "not supported yet" (download offered)                              | step 4 / roadmap |
-| K2  | Whole archive is downloaded into browser memory (up to `maxArchiveSize`, default 256 MiB)                            | step 5 (ZIP)     |
-| K3  | Password-protected ZIP entries are listed but can't be previewed or downloaded                                       | roadmap          |
-| K4  | ZIP entry sizes come from the archive's own headers; only previews (10 MiB) are capped, not user-requested downloads | —                |
-| K5  | Deflate64 / bzip2 / LZMA compression _inside_ ZIP is unsupported (native zip.js build)                               | —                |
-| K6  | New UI strings are English-only until translation tooling exists                                                     | step 6           |
+| #   | Limitation                                                                                                           | Planned                |
+| --- | -------------------------------------------------------------------------------------------------------------------- | ---------------------- |
+| K1  | XZ, TAR.XZ, 7z, RAR show "not supported yet" (download offered)                                                      | step 4b (XZ) / roadmap |
+| K2  | Whole archive is downloaded into browser memory (up to `maxArchiveSize`, default 256 MiB)                            | step 5 (ZIP)           |
+| K3  | Password-protected ZIP entries are listed but can't be previewed or downloaded                                       | roadmap                |
+| K4  | ZIP entry sizes come from the archive's own headers; only previews (10 MiB) are capped, not user-requested downloads | —                      |
+| K5  | Deflate64 / bzip2 / LZMA compression _inside_ ZIP is unsupported (native zip.js build)                               | —                      |
+| K6  | New UI strings are English-only until translation tooling exists                                                     | step 6                 |
+| K7  | bzip2 is decoded in full in memory (no streaming); large `.tar.bz2` files take seconds (in a worker)                 | —                      |
 
 ## Old viewer bugs (resolved)
 

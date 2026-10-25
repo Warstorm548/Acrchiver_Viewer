@@ -10,7 +10,10 @@ the ZIP library, which is bundled into the app.
 | ---------------- | -------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `@zip.js/zip.js` | `2.24.0` (exact, like `web-app-unzip`) | ZIP reading and writing. Imported **only** from `@zip.js/zip.js/lib/zip-native.js`: the default build uses WebAssembly (`zip-module.wasm`), which OpenCloud's production CSP blocks; the native build uses the browser's `DecompressionStream` in an inline `blob:` worker. Do not import from the package root. |
 
-TAR and gzip need no library (own parser + browser `DecompressionStream`).
+TAR and gzip need no library (own parser + browser `DecompressionStream`). bzip2 uses
+**vendored code**, not an npm package: `src/engine/bzip2.ts` is a port of `seek-bzip` 2.0.0 (MIT),
+whose npm build depends on Node's `Buffer` and can't run in a browser. License texts:
+`THIRD-PARTY-NOTICES.md`.
 
 ## devDependencies (installed versions from `pnpm-lock.yaml`)
 
@@ -60,12 +63,14 @@ has the same tree.
 `fflate`, `pako`, `node-7z`, `unrar-js`, `tar-stream` (legacy app / never used), the
 `@opencloud/core` peer (doesn't exist), and all webpack/Babel tooling.
 
-## Candidates (step 4, pure JavaScript only)
+## Evaluated decoders (step 4, checked in the npm tarballs)
 
-- A pure-JS bzip2 decoder (e.g. `seek-bzip`) for BZ2 / TAR.BZ2.
-- A pure-JS xz/LZMA decoder for XZ / TAR.XZ (most common ones are WebAssembly — must be checked).
-- `libarchive.js` is **not** an option without a CSP change (WebAssembly); see
-  [roadmap-considerations](../overview/roadmap-considerations.md).
+| Package                  | Verdict                                                                                                                                                          |
+| ------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `seek-bzip` 2.0.0 (MIT)  | Pure JS, no WebAssembly, but uses Node `new Buffer()` → **ported** into `src/engine/bzip2.ts`                                                                    |
+| `xz-decompress` 0.2.3    | Uses WebAssembly → rejected                                                                                                                                      |
+| `xz-compat` 1.2.11 (MIT) | Node-only as published (`process`, `path`, native-module loader); its pure-JS LZMA2/XZ core (~1.5–2k lines, ~75 `Buffer` uses) is the **step 4b** porting source |
+| `libarchive.js`          | WebAssembly → not usable without a CSP change ([roadmap-considerations](../overview/roadmap-considerations.md))                                                  |
 
 ## When changing dependencies
 

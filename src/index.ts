@@ -15,6 +15,8 @@ const supportedExtensions = [
   'tar.bz2',
   'tar.xz',
   'tgz',
+  'tbz2',
+  'tbz',
   'gz',
   'bz2',
   'xz',

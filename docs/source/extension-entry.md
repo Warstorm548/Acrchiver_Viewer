@@ -12,11 +12,11 @@ How the app registers with OpenCloud. The viewer itself is described in
   (utilities prefixed `ext:`), same as OpenCloud's own extensions (e.g. `web-app-notes`).
 - `applicationId = 'archive-viewer'` (also the `defineConfig({ name })` in `vite.config.ts` and
   the install folder name).
-- `supportedExtensions = ['zip', 'tar', 'tar.gz', 'tar.bz2', 'tar.xz', 'tgz', 'gz', 'bz2', 'xz',
-'7z', 'rar']`. OpenCloud treats `tar.gz`/`tar.bz2`/`tar.xz` as single extensions, so they are
-  listed explicitly (found in step 2). All of them get "Open in Archive Viewer"; formats the
-  engine can't read yet (bz2, xz, plain gz, 7z, rar) open to a "not supported yet" message with a
-  download button.
+- `supportedExtensions = ['zip', 'tar', 'tar.gz', 'tar.bz2', 'tar.xz', 'tgz', 'tbz2', 'tbz', 'gz',
+'bz2', 'xz', '7z', 'rar']`. OpenCloud treats `tar.gz`/`tar.bz2`/`tar.xz` as single extensions,
+  so they are listed explicitly (found in step 2). All of them get "Open in Archive Viewer";
+  formats the engine can't read yet (xz, tar.xz, 7z, rar) open to a "not supported yet" message
+  with a download button.
 - `useGettext()` from `vue3-gettext` for `$gettext`.
 - `routes`: one route, `name 'archive-viewer'`, `path '/:driveAliasAndItem(.*)?'`,
   `component: AppWrapperRoute(App, { applicationId })`,

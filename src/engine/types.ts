@@ -1,4 +1,4 @@
-export type ArchiveFormat = 'zip' | 'tar' | 'tar.gz'
+export type ArchiveFormat = 'zip' | 'tar' | 'tar.gz' | 'tar.bz2' | 'gz' | 'bz2'
 
 export interface ArchiveEntry {
   /** Normalized path inside the archive, no leading or trailing slash. */

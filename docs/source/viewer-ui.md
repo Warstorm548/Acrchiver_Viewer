@@ -15,8 +15,10 @@ Rendered by `AppWrapperRoute` (see [extension-entry](extension-entry.md)). Props
    An `AbortController` cancels it when the component unmounts or `url`/`resource.id` change.
 3. **Detect**: first `SIGNATURE_LENGTH` bytes + `archiveExtension(resource.name)` →
    `resolveFormat`.
-4. **Open**: `openArchive(blob, format, { maxUncompressedSize })` → state `ready` →
-   `<archive-browser>`.
+4. **Open**: `openArchive(blob, format, { maxUncompressedSize }, resource.name)` → state `ready`
+   → `<archive-browser>`. For compressed formats (`isCompressedFormat`: tar.gz, tar.bz2, gz, bz2)
+   the loading text switches to "Decompressing…" first; bzip2 runs in a Web Worker so the page
+   stays responsive.
 5. **Errors** → state `error` with a message per `ArchiveError.code` (unsupported format, too
    large when decompressed, damaged) or "could not be loaded" (HTTP/network), plus the download
    button.
@@ -41,7 +43,8 @@ Props `handle`, `archiveName`. Builds `buildIndex(handle.entries)`.
   readable files.
 - **Download**: single file → `triggerDownload(blob, name)`. Selection → files plus everything
   inside selected folders (readable only); one file is downloaded directly, several are packed
-  by `zipEntries` into `<archive>-selection.zip`.
+  by `zipEntries` into `<archive>-selection.zip` (archive name minus its extension as computed by
+  `archiveExtension`, e.g. `large.tar.bz2` → `large-selection.zip`).
 - Failures → `useMessages().showErrorMessage` (host notification).
 
 ## `components/PreviewModal.vue`

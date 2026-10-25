@@ -10,6 +10,7 @@ const bytes = (...values: number[]) => {
 
 const zipHead = bytes(0x50, 0x4b, 0x03, 0x04)
 const gzipHead = bytes(0x1f, 0x8b, 0x08)
+const bzip2Head = bytes(0x42, 0x5a, 0x68, 0x39)
 const tarHead = buildTar([{ name: 'a.txt', content: 'x' }]).subarray(0, 262)
 const unknownHead = bytes(0x01, 0x02)
 
@@ -17,6 +18,7 @@ describe('sniffSignature', () => {
   it('recognizes zip, gzip and tar', () => {
     expect(sniffSignature(zipHead)).toBe('zip')
     expect(sniffSignature(gzipHead)).toBe('gzip')
+    expect(sniffSignature(bzip2Head)).toBe('bzip2')
     expect(sniffSignature(tarHead)).toBe('tar')
     expect(sniffSignature(unknownHead)).toBeNull()
   })
@@ -28,6 +30,10 @@ describe('resolveFormat', () => {
     expect(resolveFormat('tar', tarHead)).toBe('tar')
     expect(resolveFormat('tar.gz', gzipHead)).toBe('tar.gz')
     expect(resolveFormat('tgz', gzipHead)).toBe('tar.gz')
+    expect(resolveFormat('gz', gzipHead)).toBe('gz')
+    expect(resolveFormat('tar.bz2', bzip2Head)).toBe('tar.bz2')
+    expect(resolveFormat('tbz2', bzip2Head)).toBe('tar.bz2')
+    expect(resolveFormat('bz2', bzip2Head)).toBe('bz2')
   })
 
   it('trusts content over a wrong extension', () => {
@@ -39,7 +45,8 @@ describe('resolveFormat', () => {
   })
 
   it('rejects formats this version cannot open', () => {
-    expect(() => resolveFormat('gz', gzipHead)).toThrow(ArchiveError)
+    expect(() => resolveFormat('xz', unknownHead)).toThrow(ArchiveError)
     expect(() => resolveFormat('7z', unknownHead)).toThrow(ArchiveError)
+    expect(() => resolveFormat('bz2', gzipHead)).toThrow(ArchiveError)
   })
 })

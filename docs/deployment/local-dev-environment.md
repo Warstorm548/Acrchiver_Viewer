@@ -98,7 +98,10 @@ first `up` so `dist/` exists.
 `sample.tar`, `sample.tar.gz`, `sample.tgz` (same content: nested `docs/deep/deeper/`, text files,
 PNG + SVG, `binary.bin`, an empty folder, `folder with spaces/Ünïcödé file.txt`, a >100-character
 path (pax long name), and the hostile name `x" onmouseover="alert(1)".txt`) plus `large.zip`
-(~6 MB of random data, to see the download progress). Upload (needs basic auth enabled):
+(~6 MB of random data, to see the download progress). Step 4 added `sample.tar.bz2`,
+`sample.tbz2`, `notes.txt.gz` (original name stored in the gzip header), `data.json.bz2`,
+`archive-in-disguise.gz` (a tarball gzipped without `.tar`) and `large.tar.bz2` (~6 MB, for the
+worker / "Decompressing…" check). Upload (needs basic auth enabled):
 
 ```
 curl -sk -u admin:admin -T sample.zip https://cloud.opencloud.test/remote.php/webdav/sample.zip
@@ -123,7 +126,9 @@ curl -sk -D - -o /dev/null https://cloud.opencloud.test/      # Content-Security
 5. Preview txt/md/json/yaml, PNG, SVG; `binary.bin` → "No preview".
 6. Download one file; select folders → "Download selected (n)" → `<archive>-selection.zip`.
 7. Hostile file name shows as plain text (no popup on hover).
-8. `large.zip` shows "Downloading… N%" first.
+8. `large.zip` shows "Downloading… N%" first; `large.tar.bz2` then shows "Decompressing…" while
+   the page stays responsive (bzip2 worker). `notes.txt.gz` → one entry `notes.txt`;
+   `archive-in-disguise.gz` → folder tree.
 9. F5 on the viewer page renders it again; F12 console has no CSP / WebAssembly errors.
 10. Too-large path: set `maxArchiveSize: 1000` in `custom/apps.yaml`, restart → message + working
     "Download archive"; then restore `{}` and restart.
@@ -158,6 +163,20 @@ https://keycloak.opencloud.test/` — no `'wasm-unsafe-eval'`, so WebAssembly is
   `{maxArchiveSize: 1000, maxUncompressedSize: 1073741824}` (apps.yaml merged over the manifest
   defaults) and the viewer showed the "larger than" message instead of downloading. Restored to
   `config: {}` afterwards.
+
+## Step 4 results (2026-10-25)
+
+- After a restart, `/config.json` served the step 4 build and the default limits again (an earlier
+  restart had not happened, so OpenCloud was still on the step 3 build with `maxArchiveSize: 1000`
+  — always confirm with the `config.json` check after restarting).
+- In-viewer downloads verified byte-for-byte: `large.tar.bz2` → selection zip (CRC OK, 4 × 1.5 MB
+  random files + readme identical) via the **bzip2 worker**; `notes.txt` from `notes.txt.gz`
+  (name taken from the gzip header); `data.json` from `data.json.bz2`; `notes.md` and the hostile
+  file (saved by the browser as `x_ onmouseover=_alert(1)_.txt`, content identical).
+- `archive-in-disguise.gz` opened as a folder tree.
+- Console during all of the above: only OpenCloud's own auth/version messages — no errors, no CSP,
+  worker or WebAssembly problems (the bzip2 `blob:` worker is accepted by the production CSP).
+- Found and fixed: selection zip was named `large.tar.bz2-selection.zip`; now `large-selection.zip`.
 
 ## Troubleshooting
 
