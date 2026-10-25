@@ -3,9 +3,10 @@
 Archive viewer extension for **OpenCloud Web v8** (browse/preview/download ZIP, TAR, etc. inside
 OpenCloud). Standalone extension at the repo root, built with OpenCloud's toolchain
 (`@opencloud-eu/extension-sdk`, Vite, Vue 3, TypeScript, pnpm, Node 24), pinned to OpenCloud
-**8.0** to match the main server (rolling 8.0.1). Rework steps 1–4 of 6 are done: it opens ZIP,
-TAR, TAR.GZ/TGZ, TAR.BZ2/TBZ2 and single .gz/.bz2 files in the browser with pure JavaScript (no
-WebAssembly, no CSP change) — browse, search, sort, preview, download. Next: step 4b (XZ). Start with [project status](docs/overview/project-status.md).
+**8.0** to match the main server (rolling 8.0.1). Rework steps 1–4b of 6 are done: it opens ZIP,
+TAR, TAR.GZ/TGZ, TAR.BZ2/TBZ2, TAR.XZ/TXZ, TAR.LZMA and single .gz/.bz2/.xz/.lzma files in the
+browser with pure JavaScript (no WebAssembly, no CSP change) — browse, search, sort, preview,
+download. Next: step 5 (large ZIPs). Start with [project status](docs/overview/project-status.md).
 
 Commands: `pnpm install`, `pnpm build`, `pnpm check:types`, `pnpm lint`, `pnpm format:check`,
 `pnpm test:unit --run` (run `nvm use` first if Node 24 isn't active).
@@ -36,7 +37,7 @@ Commands: `pnpm install`, `pnpm build`, `pnpm check:types`, `pnpm lint`, `pnpm f
 ### Root
 
 - [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md) — licenses of ported/bundled code (seek-bzip
-  MIT port in `src/engine/bzip2.ts`, zip.js BSD-3-Clause).
+  MIT port, xz-compat MIT adaptation, zip.js BSD-3-Clause).
 - [README.md](README.md) — project readme; still describes the original, aspirational feature set
   and old setup (rewrite pending), see project status.
 
@@ -68,10 +69,12 @@ Commands: `pnpm install`, `pnpm build`, `pnpm check:types`, `pnpm lint`, `pnpm f
 
 - [docs/source/extension-entry.md](docs/source/extension-entry.md) — `src/index.ts` and
   `src/manifest.json`: Tailwind import, file types, route, default config.
+- [docs/source/xz-lzma-decoder.md](docs/source/xz-lzma-decoder.md) — XZ container, LZMA/LZMA2
+  decoder, filters, checks, legacy `.lzma`: origins, design notes, verification, speed.
 - [docs/source/viewer-ui.md](docs/source/viewer-ui.md) — `App.vue` loading flow, `ArchiveBrowser`,
   `PreviewModal`, `download.ts`, styling conventions.
 - [docs/source/archive-engine.md](docs/source/archive-engine.md) — `src/engine/`: formats table,
-  detection, ZIP (zip.js native), TAR, gzip, bzip2 port + worker, single files, index, limits.
+  detection, ZIP (zip.js native), TAR, gzip, bzip2, worker, single files, index, limits.
 - [docs/source/styles-and-i18n.md](docs/source/styles-and-i18n.md) — Tailwind/design-system
   styling, v8 theme tokens, `l10n/translations.json`, translation tooling.
 

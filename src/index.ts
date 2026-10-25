@@ -17,9 +17,12 @@ const supportedExtensions = [
   'tgz',
   'tbz2',
   'tbz',
+  'txz',
+  'tlz',
   'gz',
   'bz2',
   'xz',
+  'lzma',
   '7z',
   'rar'
 ]

@@ -30,6 +30,6 @@ export const singleFileName = (archiveName: string, storedName?: string): string
   if (stored) {
     return stored
   }
-  const stripped = archiveName.replace(/\.(gz|bz2)$/i, '')
+  const stripped = archiveName.replace(/\.(gz|bz2|xz|lzma)$/i, '')
   return stripped && stripped !== archiveName ? stripped : `${archiveName}.out`
 }

@@ -41,6 +41,61 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ```
 
+## xz-compat 1.2.11 — MIT License (adapted)
+
+`src/engine/lzma/lzmaDecoder.ts` and `src/engine/lzma/rangeDecoder.ts` adapt the LZMA decoder
+structure from [xz-compat](https://github.com/kmalakoff/xz-compat) (`src/lzma/sync/*`), which ports
+Igor Pavlov's LZMA SDK (public domain). Changes: Uint8Array instead of Node `Buffer`, unsigned
+range-coder arithmetic, the output buffer used as the dictionary, matches carried across LZMA2
+chunks, strict end-of-input handling. The XZ container (`src/engine/xz.ts`), LZMA2 chunk parser
+and legacy `.lzma` reader were written from the format specifications; the BCJ/Delta filters
+(`src/engine/lzma/filters.ts`) follow liblzma's simple filters (public domain / 0BSD).
+
+```
+The MIT License (MIT)
+
+Copyright (c) 2020 Kevin Malakoff
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+wof this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+--------------------zip: https://github.com/kriskowal/zip/blob/master/LICENSE
+
+Copyright 2009, 2010 Kristopher Michael Kowal. All rights reserved.
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to
+deal in the Software without restriction, including without limitation the
+rights to use, copy, modify, merge, publish, distribute, sublicense, and/or
+sell copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
+IN THE SOFTWARE.
+```
+
 ## @zip.js/zip.js 2.24.0 — BSD 3-Clause License (bundled)
 
 Bundled into the build output as a dependency (native build only, `lib/zip-native.js`).

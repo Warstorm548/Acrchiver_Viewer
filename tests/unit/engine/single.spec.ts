@@ -1,6 +1,7 @@
 import { openArchive } from '../../../src/engine'
 import { openSingleFile, singleFileName } from '../../../src/engine/single'
 import { bzip2Samples } from './bzip2Samples'
+import { xzSamples } from './xzSamples'
 import { buildTar, gzipBytes } from './tarBuilder'
 
 const limits = { maxUncompressedSize: 10_000_000 }
@@ -10,6 +11,8 @@ describe('singleFileName', () => {
   it.each([
     ['notes.txt.gz', undefined, 'notes.txt'],
     ['data.json.bz2', undefined, 'data.json'],
+    ['log.txt.xz', undefined, 'log.txt'],
+    ['dump.sql.lzma', undefined, 'dump.sql'],
     ['notes.txt.gz', 'original.txt', 'original.txt'],
     ['x.gz', '../../etc/passwd', 'passwd'],
     ['strange', undefined, 'strange.out']
@@ -50,5 +53,14 @@ describe('openArchive with single compressed files', () => {
     const tar = await openArchive(fromBase64(bzip2Samples.TAR.data), 'tar.bz2', limits, 'a.tar.bz2')
     expect(tar.entries.map((e) => e.path)).toEqual(['docs/readme.txt', 'data.bin'])
     expect(await (await tar.read(tar.entries[0])).text()).toBe('hello from tar.bz2\n')
+  })
+
+  it('opens .xz, .tar.xz and .lzma', async () => {
+    const xz = await openArchive(fromBase64(xzSamples.PRESET6.data), 'xz', limits, 'notes.txt.xz')
+    expect(xz.entries.map((e) => [e.name, e.size])).toEqual([['notes.txt', xzSamples.PRESET6.size]])
+    const tar = await openArchive(fromBase64(xzSamples.TAR.data), 'tar.xz', limits, 'src.tar.xz')
+    expect(tar.entries.map((e) => e.path)).toEqual(['src/main.c', 'README'])
+    const lzma = await openArchive(fromBase64(xzSamples.ALONE.data), 'lzma', limits, 'a.txt.lzma')
+    expect(lzma.entries.map((e) => e.name)).toEqual(['a.txt'])
   })
 })

@@ -3,7 +3,7 @@ import { gunzip, readGzipHeader } from './gzip'
 import { openSingleFile, singleFileName } from './single'
 import { openTar } from './tar'
 import { ArchiveFormat, ArchiveHandle, ArchiveLimits } from './types'
-import { bunzip2Async } from './workerClient'
+import { decompressAsync } from './workerClient'
 import { openZip } from './zip'
 
 export * from './types'
@@ -18,7 +18,7 @@ export const isCompressedFormat = (format: ArchiveFormat): boolean =>
 const looksLikeTar = (data: Uint8Array): boolean => sniffSignature(data.subarray(0, 262)) === 'tar'
 
 /**
- * A plain `.gz` / `.bz2` file is shown as the single file it contains — unless the content is a
+ * A plain `.gz` / `.bz2` / `.xz` / `.lzma` file is shown as the single file it contains — unless the content is a
  * tar (e.g. a tarball named without `.tar`), which is opened as an archive.
  */
 const openDecompressed = (
@@ -46,17 +46,20 @@ export const openArchive = async (
     case 'tar.gz':
       return openTar(await gunzip(blob, limits.maxUncompressedSize), format)
     case 'tar.bz2':
-      return openTar(await bunzip2Async(blob, limits.maxUncompressedSize), format)
+      return openTar(await decompressAsync('bzip2', blob, limits.maxUncompressedSize), format)
+    case 'tar.xz':
+      return openTar(await decompressAsync('xz', blob, limits.maxUncompressedSize), format)
     case 'gz': {
       const header = readGzipHeader(new Uint8Array(await blob.slice(0, 1024).arrayBuffer()))
       const data = await gunzip(blob, limits.maxUncompressedSize)
       return openDecompressed(data, format, archiveName, header.fileName, header.modified)
     }
     case 'bz2':
-      return openDecompressed(
-        await bunzip2Async(blob, limits.maxUncompressedSize),
-        format,
-        archiveName
-      )
+    case 'xz':
+    case 'lzma': {
+      const kind = format === 'bz2' ? 'bzip2' : format
+      const data = await decompressAsync(kind, blob, limits.maxUncompressedSize)
+      return openDecompressed(data, format, archiveName)
+    }
   }
 }

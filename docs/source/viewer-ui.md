@@ -16,7 +16,7 @@ Rendered by `AppWrapperRoute` (see [extension-entry](extension-entry.md)). Props
 3. **Detect**: first `SIGNATURE_LENGTH` bytes + `archiveExtension(resource.name)` →
    `resolveFormat`.
 4. **Open**: `openArchive(blob, format, { maxUncompressedSize }, resource.name)` → state `ready`
-   → `<archive-browser>`. For compressed formats (`isCompressedFormat`: tar.gz, tar.bz2, gz, bz2)
+   → `<archive-browser>`. For compressed formats (`isCompressedFormat`: everything except zip and tar)
    the loading text switches to "Decompressing…" first; bzip2 runs in a Web Worker so the page
    stays responsive.
 5. **Errors** → state `error` with a message per `ArchiveError.code` (unsupported format, too

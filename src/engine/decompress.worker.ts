@@ -1,9 +1,10 @@
-// Runs the (synchronous, CPU-heavy) pure-JS bzip2 decoder off the main thread.
+// Runs the (synchronous, CPU-heavy) pure-JS decoders off the main thread.
 // Bundled with Vite `?worker&inline`, i.e. started from a blob: URL (allowed by OpenCloud's CSP).
-import { bunzip2 } from './bzip2'
+import { decompress, DecompressKind } from './decompressors'
 import { ArchiveError } from './types'
 
 export interface DecompressRequest {
+  kind: DecompressKind
   data: ArrayBuffer
   maxSize: number
 }
@@ -21,9 +22,9 @@ const scope = self as unknown as {
   postMessage: (message: DecompressResponse, transfer?: Transferable[]) => void
 }
 
-scope.onmessage = ({ data: request }) => {
+scope.onmessage = async ({ data: request }) => {
   try {
-    const result = bunzip2(new Uint8Array(request.data), request.maxSize)
+    const result = await decompress(request.kind, new Uint8Array(request.data), request.maxSize)
     scope.postMessage({ ok: true, data: result.buffer }, [result.buffer])
   } catch (error) {
     scope.postMessage({

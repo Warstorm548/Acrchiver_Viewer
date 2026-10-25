@@ -1,8 +1,9 @@
 # OpenCloud v8 Compatibility
 
-**Verdict (after rework step 4): compatible and functional on OpenCloud 8.0.1** for ZIP, TAR,
-TAR.GZ/TGZ, TAR.BZ2/TBZ2 and single .gz/.bz2 files (pure JavaScript, no CSP change; bzip2 runs in
-a `blob:` Web Worker). XZ follows in step 4b, large-archive streaming in step 5. The toolchain, app registration and route wiring match OpenCloud v8. The app is built
+**Verdict (after rework step 4b): compatible and functional on OpenCloud 8.0.1** for ZIP, TAR,
+TAR.GZ/TGZ, TAR.BZ2/TBZ2, TAR.XZ/TXZ, legacy TAR.LZMA/TLZ and single .gz/.bz2/.xz/.lzma files
+(pure JavaScript, no CSP change; bzip2/xz/lzma run in a `blob:` Web Worker). Large-archive
+streaming follows in step 5. The toolchain, app registration and route wiring match OpenCloud v8. The app is built
 against the 8.0 packages (the main server runs rolling **8.0.1**; latest is 8.1.0) and was
 verified on a local opencloud-compose stack: "Open in Archive Viewer" works for zip, tar and
 tar.gz. Researched 2026-10-25 against `opencloud-eu/web-extensions` (`web-app-json-viewer`,

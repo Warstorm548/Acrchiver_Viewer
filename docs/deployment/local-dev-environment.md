@@ -101,7 +101,9 @@ path (pax long name), and the hostile name `x" onmouseover="alert(1)".txt`) plus
 (~6 MB of random data, to see the download progress). Step 4 added `sample.tar.bz2`,
 `sample.tbz2`, `notes.txt.gz` (original name stored in the gzip header), `data.json.bz2`,
 `archive-in-disguise.gz` (a tarball gzipped without `.tar`) and `large.tar.bz2` (~6 MB, for the
-worker / "Decompressing…" check). Upload (needs basic auth enabled):
+worker / "Decompressing…" check). Step 4b added `sample.tar.xz` (-9e), `sample.txz`, `sample.tar.lzma`,
+`notes.txt.xz`, `data.json.lzma`, `filters-x86.bin.xz` (BCJ x86 + LZMA2) and `large.tar.xz` (~6 MB);
+all pass `xz -t`. Upload (needs basic auth enabled):
 
 ```
 curl -sk -u admin:admin -T sample.zip https://cloud.opencloud.test/remote.php/webdav/sample.zip
@@ -177,6 +179,18 @@ https://keycloak.opencloud.test/` — no `'wasm-unsafe-eval'`, so WebAssembly is
 - Console during all of the above: only OpenCloud's own auth/version messages — no errors, no CSP,
   worker or WebAssembly problems (the bzip2 `blob:` worker is accepted by the production CSP).
 - Found and fixed: selection zip was named `large.tar.bz2-selection.zip`; now `large-selection.zip`.
+
+## Step 4b results (2026-10-25)
+
+- Confirmed via `/config.json` that the step 4b build was live before testing.
+- Opened in the viewer (screenshots): `sample.tar.xz` (full tree; the hostile file name shows as
+  plain text), `sample.tar.lzma`, `notes.txt.xz`, `data.json.lzma` (preview window shows the JSON),
+  `filters-x86.bin.xz`.
+- In-viewer downloads verified byte-for-byte: `notes.txt` (xz), `data.json` (legacy lzma),
+  `filters-x86.bin` (BCJ x86 + LZMA2, 26,384 B), and three selection zips from `large.tar.xz` (CRC
+  OK; full `big/` twice and a 3-file selection, all identical).
+- Console: only OpenCloud's own messages — an SSE reconnect right after the restart, a 404 for the
+  admin's (missing) avatar, token refresh and the known `frame-ancestors` note. Nothing from the app.
 
 ## Troubleshooting
 

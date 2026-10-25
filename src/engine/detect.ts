@@ -1,6 +1,7 @@
+import { looksLikeLzmaAlone } from './lzmaAlone'
 import { ArchiveError, ArchiveFormat } from './types'
 
-type Signature = 'zip' | 'gzip' | 'bzip2' | 'tar'
+type Signature = 'zip' | 'gzip' | 'bzip2' | 'xz' | 'tar'
 
 /** Formats this version can open, keyed by the extension OpenCloud reports for the file. */
 const formatsByExtension: Record<string, ArchiveFormat> = {
@@ -11,8 +12,14 @@ const formatsByExtension: Record<string, ArchiveFormat> = {
   'tar.bz2': 'tar.bz2',
   tbz2: 'tar.bz2',
   tbz: 'tar.bz2',
+  'tar.xz': 'tar.xz',
+  txz: 'tar.xz',
   gz: 'gz',
-  bz2: 'bz2'
+  bz2: 'bz2',
+  xz: 'xz',
+  // .tar.lzma is reported by OpenCloud as "lzma"; its content is then recognized as a tar
+  lzma: 'lzma',
+  tlz: 'lzma'
 }
 
 /** Same rule as OpenCloud's web-client `extractExtensionFromFile` (tar.* counts as one extension). */
@@ -40,6 +47,9 @@ export const sniffSignature = (head: Uint8Array): Signature | null => {
   }
   if (head[0] === 0x42 && head[1] === 0x5a && head[2] === 0x68) {
     return 'bzip2'
+  }
+  if ([0xfd, 0x37, 0x7a, 0x58, 0x5a, 0x00].every((byte, i) => head[i] === byte)) {
+    return 'xz'
   }
   const magic = String.fromCharCode(...head.subarray(257, 262))
   if (magic === 'ustar') {
@@ -69,8 +79,15 @@ export const resolveFormat = (extension: string, head: Uint8Array): ArchiveForma
   if (signature === 'bzip2' && (byExtension === 'tar.bz2' || byExtension === 'bz2')) {
     return byExtension
   }
+  if (signature === 'xz' && (byExtension === 'tar.xz' || byExtension === 'xz')) {
+    return byExtension
+  }
   if (signature === null && byExtension === 'tar') {
     return 'tar'
+  }
+  // Legacy .lzma has no magic bytes; accept it on the extension if the header is plausible.
+  if (signature === null && byExtension === 'lzma' && looksLikeLzmaAlone(head)) {
+    return 'lzma'
   }
   throw new ArchiveError(
     'unsupported-format',
