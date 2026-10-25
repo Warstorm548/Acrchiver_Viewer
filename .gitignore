@@ -11,3 +11,6 @@ coverage
 
 # module federation temp files
 .__mf__temp/
+
+# release zips (pnpm package)
+release/

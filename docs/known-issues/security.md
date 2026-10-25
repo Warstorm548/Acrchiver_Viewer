@@ -22,9 +22,3 @@ contents reach the DOM, memory or storage.
 The app is served by OpenCloud itself, which sets its CSP (`PROXY_CSP_CONFIG_FILE_LOCATION`;
 opencloud-compose `config/opencloud/csp.yaml`). No CSP change is needed or recommended; the risks of
 allowing WebAssembly are recorded in [roadmap-considerations](../overview/roadmap-considerations.md).
-
-## README claims not backed by code
-
-"CSRF tokens for API requests", "Secure share link generation" and "All file operations respect
-OpenCloud permissions" in `README.md` are not implemented by this repo's code (the last is
-provided by OpenCloud's server, not the app).

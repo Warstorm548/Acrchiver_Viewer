@@ -20,24 +20,39 @@
 - Icons are Remix icon names (`folder`, `file`, `file-text`, `image`, `eye`, `download`, `lock`,
   `arrow-up-s`, `arrow-down-s`, `arrow-right-s`, `file-zip`).
 
-## Translations — `l10n/translations.json`
+## Translations — `l10n/`
 
-Shape `{ "<lang>": { "<English msgid>": "<translation>" } }`, imported by `src/index.ts` and
-returned as `translations`. After step 3 it keeps only the de/es/fr/en entries still used by the
-new UI ('Actions', 'Archive Viewer', 'Close', 'Download', 'Modified', 'Name', 'Size'). The other
-~28 new strings have no translations yet and show in English.
+German, Spanish and French cover **all 41 strings** (step 6). They were **drafted by Claude (AI)**
+and not yet reviewed by native speakers (noted in each `.po` header and the README). English needs
+no table: the msgids are the English text. Formal register (Sie / usted / vous); Spanish uses
+"archivo comprimido" for archive ("archivo" alone means file); French puts a space before `%`.
 
-Strings are wrapped with `$gettext` — in `setup()` via `useGettext()` from `vue3-gettext`, and in
-templates via the global `$gettext`. Placeholders use `%{name}` with string values.
+| File                        | Role                                                                                               |
+| --------------------------- | -------------------------------------------------------------------------------------------------- |
+| `gettext.config.cjs`        | vue3-gettext config: `src/**/*.{js,ts,vue}` → `l10n/locale`, de/es/fr, `flat: false`, no locations |
+| `l10n/template.pot`         | All msgids, written by `pnpm l10n:extract`                                                         |
+| `l10n/locale/<lang>/app.po` | Translations per language (edit these)                                                             |
+| `l10n/translations.json`    | Compiled `{ lang: { msgid: text or [plural forms] } }`, imported by `src/index.ts`                 |
 
-## Translation tooling (step 6)
+All four are committed, so building needs no gettext tools.
 
-OpenCloud's `web-extensions` extracts strings with `vue3-gettext` using `gettext.config.cjs`
-(input `./src` `**/*.{js,ts,vue}`, output `./l10n/locale`, `potPath ../template.pot`,
-`jsonPath ../translations.json`) and syncs with Transifex (`l10n/.tx`). Plan: add the extraction
-config and fill translations in step 6.
+Strings are wrapped with `$gettext` (or `$ngettext` for plurals, e.g. `%{count} result(s)`) — in
+`setup()` via `useGettext()` from `vue3-gettext`, and in templates via the globals. Placeholders
+use `%{name}` with string values. Same layout as OpenCloud's `web-extensions` (which also sync
+with Transifex; this repo doesn't).
+
+## Translation workflow
+
+1. Prerequisite for extraction: GNU gettext (`sudo apt install gettext`) — `vue-gettext-extract`
+   calls `msginit` / `msgmerge` / `msgattrib`.
+2. `pnpm l10n:extract` → updates `template.pot` and merges new strings into each `app.po`.
+3. Translate the new entries in `l10n/locale/<lang>/app.po`.
+4. `pnpm l10n:compile` → `l10n/translations.json`; then build.
+
+`tests/unit/translations.spec.ts` fails when a `$gettext`/`$ngettext` string in `src/` is missing
+from `template.pot`, or when a language lacks a string or changes its `%{…}` placeholders.
 
 ## When changing UI text
 
-Wrap new strings in `$gettext`, add translations to `l10n/translations.json` when available, and
+Wrap new strings in `$gettext`, run the translation workflow above (all three languages), and
 update this file. Use prefixed Tailwind classes only.

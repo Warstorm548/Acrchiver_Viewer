@@ -1,7 +1,7 @@
 # Known Bugs and Limitations
 
 **Confidence:** `CONFIRMED` = certain from the code (and, where noted, library/OpenCloud source or
-docs); `PLAUSIBLE` = needs a test. Remove entries when fixed (and say so in the commit).
+docs); `PLAUSIBLE` = needs a test. Remove entries when fixed (and say so in the commit). K6 (English-only UI) was resolved in step 6.
 
 ## Current app
 
@@ -14,7 +14,6 @@ No known bugs. Known limitations (by design for now):
 | K3  | Password-protected ZIP entries are listed but can't be previewed or downloaded                                                                                                   | roadmap                      |
 | K4  | An extracted file is held in memory, so single files and selections are capped at `maxEntrySize` (1 GiB / 256 MiB); bigger ones must be fetched by downloading the whole archive | —                            |
 | K5  | Deflate64 / bzip2 / LZMA compression _inside_ ZIP is unsupported (native zip.js build)                                                                                           | —                            |
-| K6  | New UI strings are English-only until translation tooling exists                                                                                                                 | step 6                       |
 | K7  | bzip2/xz/lzma are decoded in full in memory (no streaming); large files take seconds (in a worker)                                                                               | —                            |
 
 ## Old viewer bugs (resolved)

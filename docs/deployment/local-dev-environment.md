@@ -226,3 +226,12 @@ https://keycloak.opencloud.test/` — no `'wasm-unsafe-eval'`, so WebAssembly is
   [zip-range-reading](../source/zip-range-reading.md).
 - Cleanup confirmed: test links gone, server file 404, trash empty, local and downloaded copies
   deleted.
+
+## Step 6 results (2026-10-25)
+
+- `/config.json` served the translated build. With OpenCloud set to Deutsch, Español and
+  Français in turn: app name in "Open in…", table headers, search, "Download selected", result
+  count (singular/plural), preview buttons and the unsupported-format message all appeared
+  translated (checked by the user); switched back to English afterwards.
+- `pnpm l10n:extract` with GNU gettext installed: `template.pot` unchanged, `.po` files only
+  re-wrapped by `msgmerge`, compiled translations identical.

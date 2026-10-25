@@ -46,7 +46,11 @@
     <p
       v-else
       class="archive-search-summary ext:text-sm"
-      v-text="$gettext('%{count} results', { count: String(rows.length) })"
+      v-text="
+        $ngettext('%{count} result', '%{count} results', rows.length, {
+          count: String(rows.length)
+        })
+      "
     />
 
     <div class="ext:overflow-auto">

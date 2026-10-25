@@ -1,6 +1,6 @@
 # OpenCloud v8 Compatibility
 
-**Verdict (after rework step 5): compatible and functional on OpenCloud 8.0.1** for ZIP, TAR,
+**Verdict (after rework step 6): compatible and functional on OpenCloud 8.0.1** for ZIP, TAR,
 TAR.GZ/TGZ, TAR.BZ2/TBZ2, TAR.XZ/TXZ, legacy TAR.LZMA/TLZ and single .gz/.bz2/.xz/.lzma files
 (pure JavaScript, no CSP change; bzip2/xz/lzma run in a `blob:` Web Worker). ZIPs of any size
 are read by HTTP Range requests (step 5). The toolchain, app registration and route wiring match OpenCloud v8. The app is built
@@ -144,7 +144,8 @@ export default defineWebApplication({
    files; size limits from `apps.yaml` (since step 3). Step 4b: XZ.
 5. **Done (step 5):** large ZIPs via Range reads with signed-URL renewal; device-aware limits
    (1 GiB desktop / 256 MiB mobile).
-6. Tests (`web-test-helpers`), translations, docs, README.
+6. **Done (step 6):** de/es/fr translations with vue3-gettext tooling, README rewrite, release zip
+   (`pnpm package`), final docs pass.
 
 Decided: approach A (pure JS), view + download, range reads for ZIP, 1 GiB / 256 MiB limits. Alternatives (server
 helper, libarchive as plain JS, extract-to-folder) are parked in

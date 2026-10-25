@@ -3,14 +3,15 @@
 Archive viewer extension for **OpenCloud Web v8** (browse/preview/download ZIP, TAR, etc. inside
 OpenCloud). Standalone extension at the repo root, built with OpenCloud's toolchain
 (`@opencloud-eu/extension-sdk`, Vite, Vue 3, TypeScript, pnpm, Node 24), pinned to OpenCloud
-**8.0** to match the main server (rolling 8.0.1). Rework steps 1–5 of 6 are done: it opens ZIP,
+**8.0** to match the main server (rolling 8.0.1). All 6 rework steps are done: it opens ZIP,
 TAR, TAR.GZ/TGZ, TAR.BZ2/TBZ2, TAR.XZ/TXZ, TAR.LZMA and single .gz/.bz2/.xz/.lzma files in the
 browser with pure JavaScript (no WebAssembly, no CSP change) — browse, search, sort, preview,
-download; ZIPs of any size are read by HTTP Range requests. Next: step 6 (translations, README,
-release). Start with [project status](docs/overview/project-status.md).
+download; ZIPs of any size are read by HTTP Range requests. UI in English, German,
+Spanish and French (AI-drafted). Version 0.1.0 is ready to release (no tag yet). Start with [project status](docs/overview/project-status.md).
 
 Commands: `pnpm install`, `pnpm build`, `pnpm check:types`, `pnpm lint`, `pnpm format:check`,
-`pnpm test:unit --run` (run `nvm use` first if Node 24 isn't active).
+`pnpm test:unit --run`, `pnpm package` (release zip), `pnpm l10n:extract` / `pnpm l10n:compile`
+(translations; extract needs GNU gettext). Run `nvm use` first if Node 24 isn't active.
 
 ## How to use this index
 
@@ -39,8 +40,8 @@ Commands: `pnpm install`, `pnpm build`, `pnpm check:types`, `pnpm lint`, `pnpm f
 
 - [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md) — licenses of ported/bundled code (seek-bzip
   MIT port, xz-compat MIT adaptation, zip.js BSD-3-Clause).
-- [README.md](README.md) — project readme; still describes the original, aspirational feature set
-  and old setup (rewrite pending), see project status.
+- [README.md](README.md) — user-facing readme (step 6): features, formats, limits, install,
+  build, translations, security, license.
 
 ### Overview
 
@@ -57,7 +58,8 @@ Commands: `pnpm install`, `pnpm build`, `pnpm check:types`, `pnpm lint`, `pnpm f
 - [docs/tech-stack/dependencies.md](docs/tech-stack/dependencies.md) — zip.js (native build only)
   and devDependencies with versions, 8.0 alignment rule, install warnings, step 4 candidates.
 - [docs/tech-stack/build-tooling.md](docs/tech-stack/build-tooling.md) — Node/pnpm, scripts, what
-  the extension-sdk `defineConfig` provides, TypeScript, ESLint, Prettier, `.gitignore`.
+  the extension-sdk `defineConfig` provides, TypeScript, ESLint, Prettier, `.gitignore`, release
+  zip script, gettext config.
 
 ### Architecture
 
@@ -81,24 +83,24 @@ Commands: `pnpm install`, `pnpm build`, `pnpm check:types`, `pnpm lint`, `pnpm f
 - [docs/source/archive-engine.md](docs/source/archive-engine.md) — `src/engine/`: formats table,
   detection, ZIP (zip.js native), TAR, gzip, bzip2, worker, single files, index, limits.
 - [docs/source/styles-and-i18n.md](docs/source/styles-and-i18n.md) — Tailwind/design-system
-  styling, v8 theme tokens, `l10n/translations.json`, translation tooling.
+  styling, v8 theme tokens, translations (de/es/fr files, AI-draft note), translation workflow.
 
 ### Testing
 
-- [docs/testing/tests.md](docs/testing/tests.md) — how to run, SDK test config, the 12 spec files,
+- [docs/testing/tests.md](docs/testing/tests.md) — how to run, SDK test config, the 13 spec files,
   test patterns (stubs, range-server fetch mock, zip), what only the manual checklist covers.
 
 ### Deployment
 
 - [docs/deployment/deploying-to-opencloud.md](docs/deployment/deploying-to-opencloud.md) — build
-  output, installing on a server (opencloud-compose), install checks, `apps.yaml` limit keys, production CSP.
+  output, installing on a server (opencloud-compose), install checks, release zip install, `apps.yaml` limit keys, releasing steps, production CSP.
 - [docs/deployment/local-dev-environment.md](docs/deployment/local-dev-environment.md) — the local
   opencloud-compose stack (rolling 8.0.1) outside the repo: setup to recreate it, sudo commands,
   dev loop, fixtures, browser checklist, large-ZIP test + cleanup, step results, troubleshooting.
 
 ### Known issues
 
-- [docs/known-issues/bugs.md](docs/known-issues/bugs.md) — known limitations (K1–K7) and how the
+- [docs/known-issues/bugs.md](docs/known-issues/bugs.md) — known limitations (K1–K5, K7) and how the
   old viewer's bugs were resolved.
 - [docs/known-issues/security.md](docs/known-issues/security.md) — untrusted-archive rules and how
   the viewer meets them (no `v-html`, limits, SVG, filenames, auth, CSP).

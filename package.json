@@ -26,11 +26,14 @@
   "scripts": {
     "build": "vite build",
     "build:w": "vite build --watch --mode development",
+    "package": "node scripts/package.mjs",
     "check:types": "vue-tsc --noEmit",
     "lint": "eslint .",
     "format:check": "prettier . --check",
     "format:write": "prettier . --write",
-    "test:unit": "vitest"
+    "test:unit": "vitest",
+    "l10n:extract": "vue-gettext-extract",
+    "l10n:compile": "vue-gettext-compile && prettier --write l10n/translations.json"
   },
   "devDependencies": {
     "@opencloud-eu/eslint-config": "~8.0.0",

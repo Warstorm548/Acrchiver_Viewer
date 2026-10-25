@@ -1,9 +1,9 @@
 # Project Status
 
-Where the Archive Viewer stands. Branch `feat/opencloud-v8-compat`, rework **steps 1–5 of 6 done**
+Where the Archive Viewer stands. Branch `feat/opencloud-v8-compat`, rework **all 6 steps done**
 (rebuilt setup; verified in a local copy of the production stack; real viewer in pure JavaScript;
-bzip2, XZ/LZMA and single compressed files; large ZIPs by HTTP Range). Next: step 6 (translations,
-README, release).
+bzip2, XZ/LZMA and single compressed files; large ZIPs by HTTP Range; translations, README, release zip). Version 0.1.0 is ready to release;
+no tag or GitHub release yet.
 
 ## Summary
 
@@ -41,10 +41,11 @@ deployment (removed in step 1); the old pre-v8 viewer was ported and deleted in 
 | TAR.BZ2/TBZ2, single .gz/.bz2 (bzip2 in a Web Worker)                  | Done (step 4)                                                            |
 | TAR.XZ/TXZ, TAR.LZMA/TLZ, single .xz/.lzma (own decoder in the worker) | Done (step 4b)                                                           |
 | Large ZIPs via Range requests, signed-URL renewal, public links        | Done (step 5)                                                            |
+| German, Spanish, French UI (AI-drafted) + gettext tooling              | Done (step 6)                                                            |
+| Release zip (`pnpm package`)                                           | Done (step 6)                                                            |
 | 7z / RAR, extract to folder, server helper                             | Roadmap only ([roadmap-considerations](roadmap-considerations.md))       |
 
-`README.md` still describes the original, aspirational feature set and the old webpack setup; it
-gets rewritten in step 6.
+`README.md` was rewritten in step 6 to describe only what the app does.
 
 ## Rework plan
 
@@ -54,7 +55,7 @@ gets rewritten in step 6.
 4. ~~bzip2 (TAR.BZ2/TBZ2/BZ2) and single compressed files, pure JS in a worker~~ (done).
    4b. ~~XZ / TAR.XZ and legacy LZMA, own pure-JS decoder~~ (done).
 5. ~~Large ZIPs via the `url` prop + Range reads; device-aware limits~~ (done).
-6. Translations tooling, README rewrite, release packaging, final docs pass.
+6. ~~Translations (de/es/fr, AI-drafted), README rewrite, release zip, final docs pass~~ (done).
 
 Decisions so far: approach A (pure JS, no CSP change), view + download (no writing to OpenCloud),
 range reads for every ZIP, 1 GiB desktop / 256 MiB mobile limits, TAR header hopping deferred.

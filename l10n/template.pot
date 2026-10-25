@@ -1,0 +1,171 @@
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=UTF-8\n"
+
+#: src/App.vue:19
+msgid "Loading archive"
+msgstr ""
+
+#: src/App.vue:33
+msgid "Download archive"
+msgstr ""
+
+#: src/App.vue:95
+msgid "Reading archive index…"
+msgstr ""
+
+#: src/App.vue:98
+msgid "Decompressing…"
+msgstr ""
+
+#: src/App.vue:102
+msgid "Downloading… %{percent}%"
+msgstr ""
+
+#: src/App.vue:105
+msgid "Downloading… %{size}"
+msgstr ""
+
+#: src/App.vue:112
+msgid "This archive format is not supported yet. You can download it instead."
+msgstr ""
+
+#: src/App.vue:116
+msgid "The archive expands to more data than the browser is allowed to open."
+msgstr ""
+
+#: src/App.vue:118
+msgid "The archive seems to be damaged or is not a valid archive."
+msgstr ""
+
+#: src/App.vue:121
+msgid "The archive could not be loaded."
+msgstr ""
+
+#: src/App.vue:182
+msgid "This archive is larger than %{limit}, the most this viewer opens in the browser on this device. You can download it instead."
+msgstr ""
+
+#: src/components/ArchiveBrowser.vue:7
+msgid "Search in archive"
+msgstr ""
+
+#: src/components/ArchiveBrowser.vue:27
+msgid "Extracting"
+msgstr ""
+
+#: src/components/ArchiveBrowser.vue:50
+msgid "%{count} result"
+msgid_plural "%{count} results"
+msgstr[0] ""
+msgstr[1] ""
+
+#: src/components/ArchiveBrowser.vue:63
+msgid "Select all"
+msgstr ""
+
+#: src/components/ArchiveBrowser.vue:83
+msgid "Actions"
+msgstr ""
+
+#: src/components/ArchiveBrowser.vue:98
+msgid "Select %{name}"
+msgstr ""
+
+#: src/components/ArchiveBrowser.vue:126
+msgid "Preview %{name}"
+msgstr ""
+
+#: src/components/ArchiveBrowser.vue:136
+msgid "Download %{name}"
+msgstr ""
+
+#: src/components/ArchiveBrowser.vue:148
+msgid "No matching files"
+msgstr ""
+
+#: src/components/ArchiveBrowser.vue:148
+msgid "This folder is empty"
+msgstr ""
+
+#: src/components/ArchiveBrowser.vue:210
+msgid "Name"
+msgstr ""
+
+#: src/components/ArchiveBrowser.vue:211
+msgid "Size"
+msgstr ""
+
+#: src/components/ArchiveBrowser.vue:212
+msgid "Modified"
+msgstr ""
+
+#: src/components/ArchiveBrowser.vue:255
+msgid "Download selected (%{count})"
+msgstr ""
+
+#: src/components/ArchiveBrowser.vue:256
+msgid "Download selected"
+msgstr ""
+
+#: src/components/ArchiveBrowser.vue:302
+msgid "Files larger than %{limit} cannot be extracted in the browser on this device. Download the whole archive instead."
+msgstr ""
+
+#: src/components/ArchiveBrowser.vue:324
+msgid "Extracting %{name}…"
+msgstr ""
+
+#: src/components/ArchiveBrowser.vue:326
+msgid "Extracting %{name}… %{percent}%"
+msgstr ""
+
+#: src/components/ArchiveBrowser.vue:355
+msgid "Failed to download \"%{name}\""
+msgstr ""
+
+#: src/components/ArchiveBrowser.vue:378
+#: src/components/ArchiveBrowser.vue:403
+msgid "Failed to download the selection"
+msgstr ""
+
+#: src/components/PreviewModal.vue:10
+msgid "Loading preview"
+msgstr ""
+
+#: src/components/PreviewModal.vue:28
+msgid "Only the beginning of the file is shown."
+msgstr ""
+
+#: src/components/PreviewModal.vue:39
+msgid "Download"
+msgstr ""
+
+#: src/components/PreviewModal.vue:42
+msgid "Close"
+msgstr ""
+
+#: src/components/PreviewModal.vue:85
+msgid "This file is password protected and cannot be previewed."
+msgstr ""
+
+#: src/components/PreviewModal.vue:86
+msgid "This file cannot be read."
+msgstr ""
+
+#: src/components/PreviewModal.vue:90
+msgid "No preview available for this file type."
+msgstr ""
+
+#: src/components/PreviewModal.vue:94
+msgid "This file is too large to preview. Download it instead."
+msgstr ""
+
+#: src/components/PreviewModal.vue:111
+msgid "The preview could not be loaded."
+msgstr ""
+
+#: src/index.ts:43
+#: src/index.ts:50
+msgid "Archive Viewer"
+msgstr ""

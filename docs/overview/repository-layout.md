@@ -1,25 +1,27 @@
 # Repository Layout
 
-Every tracked file after rework step 5, what it is, and its line count. Generated/ignored: `node_modules/`, `dist/`, `coverage/`, `.__mf__temp/`.
+Every tracked file after rework step 6, what it is, and its line count. Generated/ignored: `node_modules/`, `dist/`, `coverage/`, `.__mf__temp/`.
 
 ## Root
 
 | Path                     | Lines | Purpose                                                                                   |
 | ------------------------ | ----: | ----------------------------------------------------------------------------------------- |
-| `README.md`              |   347 | Project readme (still describes the original feature set; rewritten in step 6)            |
-| `CLAUDE.md`              |   125 | Index into `docs/`                                                                        |
+| `README.md`              |   122 | User-facing readme (rewritten in step 6)                                                  |
+| `CLAUDE.md`              |   127 | Index into `docs/`                                                                        |
 | `LICENSE`                |   661 | GNU AGPL-3.0 (canonical gnu.org text); copyright notice is in `README.md`                 |
 | `THIRD-PARTY-NOTICES.md` |   132 | Licenses of ported (seek-bzip) and bundled (zip.js) code                                  |
-| `package.json`           |    61 | Package metadata, scripts, `@zip.js/zip.js` dependency, devDependencies, `packageManager` |
+| `package.json`           |    64 | Package metadata, scripts, `@zip.js/zip.js` dependency, devDependencies, `packageManager` |
 | `pnpm-lock.yaml`         |  5356 | Locked dependency tree                                                                    |
 | `.nvmrc`                 |     1 | Node version for nvm (`24`)                                                               |
 | `vite.config.ts`         |     5 | `defineConfig({ name: 'archive-viewer' })` from extension-sdk                             |
+| `gettext.config.cjs`     |    17 | vue3-gettext extract/compile config (de/es/fr)                                            |
+| `scripts/package.mjs`    |    58 | `pnpm package`: release zip + SHA-256 from `dist/`                                        |
 | `tsconfig.json`          |     4 | Extends `@opencloud-eu/tsconfig`                                                          |
 | `extension.d.ts`         |     1 | Vite client types                                                                         |
 | `eslint.config.js`       |     3 | OpenCloud ESLint config + ignores                                                         |
 | `.prettierrc.json`       |     1 | OpenCloud Prettier config                                                                 |
-| `.prettierignore`        |     6 | dist, coverage, lockfile, LICENSE, original docs, `.__mf__temp`                           |
-| `.gitignore`             |    13 | node_modules, dist, coverage, editor/env files, `.__mf__temp/`                            |
+| `.prettierignore`        |     9 | dist, coverage, lockfile, LICENSE, original docs, `.__mf__temp`                           |
+| `.gitignore`             |    16 | node_modules, dist, coverage, editor/env files, `.__mf__temp/`                            |
 
 ## `src/`
 
@@ -29,7 +31,7 @@ Every tracked file after rework step 5, what it is, and its line count. Generate
 | `src/manifest.json`                 |    10 | Default `config` (6 size limits) merged into `dist/manifest.json`                              |
 | `src/limits.ts`                     |    59 | Desktop/mobile limits: `isMobileDevice`, `resolveLimits`                                       |
 | `src/App.vue`                       |   243 | Viewer shell: ZIP range mode, size check, streamed download, detect + open, error states       |
-| `src/components/ArchiveBrowser.vue` |   450 | File table: folders, breadcrumb, search, sort, selection, downloads, cap, progress             |
+| `src/components/ArchiveBrowser.vue` |   454 | File table: folders, breadcrumb, search, sort, selection, downloads, cap, progress             |
 | `src/components/PreviewModal.vue`   |   126 | Text/image preview in `oc-modal` (reads via the capped `read` prop)                            |
 | `src/download.ts`                   |    35 | `sanitizeFileName`, `triggerDownload`, `zipEntries` (selection → zip)                          |
 | `src/engine/index.ts`               |    67 | `openArchive` + re-exports (incl. range reader)                                                |
@@ -60,9 +62,13 @@ Details: [extension-entry](../source/extension-entry.md), [viewer-ui](../source/
 
 ## `l10n/`
 
-| Path                     | Lines | Purpose                                                 |
-| ------------------------ | ----: | ------------------------------------------------------- |
-| `l10n/translations.json` |    38 | de/es/fr/en entries for strings still in use (7 msgids) |
+| Path                     | Lines | Purpose                                                                 |
+| ------------------------ | ----: | ----------------------------------------------------------------------- |
+| `l10n/translations.json` |   131 | Compiled de/es/fr translations (41 strings), imported by `src/index.ts` |
+| `l10n/template.pot`      |   171 | All msgids (`pnpm l10n:extract`)                                        |
+| `l10n/locale/de/app.po`  |   149 | German translations (AI-drafted)                                        |
+| `l10n/locale/es/app.po`  |   150 | Spanish translations (AI-drafted)                                       |
+| `l10n/locale/fr/app.po`  |   148 | French translations (AI-drafted)                                        |
 
 ## `tests/`
 
@@ -71,6 +77,7 @@ Details: [extension-entry](../source/extension-entry.md), [viewer-ui](../source/
 | `tests/unit/App.spec.ts`                |   163 | Viewer flow: range mode, renewal, fallbacks, limits, errors |
 | `tests/unit/ArchiveBrowser.spec.ts`     |   131 | Navigation, search, sort, downloads, entry cap, progress    |
 | `tests/unit/limits.spec.ts`             |    46 | Device detection and limit resolution                       |
+| `tests/unit/translations.spec.ts`       |    50 | Translation completeness and placeholders                   |
 | `tests/unit/rangeServer.ts`             |    38 | Test helper: `fetch` mock serving byte ranges               |
 | `tests/unit/engine/tar.spec.ts`         |    60 | TAR parser                                                  |
 | `tests/unit/engine/zip.spec.ts`         |    87 | ZIP reader, range source, entry cap                         |
