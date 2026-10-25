@@ -72,10 +72,12 @@ node_modules, dist, coverage, logs, `.env`/`.envrc`, `.DS_Store`, `.idea`, `.vsc
 ## Release zip — `scripts/package.mjs`
 
 `pnpm build && pnpm package` writes `release/archive-viewer-<version>.zip` (top folder
-`archive-viewer/` holding the contents of `dist/`, ready to unzip into an apps folder) and
+`archive-viewer/` holding the contents of `dist/` plus `LICENSE` and `THIRD-PARTY-NOTICES.md`,
+ready to unzip into an apps folder) and
 `release/archive-viewer-<version>.zip.sha256`. Uses zip.js (Node, no workers) — no extra package
 or system `zip`. Stops if `dist/` is missing or its manifest version differs from `package.json`.
-Verified in step 6: checksum OK, unzipped folder identical to `dist/`.
+Verified in step 6: checksum OK, unzipped folder identical to `dist/` plus the two notices.
+The root path uses `fileURLToPath`, so checkouts in folders with spaces work.
 
 ## Translations — `gettext.config.cjs`
 

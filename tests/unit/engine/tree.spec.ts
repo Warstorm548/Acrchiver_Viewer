@@ -46,12 +46,26 @@ describe('buildIndex', () => {
     expect(index.filesBelow('')).toHaveLength(3)
   })
 
-  it('keeps the first of duplicate paths', () => {
+  it('keeps the last of duplicate paths, like the readers do', () => {
     const duplicate = buildIndex([
       { ...file('x.txt'), size: 1 },
+      { ...file('y.txt'), size: 5 },
       { ...file('x.txt'), size: 2 }
     ])
-    expect(duplicate.children('')).toHaveLength(1)
-    expect(duplicate.get('x.txt')?.size).toBe(1)
+    expect(duplicate.children('').map((e) => [e.path, e.size])).toEqual([
+      ['x.txt', 2],
+      ['y.txt', 5]
+    ])
+    expect(duplicate.get('x.txt')?.size).toBe(2)
+    expect(duplicate.entries).toHaveLength(2)
+  })
+
+  it('keeps the first when a file and a folder share a path', () => {
+    const mixed = buildIndex([
+      { ...file('a'), size: 3 },
+      { ...file('a'), isDirectory: true }
+    ])
+    expect(mixed.get('a')?.isDirectory).toBe(false)
+    expect(mixed.get('a')?.size).toBe(3)
   })
 })

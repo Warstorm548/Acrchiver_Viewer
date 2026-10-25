@@ -51,6 +51,8 @@ chunks, strict end-of-input handling. The XZ container (`src/engine/xz.ts`), LZM
 and legacy `.lzma` reader were written from the format specifications; the BCJ/Delta filters
 (`src/engine/lzma/filters.ts`) follow liblzma's simple filters (public domain / 0BSD).
 
+License text copied verbatim from upstream, including its typo "wof this software" (sic).
+
 ```
 The MIT License (MIT)
 

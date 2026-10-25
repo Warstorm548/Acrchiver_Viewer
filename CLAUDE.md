@@ -30,7 +30,7 @@ Commands: `pnpm install`, `pnpm build`, `pnpm check:types`, `pnpm lint`, `pnpm f
 - When a doc is added, renamed, split or removed, update its entry here in the same change.
 - One topic per doc. Every `.md` in `docs/` (and this file) stays **at or under 300 lines**; when a
   doc would exceed that, split it into a subfolder with one file per subtopic and index each one.
-- Keep entries to one line: path + what it covers.
+- One bullet per doc: path + a short description of what it covers (Prettier may wrap it).
 - When a bug in [bugs](docs/known-issues/bugs.md) is fixed, remove it there and update any doc
   that mentions it.
 
@@ -87,7 +87,7 @@ Commands: `pnpm install`, `pnpm build`, `pnpm check:types`, `pnpm lint`, `pnpm f
 
 ### Testing
 
-- [docs/testing/tests.md](docs/testing/tests.md) — how to run, SDK test config, the 13 spec files,
+- [docs/testing/tests.md](docs/testing/tests.md) — how to run, SDK test config, the 14 spec files,
   test patterns (stubs, range-server fetch mock, zip), what only the manual checklist covers.
 
 ### Deployment

@@ -27,14 +27,26 @@ export interface ArchiveIndex {
 
 /**
  * Builds the folder structure from a flat entry list. Archives often omit folder entries, so
- * missing parents are synthesized; duplicates keep the first occurrence.
+ * missing parents are synthesized. A repeated path keeps its **last** occurrence (what `tar`
+ * extracts and what the readers return), so the listing never shows other data than a download
+ * delivers; a file and a folder with the same path keep the first.
  */
 export const buildIndex = (rawEntries: ArchiveEntry[]): ArchiveIndex => {
   const byPath = new Map<string, ArchiveEntry>()
   const childrenOf = new Map<string, ArchiveEntry[]>([['', []]])
 
   const add = (entry: ArchiveEntry) => {
-    if (!entry.path || byPath.has(entry.path)) {
+    if (!entry.path) {
+      return
+    }
+    const existing = byPath.get(entry.path)
+    if (existing) {
+      if (existing.isDirectory === entry.isDirectory) {
+        // replace in place: same position in the listing and in its folder
+        byPath.set(entry.path, entry)
+        const siblings = childrenOf.get(parentPath(entry.path))
+        siblings[siblings.indexOf(existing)] = entry
+      }
       return
     }
     const parent = parentPath(entry.path)

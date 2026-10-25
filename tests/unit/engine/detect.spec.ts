@@ -47,6 +47,10 @@ describe('resolveFormat', () => {
 
   it('trusts content over a wrong extension', () => {
     expect(resolveFormat('tar', zipHead)).toBe('zip')
+    expect(resolveFormat('bz2', gzipHead)).toBe('gz')
+    expect(resolveFormat('zip', gzipHead)).toBe('gz')
+    expect(resolveFormat('tar', bzip2Head)).toBe('bz2')
+    expect(resolveFormat('lzma', xzHead)).toBe('xz')
   })
 
   it('accepts signature-less tar by extension', () => {
@@ -57,6 +61,6 @@ describe('resolveFormat', () => {
     expect(() => resolveFormat('xz', unknownHead)).toThrow(ArchiveError)
     expect(() => resolveFormat('lzma', bytes(0xff, 0x00))).toThrow(ArchiveError)
     expect(() => resolveFormat('7z', unknownHead)).toThrow(ArchiveError)
-    expect(() => resolveFormat('bz2', gzipHead)).toThrow(ArchiveError)
+    expect(() => resolveFormat('gz', unknownHead)).toThrow(ArchiveError)
   })
 })

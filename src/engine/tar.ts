@@ -71,7 +71,9 @@ export const openTar = (
   format: ArchiveFormat = 'tar'
 ): ArchiveHandle => {
   const entries: ArchiveEntry[] = []
-  const ranges = new Map<string, DataRange>()
+  // by entry (exact member) and by path (last member wins, like the folder index)
+  const ranges = new Map<ArchiveEntry, DataRange>()
+  const rangesByPath = new Map<string, DataRange>()
   let pendingName: string | null = null
   let pendingPax: Record<string, string> = {}
   let offset = 0
@@ -86,7 +88,10 @@ export const openTar = (
     }
 
     const type = String.fromCharCode(header[156] || 0x30)
-    const size = pendingPax.size ? parseInt(pendingPax.size, 10) : readNumber(header, 124, 12)
+    const size = pendingPax.size ? Number(pendingPax.size) : readNumber(header, 124, 12)
+    if (!Number.isSafeInteger(size) || size < 0) {
+      throw new ArchiveError('corrupt', `Invalid tar entry size at byte ${offset}`)
+    }
     const start = offset + BLOCK
     const end = start + size
     if (end > data.length) {
@@ -121,16 +126,18 @@ export const openTar = (
     }
     const isDirectory = type === '5' || rawName.endsWith('/')
     const isFile = type === '0' || type === '7'
-    entries.push({
+    const entry: ArchiveEntry = {
       path,
       name: path.slice(path.lastIndexOf('/') + 1),
       isDirectory,
       size: isFile ? size : 0,
       modified: mtime ? new Date(mtime * 1000) : undefined,
       supported: isDirectory || isFile
-    })
+    }
+    entries.push(entry)
     if (isFile) {
-      ranges.set(path, { start, end })
+      ranges.set(entry, { start, end })
+      rangesByPath.set(path, { start, end })
     }
   }
 
@@ -138,7 +145,7 @@ export const openTar = (
     format,
     entries,
     read: (entry) => {
-      const range = ranges.get(entry.path)
+      const range = ranges.get(entry) ?? rangesByPath.get(entry.path)
       if (!range) {
         return Promise.reject(new ArchiveError('unreadable-entry', `Cannot read "${entry.path}"`))
       }

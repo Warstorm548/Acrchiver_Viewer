@@ -70,8 +70,9 @@ browser's `read` prop (`readEntry`, with cap and progress), falling back to `han
 
 - `sanitizeFileName`: replaces `/`, `\` and control characters (names come from the archive).
 - `triggerDownload`: temporary `<a download>`, URL revoked after 60 s.
-- `zipEntries(handle, files)`: zip.js native `ZipWriter`, entries added one at a time, keeping
-  their archive paths.
+- `zipEntries(handle, files)`: zip.js native `ZipWriter`, entries added one at a time under their
+  archive paths made safe by `selectionPath` (trims segments, drops `.`/`..`, sanitizes the rest, numbers
+  clashes as `name (2).ext`).
 
 ## Styling
 

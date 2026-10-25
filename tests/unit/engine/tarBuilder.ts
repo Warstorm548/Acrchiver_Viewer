@@ -44,10 +44,12 @@ const padded = (data: Uint8Array): Uint8Array => {
   return result
 }
 
+/** A pax record; its length prefix counts UTF-8 bytes, including the prefix itself. */
 const paxRecord = (key: string, value: string): string => {
   const body = ` ${key}=${value}\n`
-  let length = body.length + 1
-  while (`${length}${body}`.length !== length) {
+  const bytes = (text: string) => encoder.encode(text).length
+  let length = bytes(body) + 1
+  while (bytes(`${length}${body}`) !== length) {
     length++
   }
   return `${length}${body}`

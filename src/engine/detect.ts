@@ -82,6 +82,17 @@ export const resolveFormat = (extension: string, head: Uint8Array): ArchiveForma
   if (signature === 'xz' && (byExtension === 'tar.xz' || byExtension === 'xz')) {
     return byExtension
   }
+  // Wrong extension (e.g. gzip data named .zip or .bz2): open by content as a single compressed
+  // file; a tar inside is still recognized after decompression.
+  if (signature === 'gzip') {
+    return 'gz'
+  }
+  if (signature === 'bzip2') {
+    return 'bz2'
+  }
+  if (signature === 'xz') {
+    return 'xz'
+  }
   if (signature === null && byExtension === 'tar') {
     return 'tar'
   }

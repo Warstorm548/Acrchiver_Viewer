@@ -17,7 +17,8 @@ was removed in step 1.
   `vue3-gettext`, `@opencloud-eu/web-pkg`, …) are **not** bundled.
 
 `pnpm package` packs `dist/` into `release/archive-viewer-<version>.zip` (+ `.sha256`) whose
-top folder is already `archive-viewer/` (see [build-tooling](../tech-stack/build-tooling.md)).
+top folder is already `archive-viewer/` and which also carries `LICENSE` and
+`THIRD-PARTY-NOTICES.md` (see [build-tooling](../tech-stack/build-tooling.md)).
 
 ## Installing
 

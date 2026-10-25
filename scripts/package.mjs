@@ -1,8 +1,10 @@
 // Packs dist/ into release/archive-viewer-<version>.zip (top folder "archive-viewer/", the layout
-// OpenCloud's apps folder expects) plus a .sha256 file. Run `pnpm build` first.
+// OpenCloud's apps folder expects) plus a .sha256 file. Run `pnpm build` first. The license and
+// third-party notices are added next to the build, as the AGPL/MIT/BSD terms require.
 import { createHash } from 'node:crypto'
 import { existsSync, mkdirSync, readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs'
 import { join, relative, sep } from 'node:path'
+import { fileURLToPath } from 'node:url'
 import {
   BlobWriter,
   configure,
@@ -11,7 +13,8 @@ import {
 } from '@zip.js/zip.js/lib/zip-native.js'
 
 const APP_ID = 'archive-viewer'
-const root = new URL('..', import.meta.url).pathname
+const NOTICES = ['LICENSE', 'THIRD-PARTY-NOTICES.md']
+const root = fileURLToPath(new URL('..', import.meta.url))
 const dist = join(root, 'dist')
 const releaseDir = join(root, 'release')
 
@@ -39,9 +42,12 @@ const listFiles = (dir) =>
 
 configure({ useWebWorkers: false })
 const writer = new ZipWriter(new BlobWriter('application/zip'))
-const files = listFiles(dist)
-for (const file of files) {
-  const name = `${APP_ID}/${relative(dist, file).split(sep).join('/')}`
+const files = [
+  ...listFiles(dist).map((file) => [file, relative(dist, file)]),
+  ...NOTICES.filter((name) => !existsSync(join(dist, name))).map((name) => [join(root, name), name])
+]
+for (const [file, path] of files) {
+  const name = `${APP_ID}/${path.split(sep).join('/')}`
   await writer.add(name, new Uint8ArrayReader(readFileSync(file)), {
     lastModDate: statSync(file).mtime
   })

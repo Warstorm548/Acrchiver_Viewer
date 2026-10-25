@@ -121,14 +121,18 @@ describe('App', () => {
     })
   })
 
-  it('rejects a .zip holding other data after reading only its first bytes', async () => {
+  it('opens a .zip holding gzip data by its content, after a full download', async () => {
     const gz = await new Response(
       new Blob(['hello']).stream().pipeThrough(new CompressionStream('gzip'))
     ).blob()
     const { requests } = serveFile(gz)
     const wrapper = createWrapper({ name: 'misnamed.zip', size: gz.size })
-    await waitForMessage(wrapper, 'not supported')
-    expect(requests.map((r) => r.range)).toEqual([`bytes=0-${gz.size - 1}`])
+    await vi.waitFor(async () => {
+      await flushPromises()
+      expect(wrapper.findAll('.archive-name').map((n) => n.text())).toEqual(['misnamed.zip.out'])
+    })
+    // first bytes by range (not a zip), then the normal download path
+    expect(requests.map((r) => r.range)).toEqual([`bytes=0-${gz.size - 1}`, null])
   })
 
   it('uses the lower limits on mobile devices', async () => {

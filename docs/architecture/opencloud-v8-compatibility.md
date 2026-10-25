@@ -14,7 +14,7 @@ tar.gz. Researched 2026-10-25 against `opencloud-eu/web-extensions` (`web-app-js
 
 | #   | Area           | Before                                                 | Now                                                                                                                                      |
 | --- | -------------- | ------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------- |
-| C1  | Build config   | `defaultConfig` import (doesn't exist)                 | `defineConfig({ name: 'archive-viewer' })` from extension-sdk 8.1.0                                                                      |
+| C1  | Build config   | `defaultConfig` import (doesn't exist)                 | `defineConfig({ name: 'archive-viewer' })` from extension-sdk 8.0.0 (pinned to the 8.0 line)                                             |
 | C2  | File types     | String list + `handler` objects in the registry key    | `appInfo.extensions: [{ extension, routeName }]`                                                                                         |
 | C3  | Route wiring   | Bare component, `route.query.fileId`, `resourcesStore` | `AppWrapperRoute(App, { applicationId })`, `/:driveAliasAndItem(.*)?`, `authContext: 'hybrid'`, `patchCleanPath`                         |
 | C5  | Types          | Hand-written `src/types.d.ts`                          | Deleted; real package types                                                                                                              |

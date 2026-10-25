@@ -31,10 +31,11 @@ describe('openTar', () => {
     const handle = openTar(
       buildTar([
         { name: long, content: 'x', gnuLongName: true },
-        { name: `pax-${long}`, content: 'y', paxPath: true }
+        { name: `pax-${long}`, content: 'y', paxPath: true },
+        { name: 'Ünïcödé/résumé.txt', content: 'z', paxPath: true }
       ])
     )
-    expect(handle.entries.map((e) => e.path)).toEqual([long, `pax-${long}`])
+    expect(handle.entries.map((e) => e.path)).toEqual([long, `pax-${long}`, 'Ünïcödé/résumé.txt'])
   })
 
   it('marks symlinks as unsupported', () => {
@@ -51,6 +52,29 @@ describe('openTar', () => {
     const data = buildTar([{ name: 'a.txt', content: 'x' }])
     data[10] ^= 0xff
     expect(() => openTar(data)).toThrow(ArchiveError)
+  })
+
+  it('rejects a header whose size is not a number', () => {
+    const data = buildTar([{ name: 'a.txt', content: 'x' }])
+    data.set(new TextEncoder().encode('abc\0\0\0\0\0\0\0\0\0'), 124)
+    // recompute the checksum so only the size field is wrong
+    data.fill(0x20, 148, 156)
+    const sum = data.subarray(0, 512).reduce((total, byte) => total + byte, 0)
+    data.set(new TextEncoder().encode(`${sum.toString(8).padStart(6, '0')}\0 `), 148)
+    expect(() => openTar(data)).toThrow(/Invalid tar entry size/)
+  })
+
+  it('reads each of two members with the same path', async () => {
+    const handle = openTar(
+      buildTar([
+        { name: 'a.txt', content: 'one' },
+        { name: 'a.txt', content: 'second' }
+      ])
+    )
+    expect(await (await handle.read(handle.entries[0])).text()).toBe('one')
+    expect(await (await handle.read(handle.entries[1])).text()).toBe('second')
+    // a lookup by path alone gets the last member, like the folder index
+    expect(await (await handle.read({ ...handle.entries[0] })).text()).toBe('second')
   })
 
   it('detects truncated archives', () => {

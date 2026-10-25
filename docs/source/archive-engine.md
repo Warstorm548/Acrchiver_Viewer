@@ -56,7 +56,9 @@ the file name), `close()`.
 - `resolveFormat` trusts **content over extension**: zip/tar signatures always win; gzip, bzip2
   and xz signatures are accepted for their tar and single-file extensions; signature-less tar is
   accepted on `tar`; legacy `.lzma` (no magic) on `lzma`/`tlz` when `looksLikeLzmaAlone` accepts
-  the header. A compressor mismatch (e.g. gzip data named `.bz2`) is unsupported.
+  the header. Any other gzip, bzip2 or xz data (e.g. gzip named `.bz2`, `.tar` or `.zip`) opens
+  as the single-file format `gz`/`bz2`/`xz`; a tar inside is still recognized after
+  decompression. A `.zip` holding gzip data is therefore downloaded and opened by content.
 
 ## ZIP (`zip.ts`)
 
@@ -69,10 +71,12 @@ and symlinks → `supported: false`. `configureZip({ useWebWorkers: false })` in
 
 ## TAR (`tar.ts`)
 
-512-byte headers with checksum validation; stops at the first zero block; truncated data →
+512-byte headers with checksum validation; sizes must be non-negative whole numbers (else
+`corrupt`); stops at the first zero block; truncated data →
 `corrupt`. Names from ustar `prefix`+`name`, GNU `L` long names, pax `x` records (`path`, `size`,
 `mtime`); `g`/`K` ignored. Sizes in octal or GNU base-256. Types `0`/`7` file, `5` directory,
-everything else listed as unsupported. Reads return blobs over the original bytes.
+everything else listed as unsupported. Reads return blobs over the original bytes. Each member's data range is kept per entry
+(and per path, last member wins), so every listed member reads its own data.
 
 ## GZIP (`gzip.ts`)
 
@@ -104,9 +108,11 @@ original name (basename only) or the archive name minus `.gz`/`.bz2`/`.xz`/`.lzm
 
 ## Folder index (`tree.ts`)
 
-`buildIndex` synthesizes missing parent folders, keeps the first of duplicate paths, and offers
+`buildIndex` synthesizes missing parent folders, keeps the **last** of duplicate paths (as `tar`
+extracts and as the tar/zip readers return; a file and a folder sharing a path keep the first), and offers
 `children(folder)` (direct children only), `get(path)`, `filesBelow(folder)`. `normalizePath`
-turns backslashes into slashes and drops empty / `.` segments; `..` stays display text.
+turns backslashes into slashes and drops empty / `.` segments; `..` stays display text (and is dropped
+when writing the selection zip, see [viewer-ui](viewer-ui.md)).
 
 ## Limits
 
