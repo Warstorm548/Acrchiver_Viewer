@@ -246,3 +246,23 @@ https://keycloak.opencloud.test/` — no `'wasm-unsafe-eval'`, so WebAssembly is
   console warning "Archive Viewer 0.2.0 supports OpenCloud 8.0.0; this server runs 8.0.1. Running
   anyway because allowUnsupportedOpenCloud is set in apps.yaml." Restored to `config: {}` and the
   normal build afterwards.
+
+## 0.2.1 merge results (`release/0.2.0`, 2026-10-25)
+
+0.2.0 version check merged on top of the PR #3 memory fixes; tested in Firefox with the compose
+CSP (`worker-src 'self' blob:`, so bzip2/xz/lzma ran in the worker).
+
+- `/config.json` served `archive-viewer` 0.2.1 with mobile limits 128 / 384 / 256 MiB and
+  `allowUnsupportedOpenCloud: false`; the viewer registered on 8.0.1.
+- `large.tar.xz` → `big/` selection zip: CRC OK, all 5 files byte-identical. The server's
+  `large.tar.xz` is an older generation than the local fixture (random data differs), so compare
+  downloads with the **server copy** (WebDAV GET), not `test-fixtures/`.
+- `big-test.zip` (3.04 GiB): opened; the 200 MiB file and a 900 MiB file downloaded with matching
+  SHA-256 — peak tab memory for the 900 MiB download about 1 GB (2.4 GiB before PR #3); the
+  `small` selection zip held all 3,000 files byte-identical.
+- Mobile emulation: the 900 MiB file was refused (256 MiB per-file limit), nothing downloaded.
+- Console: only OpenCloud's own messages; nothing from the app, no CSP/worker/WebAssembly errors.
+- Not reported in this run: the 1,200 MiB file / `bulk` selection refusal on desktop and the
+  image previews (both passed in steps 3–5).
+- Cleanup confirmed: no share links, server file 404, trash empty, local and downloaded copies
+  deleted.
