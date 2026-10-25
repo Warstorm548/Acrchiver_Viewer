@@ -10,39 +10,43 @@ msgstr ""
 msgid "Download archive"
 msgstr ""
 
-#: src/App.vue:95
+#: src/App.vue:97
 msgid "Reading archive index…"
 msgstr ""
 
-#: src/App.vue:98
+#: src/App.vue:100
 msgid "Decompressing…"
 msgstr ""
 
-#: src/App.vue:102
+#: src/App.vue:104
 msgid "Downloading… %{percent}%"
 msgstr ""
 
-#: src/App.vue:105
+#: src/App.vue:107
 msgid "Downloading… %{size}"
 msgstr ""
 
-#: src/App.vue:112
+#: src/App.vue:111
+msgid "This device does not have enough free memory to open this archive. You can download it instead."
+msgstr ""
+
+#: src/App.vue:120
 msgid "This archive format is not supported yet. You can download it instead."
 msgstr ""
 
-#: src/App.vue:116
+#: src/App.vue:124
 msgid "The archive expands to more data than the browser is allowed to open."
 msgstr ""
 
-#: src/App.vue:118
+#: src/App.vue:128
 msgid "The archive seems to be damaged or is not a valid archive."
 msgstr ""
 
-#: src/App.vue:121
+#: src/App.vue:131
 msgid "The archive could not be loaded."
 msgstr ""
 
-#: src/App.vue:182
+#: src/App.vue:203
 msgid "This archive is larger than %{limit}, the most this viewer opens in the browser on this device. You can download it instead."
 msgstr ""
 
@@ -88,44 +92,48 @@ msgstr ""
 msgid "This folder is empty"
 msgstr ""
 
-#: src/components/ArchiveBrowser.vue:210
+#: src/components/ArchiveBrowser.vue:211
 msgid "Name"
 msgstr ""
 
-#: src/components/ArchiveBrowser.vue:211
+#: src/components/ArchiveBrowser.vue:212
 msgid "Size"
 msgstr ""
 
-#: src/components/ArchiveBrowser.vue:212
+#: src/components/ArchiveBrowser.vue:213
 msgid "Modified"
 msgstr ""
 
-#: src/components/ArchiveBrowser.vue:255
+#: src/components/ArchiveBrowser.vue:256
 msgid "Download selected (%{count})"
 msgstr ""
 
-#: src/components/ArchiveBrowser.vue:256
+#: src/components/ArchiveBrowser.vue:257
 msgid "Download selected"
 msgstr ""
 
-#: src/components/ArchiveBrowser.vue:302
+#: src/components/ArchiveBrowser.vue:303
 msgid "Files larger than %{limit} cannot be extracted in the browser on this device. Download the whole archive instead."
 msgstr ""
 
-#: src/components/ArchiveBrowser.vue:324
+#: src/components/ArchiveBrowser.vue:311
+msgid "This device does not have enough free memory to extract this. Download the whole archive instead."
+msgstr ""
+
+#: src/components/ArchiveBrowser.vue:339
 msgid "Extracting %{name}…"
 msgstr ""
 
-#: src/components/ArchiveBrowser.vue:326
+#: src/components/ArchiveBrowser.vue:341
 msgid "Extracting %{name}… %{percent}%"
 msgstr ""
 
-#: src/components/ArchiveBrowser.vue:355
+#: src/components/ArchiveBrowser.vue:370
 msgid "Failed to download \"%{name}\""
 msgstr ""
 
-#: src/components/ArchiveBrowser.vue:378
-#: src/components/ArchiveBrowser.vue:403
+#: src/components/ArchiveBrowser.vue:393
+#: src/components/ArchiveBrowser.vue:418
 msgid "Failed to download the selection"
 msgstr ""
 
@@ -133,36 +141,40 @@ msgstr ""
 msgid "Loading preview"
 msgstr ""
 
-#: src/components/PreviewModal.vue:28
+#: src/components/PreviewModal.vue:29
 msgid "Only the beginning of the file is shown."
 msgstr ""
 
-#: src/components/PreviewModal.vue:39
+#: src/components/PreviewModal.vue:40
 msgid "Download"
 msgstr ""
 
-#: src/components/PreviewModal.vue:42
+#: src/components/PreviewModal.vue:43
 msgid "Close"
 msgstr ""
 
-#: src/components/PreviewModal.vue:85
+#: src/components/PreviewModal.vue:86
 msgid "This file is password protected and cannot be previewed."
 msgstr ""
 
-#: src/components/PreviewModal.vue:86
+#: src/components/PreviewModal.vue:87
 msgid "This file cannot be read."
 msgstr ""
 
-#: src/components/PreviewModal.vue:90
+#: src/components/PreviewModal.vue:91
 msgid "No preview available for this file type."
 msgstr ""
 
-#: src/components/PreviewModal.vue:94
+#: src/components/PreviewModal.vue:95
 msgid "This file is too large to preview. Download it instead."
 msgstr ""
 
-#: src/components/PreviewModal.vue:111
+#: src/components/PreviewModal.vue:112
 msgid "The preview could not be loaded."
+msgstr ""
+
+#: src/components/PreviewModal.vue:120
+msgid "This image could not be displayed. Download it instead."
 msgstr ""
 
 #: src/index.ts:43

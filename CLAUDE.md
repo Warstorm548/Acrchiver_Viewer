@@ -87,7 +87,7 @@ Commands: `pnpm install`, `pnpm build`, `pnpm check:types`, `pnpm lint`, `pnpm f
 
 ### Testing
 
-- [docs/testing/tests.md](docs/testing/tests.md) — how to run, SDK test config, the 14 spec files,
+- [docs/testing/tests.md](docs/testing/tests.md) — how to run, SDK test config, the 16 spec files,
   test patterns (stubs, range-server fetch mock, zip), what only the manual checklist covers.
 
 ### Deployment
@@ -100,8 +100,8 @@ Commands: `pnpm install`, `pnpm build`, `pnpm check:types`, `pnpm lint`, `pnpm f
 
 ### Known issues
 
-- [docs/known-issues/bugs.md](docs/known-issues/bugs.md) — known limitations (K1–K5, K7) and how the
-  old viewer's bugs were resolved.
+- [docs/known-issues/bugs.md](docs/known-issues/bugs.md) — known limitations (K1–K5, K7, K8),
+  memory bugs fixed by browser testing (M-1–M-6), and how the old viewer's bugs were resolved.
 - [docs/known-issues/security.md](docs/known-issues/security.md) — untrusted-archive rules and how
   the viewer meets them (no `v-html`, limits, SVG, filenames, auth, CSP).
 

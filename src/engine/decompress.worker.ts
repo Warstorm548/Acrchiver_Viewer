@@ -1,6 +1,7 @@
 // Runs the (synchronous, CPU-heavy) pure-JS decoders off the main thread.
 // Bundled with Vite `?worker&inline`, i.e. started from a blob: URL (allowed by OpenCloud's CSP).
 import { decompress, DecompressKind } from './decompressors'
+import { toArchiveError } from './buffer'
 import { ArchiveError } from './types'
 
 export interface DecompressRequest {
@@ -27,10 +28,7 @@ scope.onmessage = async ({ data: request }) => {
     const result = await decompress(request.kind, new Uint8Array(request.data), request.maxSize)
     scope.postMessage({ ok: true, data: result.buffer }, [result.buffer])
   } catch (error) {
-    scope.postMessage({
-      ok: false,
-      code: error instanceof ArchiveError ? error.code : 'corrupt',
-      message: (error as Error).message
-    })
+    const { code, message } = toArchiveError(error, `Invalid ${request.kind} data`)
+    scope.postMessage({ ok: false, code, message })
   }
 }

@@ -141,7 +141,13 @@ describe('App', () => {
     const wrapper = createWrapper({ name: 'big.tar', size: 300 * 1024 * 1024 })
     await flushPromises()
     expect(fetchSpy).not.toHaveBeenCalled()
-    expect(wrapper.find('.archive-viewer-message').text()).toContain('268.4 MB')
+    expect(wrapper.find('.archive-viewer-message').text()).toContain('134.2 MB')
+  })
+
+  it('stops a download that is larger than the limit even if the metadata says otherwise', async () => {
+    serveFile(new Blob([new Uint8Array(5000)]))
+    const wrapper = createWrapper({ name: 'big.tar', size: 10, config: { maxArchiveSize: 1000 } })
+    await waitForMessage(wrapper, 'larger than')
   })
 
   it('shows an error for damaged archives', async () => {

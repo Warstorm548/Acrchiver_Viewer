@@ -26,7 +26,7 @@ export const unlzma = (data: Uint8Array, maxSize: number): Uint8Array<ArrayBuffe
   if (!unknownSize && size > maxSize) {
     throw new ArchiveError('too-large', `Decompressed size exceeds ${maxSize} bytes`)
   }
-  const out = new Output(maxSize)
+  const out = new Output(maxSize, unknownSize ? undefined : size)
   const lzma = new LzmaDecoder(out)
   lzma.setProperties(parseLzmaProperties(data[0]))
   lzma.resetState()

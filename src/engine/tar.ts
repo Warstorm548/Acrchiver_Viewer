@@ -1,3 +1,4 @@
+import { blobFromBytes } from './buffer'
 import { mimeTypeFor } from './fileTypes'
 import { normalizePath } from './tree'
 import { ArchiveEntry, ArchiveError, ArchiveFormat, ArchiveHandle } from './types'
@@ -5,12 +6,15 @@ import { ArchiveEntry, ArchiveError, ArchiveFormat, ArchiveHandle } from './type
 const BLOCK = 512
 const decoder = new TextDecoder()
 
+/** Decodes a copy: the archive data may be a view of a resizable buffer, which TextDecoder rejects. */
+const decode = (bytes: Uint8Array): string => decoder.decode(bytes.slice())
+
 const readString = (bytes: Uint8Array, offset: number, length: number): string => {
   let end = offset
   while (end < offset + length && bytes[end] !== 0) {
     end++
   }
-  return decoder.decode(bytes.subarray(offset, end))
+  return decode(bytes.subarray(offset, end))
 }
 
 /** Numeric header field: octal text, or GNU base-256 binary when the high bit is set. */
@@ -46,11 +50,11 @@ const parsePax = (data: Uint8Array): Record<string, string> => {
     if (space === -1) {
       break
     }
-    const length = parseInt(decoder.decode(data.subarray(position, space)), 10)
+    const length = parseInt(decode(data.subarray(position, space)), 10)
     if (!length || length < 1) {
       break
     }
-    const record = decoder.decode(data.subarray(space + 1, position + length - 1))
+    const record = decode(data.subarray(space + 1, position + length - 1))
     const equals = record.indexOf('=')
     if (equals > 0) {
       records[record.slice(0, equals)] = record.slice(equals + 1)
@@ -149,10 +153,9 @@ export const openTar = (
       if (!range) {
         return Promise.reject(new ArchiveError('unreadable-entry', `Cannot read "${entry.path}"`))
       }
-      const blob = new Blob([data.subarray(range.start, range.end)], {
-        type: mimeTypeFor(entry.name)
-      })
-      return Promise.resolve(blob)
+      return Promise.resolve(
+        blobFromBytes(data.subarray(range.start, range.end), mimeTypeFor(entry.name))
+      )
     },
     close: () => Promise.resolve()
   }

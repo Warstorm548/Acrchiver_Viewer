@@ -37,6 +37,8 @@ export type ArchiveErrorCode =
   | 'unreadable-entry'
   /** The server ignored an HTTP Range request (answered 200 instead of 206). */
   | 'range-unsupported'
+  /** The browser could not allocate the memory needed (the device has too little free). */
+  | 'out-of-memory'
 
 export class ArchiveError extends Error {
   readonly code: ArchiveErrorCode

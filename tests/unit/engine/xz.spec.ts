@@ -1,5 +1,5 @@
 import { createHash } from 'node:crypto'
-import { unxz } from '../../../src/engine/xz'
+import { recordedSize, unxz } from '../../../src/engine/xz'
 import { unlzma } from '../../../src/engine/lzmaAlone'
 import { ArchiveError } from '../../../src/engine/types'
 import { xzSamples } from './xzSamples'
@@ -16,6 +16,14 @@ describe('unxz', () => {
     const result = await unxz(decode(sample.data), LIMIT)
     expect(result.length).toBe(sample.size)
     expect(sha256(result)).toBe(sample.sha256)
+  })
+
+  it.each(xzEntries)('reads the size of %s from its index', (_name, sample) => {
+    expect(recordedSize(decode(sample.data))).toBe(sample.size)
+  })
+
+  it('ignores a size it cannot find', () => {
+    expect(recordedSize(new Uint8Array([1, 2, 3]))).toBeUndefined()
   })
 
   it('stops when the output exceeds the limit', async () => {

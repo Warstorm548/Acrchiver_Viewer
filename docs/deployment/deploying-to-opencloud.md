@@ -56,8 +56,8 @@ archive-viewer:
     maxArchiveSize: 1073741824 # 1 GiB: largest non-ZIP archive downloaded in full
     maxUncompressedSize: 2147483648 # 2 GiB: largest decompressed output (gz/bz2/xz/lzma)
     maxEntrySize: 1073741824 # 1 GiB: largest extracted file or selection
-    maxArchiveSizeMobile: 268435456 # 256 MiB (phones and tablets)
-    maxUncompressedSizeMobile: 536870912 # 512 MiB
+    maxArchiveSizeMobile: 134217728 # 128 MiB (phones and tablets)
+    maxUncompressedSizeMobile: 402653184 # 384 MiB
     maxEntrySizeMobile: 268435456 # 256 MiB
 ```
 
@@ -81,7 +81,13 @@ Version 0.1.0 is prepared but no tag or release exists yet.
 opencloud-compose serves the CSP from `config/opencloud/csp.yaml`. Observed on 8.0.1:
 `worker-src 'self' blob:` (web workers allowed) but `script-src` without `'wasm-unsafe-eval'`, so
 **WebAssembly is blocked**. A WASM-based archive engine would need the server's `csp.yaml`
-changed; a pure-JS engine works as is. See
+changed; a pure-JS engine works as is.
+
+Without a `csp.yaml` (`PROXY_CSP_CONFIG_FILE_LOCATION` unset, e.g. a plain `docker run`),
+OpenCloud's **built-in** CSP applies: it has `child-src 'self'` and no `worker-src`, so `blob:`
+workers are blocked (verified on 8.0.1). The app then decodes bzip2/xz/lzma on the main thread —
+it works, but the page freezes while decoding. Adding `worker-src 'self' blob:` restores the
+worker. See
 [opencloud-v8-compatibility](../architecture/opencloud-v8-compatibility.md).
 
 ## Version alignment

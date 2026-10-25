@@ -2,6 +2,7 @@
 // DecompressionStream in an inline blob: worker, which OpenCloud's production CSP allows.
 import { BlobReader, configure, Reader, ZipReader } from '@zip.js/zip.js/lib/zip-native.js'
 import type { Entry, FileEntry } from '@zip.js/zip.js'
+import { BlobBuilder, toArchiveError } from './buffer'
 import { mimeTypeFor } from './fileTypes'
 import { normalizePath } from './tree'
 import { RangeRequestError } from './rangeReader'
@@ -24,42 +25,42 @@ const tooLarge = (name: string, maxSize: number): never => {
   )
 }
 
+/** Errors from the network or an abort, which are passed on unchanged. */
+const isTransportError = (error: unknown) =>
+  error instanceof RangeRequestError || (error as Error).name === 'AbortError'
+
 /**
  * Reads an entry into a Blob, stopping as soon as the real output exceeds `maxSize` — the size an
- * archive declares for an entry can't be trusted.
+ * archive declares for an entry can't be trusted. The data goes to the blob store as it streams.
  */
 const readLimited = async (entry: FileEntry, name: string, maxSize: number): Promise<Blob> => {
   if (entry.uncompressedSize > maxSize) {
     tooLarge(name, maxSize)
   }
-  const chunks: Uint8Array<ArrayBuffer>[] = []
-  let total = 0
+  const output = new BlobBuilder()
+  let overLimit = false
   const sink = new WritableStream<Uint8Array>({
     write(chunk) {
-      total += chunk.length
-      if (total > maxSize) {
+      if (output.size + chunk.length > maxSize) {
+        overLimit = true
         tooLarge(name, maxSize)
       }
-      chunks.push(chunk as Uint8Array<ArrayBuffer>)
+      output.append(chunk)
     }
   })
   try {
     await entry.getData(sink)
   } catch (error) {
-    if (total > maxSize) {
+    if (overLimit) {
       tooLarge(name, maxSize)
     }
-    if (
-      error instanceof ArchiveError ||
-      error instanceof RangeRequestError ||
-      (error as Error).name === 'AbortError'
-    ) {
+    if (isTransportError(error)) {
       throw error
     }
     // zip.js stops by itself when an entry turns out larger than declared, or fails its CRC.
-    throw new ArchiveError('corrupt', `Cannot extract "${name}": ${(error as Error).message}`)
+    throw toArchiveError(error, `Cannot extract "${name}"`)
   }
-  return new Blob(chunks, { type: mimeTypeFor(name) })
+  return output.build(mimeTypeFor(name))
 }
 
 const toArchiveEntry = (entry: Entry, path: string): ArchiveEntry => ({
@@ -90,14 +91,10 @@ export const openZip = async (
     zipEntries = await reader.getEntries()
   } catch (error) {
     await reader.close().catch(() => {})
-    if (
-      error instanceof ArchiveError ||
-      error instanceof RangeRequestError ||
-      (error as Error).name === 'AbortError'
-    ) {
+    if (isTransportError(error)) {
       throw error
     }
-    throw new ArchiveError('corrupt', `Invalid zip archive: ${(error as Error).message}`)
+    throw toArchiveError(error, 'Invalid zip archive')
   }
 
   const fileEntries = new Map<string, FileEntry>()

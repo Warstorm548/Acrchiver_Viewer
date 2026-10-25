@@ -16,13 +16,16 @@ Pure-JavaScript decoder for `.xz` / `.tar.xz` / `.txz` and the legacy `.lzma` / 
 | `lzma/rangeDecoder.ts` | Range decoder + bit-tree helpers                                                                                       | Adapted from xz-compat; unsigned arithmetic                                         |
 | `lzma/filters.ts`      | Delta and BCJ x86, ARM, ARM-Thumb, PowerPC, IA-64, SPARC (decode)                                                      | Follows liblzma's simple filters (public domain / 0BSD)                             |
 | `lzma/checks.ts`       | CRC32, CRC64 (ECMA-182 on two 32-bit halves), SHA-256 (`crypto.subtle`)                                                | Standard algorithms                                                                 |
-| `lzma/output.ts`       | Growable output buffer with `maxSize` guard, used as the LZMA dictionary                                               | New                                                                                 |
+| `lzma/output.ts`       | `Output extends GrowableBuffer` (`../buffer.ts`): byte/match writes; the output doubles as the LZMA dictionary         | New                                                                                 |
 
 ## Design notes
 
 - **Output = dictionary.** The whole result is kept in memory anyway, so matches copy straight
   from earlier output; a dictionary reset (each XZ block, LZMA2 control `0x01`/`0xE0+`) just moves
   `dictStart`, and distances reaching before it → `corrupt`.
+- **Sized up front.** `unxz` sizes the output from the totals in the stream indexes, read
+  backwards from the end (`recordedSize`); `unlzma` from the header when it records a size. The
+  indexes are still verified while decoding. See [archive-engine](archive-engine.md#memory).
 - **Unsigned range coder.** `range`/`code` are kept as unsigned 32-bit values in plain numbers
   (`>>> 0`), and long distances are computed with multiplication — no reliance on signed-int
   overflow like the original Java/JS ports.
@@ -56,7 +59,8 @@ Pure-JavaScript decoder for `.xz` / `.tar.xz` / `.txz` and the legacy `.lzma` / 
 ## Performance
 
 Roughly 25–100 MB/s in Node on this machine depending on settings, in a worker in the browser.
-A 256 MiB archive (the mobile limit) decodes in a few seconds; the page stays responsive.
+A 128 MiB archive (the mobile limit) decodes in a few seconds; the page stays responsive. If the
+CSP blocks the worker, decoding runs on the main thread and the page freezes meanwhile.
 
 ## When changing
 

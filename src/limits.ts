@@ -10,9 +10,15 @@ export interface Limits {
   entry: number
 }
 
+/**
+ * Measured in Chromium, a tab peaks at about `archive + uncompressed` for bzip2/xz/lzma (input and
+ * output in memory together) and about 1.5 × `uncompressed` for gzip (stream chunks awaiting
+ * garbage collection); mobile keeps that near 512 MiB. Decompressed data is also capped just
+ * under 2 GiB by the browser (`MAX_BUFFER_SIZE`).
+ */
 export const DEFAULT_LIMITS: Record<'desktop' | 'mobile', Limits> = {
   desktop: { archive: 1 * GiB, uncompressed: 2 * GiB, entry: 1 * GiB },
-  mobile: { archive: 256 * MiB, uncompressed: 512 * MiB, entry: 256 * MiB }
+  mobile: { archive: 128 * MiB, uncompressed: 384 * MiB, entry: 256 * MiB }
 }
 
 interface NavigatorLike {

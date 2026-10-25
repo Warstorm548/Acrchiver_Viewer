@@ -45,24 +45,33 @@ A zip.js `Reader` (native build) over a URL:
 
 | Limit (`apps.yaml` key)                   | Desktop | Mobile (`…Mobile` key) | Applies to                                            |
 | ----------------------------------------- | ------- | ---------------------- | ----------------------------------------------------- |
-| `maxArchiveSize` / `maxArchiveSizeMobile` | 1 GiB   | 256 MiB                | whole-file downloads (every format except ranged ZIP) |
-| `maxUncompressedSize` / `…Mobile`         | 2 GiB   | 512 MiB                | decompressed output of gzip/bzip2/xz/lzma             |
+| `maxArchiveSize` / `maxArchiveSizeMobile` | 1 GiB   | 128 MiB                | whole-file downloads (every format except ranged ZIP) |
+| `maxUncompressedSize` / `…Mobile`         | 2 GiB   | 384 MiB                | decompressed output of gzip/bzip2/xz/lzma             |
 | `maxEntrySize` / `maxEntrySizeMobile`     | 1 GiB   | 256 MiB                | one extracted file, and the total of a selection      |
 
 - `isMobileDevice()`: `navigator.userAgentData.mobile`, else the user agent
   (`Android|iPhone|iPad|iPod|Mobile`), plus iPadOS (Mac user agent with `maxTouchPoints > 1`).
   DevTools device emulation counts as mobile.
 - `resolveLimits(config, mobile)`: on desktop the plain keys, on mobile the `…Mobile` keys;
-  missing, non-numeric or non-positive values → default. Defaults are also in `src/manifest.json`.
-- Sizes in messages use `formatFileSize` (decimal units): 1 GiB shows as "1.1 GB", 256 MiB as
-  "268.4 MB".
+  missing, non-numeric or non-positive values → default. Defaults are also in `src/manifest.json`
+  (OpenCloud passes them as the config, so they win over `DEFAULT_LIMITS`; a test keeps both in
+  sync).
+- Why these values (measured in Chromium): the tab peaks near `archive + uncompressed` for
+  bzip2/xz/lzma and about 1.5 × `uncompressed` for gzip; mobile keeps that near 512 MiB.
+  Decompressed data is also capped just under 2 GiB by the browser (`MAX_BUFFER_SIZE`, see
+  [archive-engine](archive-engine.md#memory)). Mobile was 256 / 512 / 256 MiB until the memory
+  fixes; measured peaks are in [tests](../testing/tests.md#browser-memory-tests).
+- Sizes in messages use `formatFileSize` (decimal units): 1 GiB shows as "1.1 GB", 128 MiB as
+  "134.2 MB".
 
 ## Entry cap (`src/engine/zip.ts`, `ArchiveBrowser.vue`)
 
 - `ArchiveBrowser.readEntry` refuses up front when the declared size is over `maxEntrySize`;
   "Download selected" refuses when the declared total is over it. Both explain the limit.
 - `readLimited` in `zip.ts` refuses a declared size over the cap, then writes through a
-  `WritableStream` that aborts once the **real** output passes the cap.
+  `WritableStream` that aborts once the **real** output passes the cap. Output goes into a
+  `BlobBuilder` (blob store, 16 MiB parts), so a 900 MiB entry peaks at ~0.7 GiB of tab memory
+  instead of ~2.3 GiB.
 - zip.js itself already stops when an entry's output exceeds its declared size ("Invalid
   uncompressed size"); that is mapped to `ArchiveError('corrupt')`. So a ZIP lying about a size
   can't exceed the cap either way.
@@ -80,7 +89,7 @@ after the bulk data):
 - The 200 MiB file downloaded with progress; SHA-256 matched the generator's.
 - The 1,200 MiB file and the `bulk` selection were refused (desktop cap); the `small` selection
   zip held all 3,000 files byte-identical.
-- Mobile emulation: 900 MiB file refused with the 268.4 MB message; 200 MiB file and
+- Mobile emulation (then 256 MiB limits): 900 MiB file refused with the 268.4 MB message; 200 MiB file and
   `large.tar.bz2` still worked.
 - Password-protected public links: `big-test.zip` read by range, `sample.tar.xz` opened.
 - Afterwards the file was deleted locally, on the server and from the trash bin, and the test

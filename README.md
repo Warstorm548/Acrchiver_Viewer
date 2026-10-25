@@ -5,7 +5,9 @@ search, preview text and images, and download single files or a selection — wi
 anything into your storage.
 
 Everything runs in plain JavaScript in the browser. It needs **no server component and no change
-to OpenCloud's security policy (CSP)**.
+to OpenCloud's security policy (CSP)**. With the CSP from opencloud-compose (`worker-src 'self'
+blob:`) bzip2, xz and lzma are decompressed in the background; with OpenCloud's built-in default
+CSP they still open, but the page pauses while they decompress.
 
 ## Features
 
@@ -40,9 +42,13 @@ browser first.
 
 | Limit                           | Desktop | Phone/tablet | `apps.yaml` keys                                   |
 | ------------------------------- | ------- | ------------ | -------------------------------------------------- |
-| Archive downloaded in full      | 1 GiB   | 256 MiB      | `maxArchiveSize`, `maxArchiveSizeMobile`           |
-| Decompressed data               | 2 GiB   | 512 MiB      | `maxUncompressedSize`, `maxUncompressedSizeMobile` |
+| Archive downloaded in full      | 1 GiB   | 128 MiB      | `maxArchiveSize`, `maxArchiveSizeMobile`           |
+| Decompressed data               | 2 GiB   | 384 MiB      | `maxUncompressedSize`, `maxUncompressedSizeMobile` |
 | One extracted file or selection | 1 GiB   | 256 MiB      | `maxEntrySize`, `maxEntrySizeMobile`               |
+
+Browsers can't hold more than about 2 GiB of decompressed data in one piece, so higher
+`maxUncompressedSize` values have no effect. Raising the limits lets bigger archives open, but a
+tab that runs out of memory is closed by the browser.
 
 Values are in bytes, for example in OpenCloud's `apps.yaml`:
 

@@ -1,6 +1,6 @@
 # Project Status
 
-Where the Archive Viewer stands. Branch `feat/opencloud-v8-compat`, rework **all 6 steps done**
+Where the Archive Viewer stands. Merged to `main` (PR #1), rework **all 6 steps done**
 (rebuilt setup; verified in a local copy of the production stack; real viewer in pure JavaScript;
 bzip2, XZ/LZMA and single compressed files; large ZIPs by HTTP Range; translations, README, release zip). Version 0.1.0 is ready to release;
 no tag or GitHub release yet.
@@ -25,7 +25,7 @@ deployment (removed in step 1); the old pre-v8 viewer was ported and deleted in 
 | `pnpm build`                  | OK → `dist/manifest.json`, `dist/js/*.mjs`, `dist/assets/*.css`; no `.wasm`, no `WebAssembly` |
 | `pnpm check:types`            | OK                                                                                            |
 | `pnpm lint` / `format:check`  | OK                                                                                            |
-| `pnpm test:unit --run`        | OK, 131/131                                                                                   |
+| `pnpm test:unit --run`        | OK, 196/196                                                                                   |
 | Loaded in a running OpenCloud | OK — local opencloud-compose, rolling 8.0.1 (steps 2–5)                                       |
 
 ## Feature status
@@ -37,7 +37,8 @@ deployment (removed in step 1); the old pre-v8 viewer was ported and deleted in 
 | Folders, breadcrumb, whole-archive search, sort                        | Done (step 3)                                                            |
 | Preview text (first 1 MiB) and images (≤ 10 MiB)                       | Done (step 3)                                                            |
 | Download a file / a selection as one zip                               | Done (step 3)                                                            |
-| Size limits from `apps.yaml` (archive, uncompressed, entry; mobile)    | Done (step 5: 1 GiB / 2 GiB / 1 GiB desktop, 256 / 512 / 256 MiB mobile) |
+| Size limits from `apps.yaml` (archive, uncompressed, entry; mobile)    | Done (step 5: 1 GiB / 2 GiB / 1 GiB desktop; mobile 128 / 384 / 256 MiB) |
+| Memory fixes from browser testing (buffers, errors, CSP fallback)      | Done ([bugs](../known-issues/bugs.md) M-1–M-6)                           |
 | TAR.BZ2/TBZ2, single .gz/.bz2 (bzip2 in a Web Worker)                  | Done (step 4)                                                            |
 | TAR.XZ/TXZ, TAR.LZMA/TLZ, single .xz/.lzma (own decoder in the worker) | Done (step 4b)                                                           |
 | Large ZIPs via Range requests, signed-URL renewal, public links        | Done (step 5)                                                            |
@@ -58,7 +59,7 @@ deployment (removed in step 1); the old pre-v8 viewer was ported and deleted in 
 6. ~~Translations (de/es/fr, AI-drafted), README rewrite, release zip, final docs pass~~ (done).
 
 Decisions so far: approach A (pure JS, no CSP change), view + download (no writing to OpenCloud),
-range reads for every ZIP, 1 GiB desktop / 256 MiB mobile limits, TAR header hopping deferred.
+range reads for every ZIP, 1 GiB desktop / 128 MiB mobile limits, TAR header hopping deferred.
 Details:
 [opencloud-v8-compatibility](../architecture/opencloud-v8-compatibility.md).
 

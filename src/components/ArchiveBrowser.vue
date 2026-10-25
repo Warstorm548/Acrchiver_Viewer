@@ -174,6 +174,7 @@ import {
   ArchiveHandle,
   archiveExtension,
   buildIndex,
+  isOutOfMemory,
   parentPath
 } from '../engine'
 import { isImageFile, isTextFile } from '../engine/fileTypes'
@@ -305,10 +306,24 @@ export default defineComponent({
         )
       )
 
+    const outOfMemoryError = () =>
+      new Error(
+        $gettext(
+          'This device does not have enough free memory to extract this. Download the whole archive instead.'
+        )
+      )
+
     const reportError = (title: string, error: unknown) => {
       console.error(error)
-      const shown =
-        error instanceof ArchiveError && error.code === 'too-large' ? tooLargeError() : error
+      let shown = error
+      if (error instanceof ArchiveError && error.code === 'too-large') {
+        shown = tooLargeError()
+      } else if (
+        isOutOfMemory(error) ||
+        (error instanceof ArchiveError && error.code === 'out-of-memory')
+      ) {
+        shown = outOfMemoryError()
+      }
       showErrorMessage({ title, errors: [shown as Error] })
     }
 

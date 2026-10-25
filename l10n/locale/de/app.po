@@ -27,6 +27,13 @@ msgstr "Wird heruntergeladen… %{percent}%"
 msgid "Downloading… %{size}"
 msgstr "Wird heruntergeladen… %{size}"
 
+msgid ""
+"This device does not have enough free memory to open this archive. You can "
+"download it instead."
+msgstr ""
+"Dieses Gerät hat nicht genug freien Speicher, um dieses Archiv zu öffnen. "
+"Sie können es stattdessen herunterladen."
+
 msgid "This archive format is not supported yet. You can download it instead."
 msgstr ""
 "Dieses Archivformat wird noch nicht unterstützt. Sie können es stattdessen "
@@ -102,6 +109,13 @@ msgstr ""
 "Dateien über %{limit} können auf diesem Gerät nicht im Browser entpackt "
 "werden. Laden Sie stattdessen das ganze Archiv herunter."
 
+msgid ""
+"This device does not have enough free memory to extract this. Download the "
+"whole archive instead."
+msgstr ""
+"Dieses Gerät hat nicht genug freien Speicher, um dies zu entpacken. Laden "
+"Sie stattdessen das ganze Archiv herunter."
+
 msgid "Extracting %{name}…"
 msgstr "%{name} wird entpackt…"
 
@@ -144,6 +158,10 @@ msgstr ""
 
 msgid "The preview could not be loaded."
 msgstr "Die Vorschau konnte nicht geladen werden."
+
+msgid "This image could not be displayed. Download it instead."
+msgstr ""
+"Dieses Bild konnte nicht angezeigt werden. Laden Sie es stattdessen herunter."
 
 msgid "Archive Viewer"
 msgstr "Archiv-Betrachter"
