@@ -60,8 +60,21 @@ archive-viewer:
 
 ## Compatibility
 
-Built against and tested on **OpenCloud 8.0.x** (rolling 8.0.1). The `@opencloud-eu/*` packages
-are pinned to the server's minor line; rebuild against matching packages for other versions.
+Each release runs only on the exact OpenCloud versions it was tested on. This release supports
+**OpenCloud 8.0.1** (rolling); [CHANGELOG.md](CHANGELOG.md) lists the supported versions for each
+release. On any other version, or if the server version can't be read, the viewer hides itself
+and logs the reason in the browser console. This is on purpose, so an OpenCloud upgrade can't
+leave a half-working viewer.
+
+Admins can run it on an untested version at their own risk:
+
+```yaml
+archive-viewer:
+  config:
+    allowUnsupportedOpenCloud: true # default false; logs a console warning
+```
+
+The `@opencloud-eu/*` packages are pinned to the server's 8.0 line.
 
 ## Installation
 

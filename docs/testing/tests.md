@@ -13,7 +13,7 @@ globals, `clearMocks`, includes `**/*.spec.ts`, excludes `node_modules`, `dist`,
 setup file adds a `<base href="/">` to the document. Node 24 provides `CompressionStream` /
 `DecompressionStream`, which the engine and tests rely on.
 
-## Specs (200 tests, all passing after the memory fixes)
+## Specs (213 tests in 19 files, all passing)
 
 | File                                     | Covers                                                                                                                                                                                                                                                                                                                                                |
 | ---------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -34,6 +34,8 @@ setup file adds a `<base href="/">` to the document. Node 24 provides `Compressi
 | `tests/unit/engine/detect.spec.ts`       | zip/gzip/bzip2/xz/tar signatures, legacy lzma header, extension + content resolution, unsupported formats, gzip/bzip2/xz content under a wrong extension                                                                                                                                                                                              |
 | `tests/unit/ArchiveBrowser.spec.ts`      | folders first, folder navigation + breadcrumb, whole-archive search with folder path, size sort toggle, single download, selected folder → one zip, selection-zip naming for zip/tgz/tar.bz2, file and selection over the entry cap refused, selection zip gets the entry cap as its real-size allowance, extraction progress                         |
 | `tests/unit/App.spec.ts`                 | non-zip size limit blocks download, zip read by range (no archive limit), expired URL renewed, fallback when ranges are ignored, `blob:` URL downloaded, single `.gz` file, `.zip` holding gzip opened by content, mobile limits, download stopped when bigger than the limit despite the metadata, damaged archive, unsupported format, HTTP failure |
+| `tests/unit/compatibility.spec.ts`       | version normalizing (`+build` stripped, garbage rejected), override only for `true`/`'true'`, exactly 8.0.1 supported, other versions refused with the full message, unknown fails closed, admin override, waiting for capabilities (already loaded, later, timeout)                                                                                  |
+| `tests/unit/index.spec.ts`               | entry module with mocked web-pkg: registers on 8.0.1, `setup` throws on 8.1.0 (hides the app), registers with a warning under the override                                                                                                                                                                                                            |
 
 Helpers:
 

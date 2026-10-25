@@ -235,3 +235,14 @@ https://keycloak.opencloud.test/` — no `'wasm-unsafe-eval'`, so WebAssembly is
   translated (checked by the user); switched back to English afterwards.
 - `pnpm l10n:extract` with GNU gettext installed: `template.pot` unchanged, `.po` files only
   re-wrapped by `msgmerge`, compiled translations identical.
+
+## OpenCloud version check results (0.2.0, 2026-10-25)
+
+- Server reports `productversion: 8.0.1` (`status.version` is the legacy `0.1.0.0`, correctly
+  ignored). The normal 0.2.0 build registers and "Open in Archive Viewer" works.
+- Unsupported: a temporary build with `SUPPORTED_OPENCLOUD_VERSIONS = ['8.0.0']` (not committed)
+  → no "Open in Archive Viewer"; the rest of OpenCloud unaffected.
+- Override: `allowUnsupportedOpenCloud: true` in `custom/apps.yaml` with that build → viewer back,
+  console warning "Archive Viewer 0.2.0 supports OpenCloud 8.0.0; this server runs 8.0.1. Running
+  anyway because allowUnsupportedOpenCloud is set in apps.yaml." Restored to `config: {}` and the
+  normal build afterwards.
