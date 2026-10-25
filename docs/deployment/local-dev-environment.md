@@ -262,7 +262,7 @@ CSP (`worker-src 'self' blob:`, so bzip2/xz/lzma ran in the worker).
   `small` selection zip held all 3,000 files byte-identical.
 - Mobile emulation: the 900 MiB file was refused (256 MiB per-file limit), nothing downloaded.
 - Console: only OpenCloud's own messages; nothing from the app, no CSP/worker/WebAssembly errors.
-- Not reported in this run: the 1,200 MiB file / `bulk` selection refusal on desktop and the
-  image previews (both passed in steps 3–5).
+- Desktop: the 1,200 MiB file and the `bulk` selection were refused (1 GiB cap); PNG and SVG
+  previews in `sample.zip` showed (checked by the user).
 - Cleanup confirmed: no share links, server file 404, trash empty, local and downloaded copies
   deleted.
