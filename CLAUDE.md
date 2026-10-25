@@ -7,7 +7,7 @@ OpenCloud). Standalone extension at the repo root, built with OpenCloud's toolch
 TAR, TAR.GZ/TGZ, TAR.BZ2/TBZ2, TAR.XZ/TXZ, TAR.LZMA and single .gz/.bz2/.xz/.lzma files in the
 browser with pure JavaScript (no WebAssembly, no CSP change) — browse, search, sort, preview,
 download; ZIPs of any size are read by HTTP Range requests. UI in English, German,
-Spanish and French (AI-drafted). Version 0.1.1 is ready to release (no tag yet). Start with [project status](docs/overview/project-status.md).
+Spanish and French (AI-drafted). Version 0.2.0 is ready to release (no tag yet); it runs only on OpenCloud 8.0.1. Start with [project status](docs/overview/project-status.md).
 
 Commands: `pnpm install`, `pnpm build`, `pnpm check:types`, `pnpm lint`, `pnpm format:check`,
 `pnpm test:unit --run`, `pnpm package` (release zip), `pnpm l10n:extract` / `pnpm l10n:compile`
@@ -36,6 +36,8 @@ Commands: `pnpm install`, `pnpm build`, `pnpm check:types`, `pnpm lint`, `pnpm f
 - **Every change bumps the SemVer version** in `package.json` (MAJOR breaking, MINOR feature,
   PATCH fix) and adds an entry to [CHANGELOG.md](CHANGELOG.md) in the same change. Unreleased
   versions collect further changes until tagged.
+- **Supporting a new OpenCloud version** = test it, add it to `SUPPORTED_OPENCLOUD_VERSIONS` in
+  `src/compatibility.ts`, bump the version and list it in the changelog entry.
 
 ## Index
 
@@ -76,8 +78,9 @@ Commands: `pnpm install`, `pnpm build`, `pnpm check:types`, `pnpm lint`, `pnpm f
 
 ### Source
 
-- [docs/source/extension-entry.md](docs/source/extension-entry.md) — `src/index.ts` and
-  `src/manifest.json`: Tailwind import, file types, route, default config.
+- [docs/source/extension-entry.md](docs/source/extension-entry.md) — `src/index.ts`,
+  `src/manifest.json` and `src/compatibility.ts`: Tailwind import, file types, route, default
+  config, OpenCloud version check (exact versions, hide by throwing in `setup`, admin override).
 - [docs/source/xz-lzma-decoder.md](docs/source/xz-lzma-decoder.md) — XZ container, LZMA/LZMA2
   decoder, filters, checks, legacy `.lzma`: origins, design notes, verification, speed.
 - [docs/source/zip-range-reading.md](docs/source/zip-range-reading.md) — ZIP over HTTP Range
@@ -92,13 +95,13 @@ Commands: `pnpm install`, `pnpm build`, `pnpm check:types`, `pnpm lint`, `pnpm f
 
 ### Testing
 
-- [docs/testing/tests.md](docs/testing/tests.md) — how to run, SDK test config, the 14 spec files,
+- [docs/testing/tests.md](docs/testing/tests.md) — how to run, SDK test config, the 16 spec files,
   test patterns (stubs, range-server fetch mock, zip), what only the manual checklist covers.
 
 ### Deployment
 
 - [docs/deployment/deploying-to-opencloud.md](docs/deployment/deploying-to-opencloud.md) — build
-  output, installing on a server (opencloud-compose), install checks, release zip install, `apps.yaml` limit keys, releasing steps, production CSP.
+  output, installing on a server (opencloud-compose), install checks, supported OpenCloud versions, release zip install, `apps.yaml` keys, releasing steps, production CSP.
 - [docs/deployment/local-dev-environment.md](docs/deployment/local-dev-environment.md) — the local
   opencloud-compose stack (rolling 8.0.1) outside the repo: setup to recreate it, sudo commands,
   dev loop, fixtures, browser checklist, large-ZIP test + cleanup, step results, troubleshooting.

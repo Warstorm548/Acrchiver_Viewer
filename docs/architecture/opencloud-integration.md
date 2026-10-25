@@ -9,8 +9,15 @@ and what is still missing: [opencloud-v8-compatibility](opencloud-v8-compatibili
    ([deploying-to-opencloud](../deployment/deploying-to-opencloud.md)) and loads the
    `entrypoint` (`js/remoteEntry-<hash>.mjs`) via Module Federation.
 2. The remote exposes `./src/index.ts`, whose default export is `defineWebApplication(...)`.
+   OpenCloud loads the apps **in parallel** with the capabilities (web-runtime `bootstrapApp`),
+   and `loadRemote` awaits the module including its top-level `await`. The viewer uses that to
+   wait for the server version before `setup()` runs.
 3. `setup()` returns `appInfo`, `routes`, `translations` (details in
-   [extension-entry](../source/extension-entry.md)).
+   [extension-entry](../source/extension-entry.md)). It runs inside `app.runWithContext` and
+   inside `buildApplication`'s try/catch. **If `setup()` throws**, OpenCloud calls
+   `appsStore.registerAppLoadingFailure` and never registers the app: no file types, no menu
+   entry, no route. The OpenCloud version check uses this to hide the viewer on unsupported
+   versions (checked against web v8.0.0 source).
 
 ## File types
 
@@ -40,7 +47,10 @@ viewer checks the size limit first, then fetches that URL itself with progress �
 `applicationConfig` = manifest `config` (defaults from `src/manifest.json`) merged with
 `apps.yaml` (`archive-viewer: config: …`) or an app `config.json`. Read options:
 `maxArchiveSize`, `maxUncompressedSize`, `maxEntrySize` and their `…Mobile` variants (defaults
-and meaning: [zip-range-reading](../source/zip-range-reading.md)).
+and meaning: [zip-range-reading](../source/zip-range-reading.md)), and
+`allowUnsupportedOpenCloud` (default `false`), the admin override for the version check
+([extension-entry](../source/extension-entry.md)). The override is the one option read in
+`setup()` (from its `applicationConfig` argument); the others are read in `App`.
 
 ## Shared modules
 

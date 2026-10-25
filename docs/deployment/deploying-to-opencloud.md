@@ -45,6 +45,17 @@ Requirements from the OpenCloud web service: each app has its own directory, con
   `{ "id": "archive-viewer", "path": "/assets/apps/archive-viewer/js/remoteEntry-<hash>.mjs", "version": "…" }`.
 - Files are served under `https://<server>/assets/apps/archive-viewer/`.
 - In Files, right-click a `.zip` → "Open in Archive Viewer".
+- If that entry is missing, check the browser console. On an OpenCloud version the release
+  doesn't support, the console shows `cannot create application` with "Archive Viewer <version>
+  supports OpenCloud 8.0.1; this server runs …". See below.
+
+## Supported OpenCloud versions
+
+Each release runs only on the exact OpenCloud versions it was tested on (`8.0.1` for 0.2.0, listed
+in `CHANGELOG.md`). On any other version, or if the version can't be read, the viewer hides
+itself (no "Open in Archive Viewer", no file types). Before upgrading OpenCloud, install a viewer
+release that supports the new version, or set `allowUnsupportedOpenCloud: true` (below) at your
+own risk. Details: [extension-entry](../source/extension-entry.md).
 
 ## Configuring
 
@@ -60,6 +71,7 @@ archive-viewer:
     maxArchiveSizeMobile: 268435456 # 256 MiB (phones and tablets)
     maxUncompressedSizeMobile: 536870912 # 512 MiB
     maxEntrySizeMobile: 268435456 # 256 MiB
+    allowUnsupportedOpenCloud: false # true: run on an untested OpenCloud version (console warning)
 ```
 
 Values are merged with the manifest's `config` and reach the component as the
@@ -76,7 +88,7 @@ app from loading.
 3. Test the zip on a server (unzip, restart, `/config.json` check).
 4. Merge to `main`, tag `v<version>`, create a GitHub release and attach the zip and `.sha256`.
 
-Version 0.1.1 is prepared but no tag or release exists yet.
+Version 0.2.0 is prepared but no tag or release exists yet.
 
 ## Production security policy (CSP)
 

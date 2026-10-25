@@ -6,14 +6,14 @@ Every tracked file after rework step 6, what it is, and its line count. Generate
 
 | Path                     | Lines | Purpose                                                                                   |
 | ------------------------ | ----: | ----------------------------------------------------------------------------------------- |
-| `README.md`              |   122 | User-facing readme (rewritten in step 6)                                                  |
-| `CLAUDE.md`              |   132 | Index into `docs/`                                                                        |
+| `README.md`              |   135 | User-facing readme (rewritten in step 6)                                                  |
+| `CLAUDE.md`              |   135 | Index into `docs/`                                                                        |
 | `LICENSE`                |   661 | GNU AGPL-3.0 (canonical gnu.org text); copyright notice is in `README.md`                 |
 | `THIRD-PARTY-NOTICES.md` |   134 | Licenses of ported (seek-bzip) and bundled (zip.js) code                                  |
 | `package.json`           |    64 | Package metadata, scripts, `@zip.js/zip.js` dependency, devDependencies, `packageManager` |
 | `pnpm-lock.yaml`         |  5356 | Locked dependency tree                                                                    |
 | `.nvmrc`                 |     1 | Node version for nvm (`24`)                                                               |
-| `CHANGELOG.md`           |    35 | SemVer rules and per-version changes                                                      |
+| `CHANGELOG.md`           |    48 | SemVer rules and per-version changes                                                      |
 | `vite.config.ts`         |    17 | extension-sdk `defineConfig`, plus the version banner on compiled JS                      |
 | `gettext.config.cjs`     |    17 | vue3-gettext extract/compile config (de/es/fr)                                            |
 | `scripts/package.mjs`    |    64 | `pnpm package`: release zip + SHA-256 from `dist/`                                        |
@@ -26,37 +26,38 @@ Every tracked file after rework step 6, what it is, and its line count. Generate
 
 ## `src/`
 
-| Path                                | Lines | Purpose                                                                                        |
-| ----------------------------------- | ----: | ---------------------------------------------------------------------------------------------- |
-| `src/index.ts`                      |    66 | `defineWebApplication`: Tailwind import, file types, route via `AppWrapperRoute`, translations |
-| `src/manifest.json`                 |    10 | Default `config` (6 size limits) merged into `dist/manifest.json`                              |
-| `src/limits.ts`                     |    59 | Desktop/mobile limits: `isMobileDevice`, `resolveLimits`                                       |
-| `src/App.vue`                       |   243 | Viewer shell: ZIP range mode, size check, streamed download, detect + open, error states       |
-| `src/components/ArchiveBrowser.vue` |   454 | File table: folders, breadcrumb, search, sort, selection, downloads, cap, progress             |
-| `src/components/PreviewModal.vue`   |   126 | Text/image preview in `oc-modal` (reads via the capped `read` prop)                            |
-| `src/download.ts`                   |    61 | `sanitizeFileName`, `triggerDownload`, `zipEntries` (selection → zip)                          |
-| `src/engine/index.ts`               |    67 | `openArchive` + re-exports (incl. range reader)                                                |
-| `src/engine/types.ts`               |    49 | Entry/handle/limit types, `ArchiveError` (incl. `range-unsupported`)                           |
-| `src/engine/detect.ts`              |   107 | Extension + signature → format                                                                 |
-| `src/engine/zip.ts`                 |   128 | ZIP via zip.js native build (no WebAssembly), Blob or range source, capped entry reads         |
-| `src/engine/rangeReader.ts`         |    79 | `HttpRangeReader`: zip.js Reader over HTTP Range, URL renewal                                  |
-| `src/engine/tar.ts`                 |   159 | Own TAR parser (ustar, pax, GNU long names)                                                    |
-| `src/engine/gzip.ts`                |    66 | Browser `DecompressionStream` gunzip with size limit                                           |
-| `src/engine/tree.ts`                |    78 | Path normalization and folder index                                                            |
-| `src/engine/fileTypes.ts`           |    44 | Text/image detection and MIME types                                                            |
-| `src/engine/bzip2.ts`               |   430 | bzip2 decoder, TypeScript port of seek-bzip (MIT)                                              |
-| `src/engine/decompress.worker.ts`   |    36 | Web Worker running bzip2/xz/lzma decoders                                                      |
-| `src/engine/workerClient.ts`        |    35 | `decompressAsync`: worker or main-thread fallback                                              |
-| `src/engine/single.ts`              |    35 | Single compressed file as a one-entry archive                                                  |
-| `src/engine/xz.ts`                  |   267 | XZ container decoder (from the spec)                                                           |
-| `src/engine/lzmaAlone.ts`           |    41 | Legacy .lzma reader                                                                            |
-| `src/engine/decompressors.ts`       |    25 | `decompress(kind)` for bzip2/xz/lzma                                                           |
-| `src/engine/lzma/lzmaDecoder.ts`    |   227 | LZMA decoder (adapted from xz-compat, MIT)                                                     |
-| `src/engine/lzma/lzma2.ts`          |    91 | LZMA2 chunk decoder                                                                            |
-| `src/engine/lzma/rangeDecoder.ts`   |   103 | Range decoder + bit trees                                                                      |
-| `src/engine/lzma/filters.ts`        |   182 | Delta + BCJ filters (liblzma logic)                                                            |
-| `src/engine/lzma/checks.ts`         |    70 | CRC32, CRC64, SHA-256                                                                          |
-| `src/engine/lzma/output.ts`         |    58 | Growable output / dictionary buffer                                                            |
+| Path                                | Lines | Purpose                                                                                         |
+| ----------------------------------- | ----: | ----------------------------------------------------------------------------------------------- |
+| `src/index.ts`                      |    80 | `defineWebApplication`: version check, Tailwind import, file types, route, translations         |
+| `src/compatibility.ts`              |    91 | OpenCloud version check: supported versions, `waitForProductVersion`, `checkCompatibility`      |
+| `src/manifest.json`                 |    11 | Default `config` (6 size limits + `allowUnsupportedOpenCloud`) merged into `dist/manifest.json` |
+| `src/limits.ts`                     |    59 | Desktop/mobile limits: `isMobileDevice`, `resolveLimits`                                        |
+| `src/App.vue`                       |   243 | Viewer shell: ZIP range mode, size check, streamed download, detect + open, error states        |
+| `src/components/ArchiveBrowser.vue` |   454 | File table: folders, breadcrumb, search, sort, selection, downloads, cap, progress              |
+| `src/components/PreviewModal.vue`   |   126 | Text/image preview in `oc-modal` (reads via the capped `read` prop)                             |
+| `src/download.ts`                   |    61 | `sanitizeFileName`, `triggerDownload`, `zipEntries` (selection → zip)                           |
+| `src/engine/index.ts`               |    67 | `openArchive` + re-exports (incl. range reader)                                                 |
+| `src/engine/types.ts`               |    49 | Entry/handle/limit types, `ArchiveError` (incl. `range-unsupported`)                            |
+| `src/engine/detect.ts`              |   107 | Extension + signature → format                                                                  |
+| `src/engine/zip.ts`                 |   128 | ZIP via zip.js native build (no WebAssembly), Blob or range source, capped entry reads          |
+| `src/engine/rangeReader.ts`         |    79 | `HttpRangeReader`: zip.js Reader over HTTP Range, URL renewal                                   |
+| `src/engine/tar.ts`                 |   159 | Own TAR parser (ustar, pax, GNU long names)                                                     |
+| `src/engine/gzip.ts`                |    66 | Browser `DecompressionStream` gunzip with size limit                                            |
+| `src/engine/tree.ts`                |    78 | Path normalization and folder index                                                             |
+| `src/engine/fileTypes.ts`           |    44 | Text/image detection and MIME types                                                             |
+| `src/engine/bzip2.ts`               |   430 | bzip2 decoder, TypeScript port of seek-bzip (MIT)                                               |
+| `src/engine/decompress.worker.ts`   |    36 | Web Worker running bzip2/xz/lzma decoders                                                       |
+| `src/engine/workerClient.ts`        |    35 | `decompressAsync`: worker or main-thread fallback                                               |
+| `src/engine/single.ts`              |    35 | Single compressed file as a one-entry archive                                                   |
+| `src/engine/xz.ts`                  |   267 | XZ container decoder (from the spec)                                                            |
+| `src/engine/lzmaAlone.ts`           |    41 | Legacy .lzma reader                                                                             |
+| `src/engine/decompressors.ts`       |    25 | `decompress(kind)` for bzip2/xz/lzma                                                            |
+| `src/engine/lzma/lzmaDecoder.ts`    |   227 | LZMA decoder (adapted from xz-compat, MIT)                                                      |
+| `src/engine/lzma/lzma2.ts`          |    91 | LZMA2 chunk decoder                                                                             |
+| `src/engine/lzma/rangeDecoder.ts`   |   103 | Range decoder + bit trees                                                                       |
+| `src/engine/lzma/filters.ts`        |   182 | Delta + BCJ filters (liblzma logic)                                                             |
+| `src/engine/lzma/checks.ts`         |    70 | CRC32, CRC64, SHA-256                                                                           |
+| `src/engine/lzma/output.ts`         |    58 | Growable output / dictionary buffer                                                             |
 
 Details: [extension-entry](../source/extension-entry.md), [viewer-ui](../source/viewer-ui.md),
 [archive-engine](../source/archive-engine.md).
@@ -78,6 +79,8 @@ Details: [extension-entry](../source/extension-entry.md), [viewer-ui](../source/
 | `tests/unit/App.spec.ts`                |   167 | Viewer flow: range mode, renewal, fallbacks, limits, errors |
 | `tests/unit/ArchiveBrowser.spec.ts`     |   131 | Navigation, search, sort, downloads, entry cap, progress    |
 | `tests/unit/limits.spec.ts`             |    46 | Device detection and limit resolution                       |
+| `tests/unit/compatibility.spec.ts`      |   101 | OpenCloud version check                                     |
+| `tests/unit/index.spec.ts`              |    44 | Entry module: register, hide, override                      |
 | `tests/unit/translations.spec.ts`       |    50 | Translation completeness and placeholders                   |
 | `tests/unit/download.spec.ts`           |    48 | Safe selection-zip paths                                    |
 | `tests/unit/rangeServer.ts`             |    38 | Test helper: `fetch` mock serving byte ranges               |

@@ -13,6 +13,19 @@ Every change gets an entry and a version bump in `package.json`, which is the si
 the version: the build copies it into `dist/manifest.json` and stamps it on every compiled JS file
 (`/*! archive-viewer vX.Y.Z */`).
 
+## [0.2.0] - Unreleased
+
+Supported OpenCloud versions: **8.0.1**.
+
+### Added
+
+- OpenCloud version check: the viewer runs only on the exact OpenCloud versions it supports
+  (`SUPPORTED_OPENCLOUD_VERSIONS` in `src/compatibility.ts`). On any other version, or if the
+  version can't be read, it hides itself (no "Open in Archive Viewer", no file types) and logs the
+  reason in the browser console.
+- `apps.yaml` option `allowUnsupportedOpenCloud` (default `false`): lets an admin run the viewer on
+  an unsupported version anyway, with a console warning.
+
 ## [0.1.1] - Unreleased
 
 ### Added

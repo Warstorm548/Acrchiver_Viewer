@@ -5,8 +5,8 @@ How the app registers with OpenCloud. The viewer itself is described in
 
 ## `src/index.ts`
 
-`export default defineWebApplication({ setup() { … } })` from `@opencloud-eu/web-pkg`, following
-`web-app-json-viewer`:
+`export default defineWebApplication({ setup({ applicationConfig }) { … } })` from
+`@opencloud-eu/web-pkg`, following `web-app-json-viewer`:
 
 - First line: `import '@opencloud-eu/extension-sdk/tailwind.css'` — the SDK's Tailwind build
   (utilities prefixed `ext:`), same as OpenCloud's own extensions (e.g. `web-app-notes`).
@@ -17,6 +17,7 @@ How the app registers with OpenCloud. The viewer itself is described in
   so they are listed explicitly (found in step 2). All of them get "Open in Archive Viewer";
   formats the engine can't read (7z, rar) open to a "not supported yet" message
   with a download button.
+- **OpenCloud version check** (top of the module and start of `setup`), see the section below.
 - `useGettext()` from `vue3-gettext` for `$gettext`.
 - `routes`: one route, `name 'archive-viewer'`, `path '/:driveAliasAndItem(.*)?'`,
   `component: AppWrapperRoute(App, { applicationId })`,
@@ -26,6 +27,32 @@ How the app registers with OpenCloud. The viewer itself is described in
 - `translations` from `../l10n/translations.json`.
 
 No `extensions` (registry) key — no menu items or file actions.
+
+## OpenCloud version check — `src/compatibility.ts`
+
+The viewer runs only on the exact OpenCloud versions in `SUPPORTED_OPENCLOUD_VERSIONS`
+(currently `['8.0.1']`). That's deliberate, so an untested OpenCloud upgrade can't leave a
+half-working viewer.
+
+- Top level of `src/index.ts`: `await waitForProductVersion(useCapabilityStore())`. OpenCloud
+  loads capabilities in parallel with the apps, so this waits for `isInitialized` (10 s timeout,
+  then the version counts as unknown). OpenCloud awaits the module, top-level `await` included,
+  before it calls `setup()`.
+- Only `status.productversion` is used, with build info stripped (`8.0.1+abc` → `8.0.1`), as
+  OpenCloud itself does. `status.version` / `versionstring` are a legacy ownCloud number (10.x).
+- `setup()` calls `checkCompatibility({ productVersion, config: applicationConfig })`:
+  - supported → registers as usual;
+  - unsupported or unknown → **throws** with a message like "Archive Viewer 0.2.0 supports
+    OpenCloud 8.0.1; this server runs 8.1.0. Set allowUnsupportedOpenCloud: true in apps.yaml to
+    run it anyway." OpenCloud then records an app loading failure and never registers the app,
+    so there's no "Open in Archive Viewer", no file types and no route (see
+    [opencloud-integration](../architecture/opencloud-integration.md));
+  - unsupported but `allowUnsupportedOpenCloud: true` (or `'true'`) in `apps.yaml` → registers
+    and logs the message with `console.warn`.
+
+To support a new OpenCloud version: test it, add it to `SUPPORTED_OPENCLOUD_VERSIONS`, bump the
+version and note it in `CHANGELOG.md`. Tests: `tests/unit/compatibility.spec.ts`,
+`tests/unit/index.spec.ts`.
 
 ## `src/manifest.json`
 
@@ -37,14 +64,16 @@ No `extensions` (registry) key — no menu items or file actions.
     "maxEntrySize": 1073741824,
     "maxArchiveSizeMobile": 268435456,
     "maxUncompressedSizeMobile": 536870912,
-    "maxEntrySizeMobile": 268435456
+    "maxEntrySizeMobile": 268435456,
+    "allowUnsupportedOpenCloud": false
   }
 }
 ```
 
 The SDK merges it into `dist/manifest.json` (with name, version, license, author and
 `entrypoint`). OpenCloud merges the `config` block with `apps.yaml`, and the result reaches the
-viewer as `applicationConfig`. The same defaults are hard-coded in `App.vue` as a fallback.
+viewer as `applicationConfig`. The same limit defaults are hard-coded in `src/limits.ts` as a
+fallback; a missing `allowUnsupportedOpenCloud` means `false`.
 
 ## When changing
 

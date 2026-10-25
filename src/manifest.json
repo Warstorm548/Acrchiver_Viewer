@@ -5,6 +5,7 @@
     "maxEntrySize": 1073741824,
     "maxArchiveSizeMobile": 268435456,
     "maxUncompressedSizeMobile": 536870912,
-    "maxEntrySizeMobile": 268435456
+    "maxEntrySizeMobile": 268435456,
+    "allowUnsupportedOpenCloud": false
   }
 }
