@@ -5,7 +5,25 @@ docs); `PLAUSIBLE` = needs a test. Remove entries when fixed (and say so in the 
 
 ## Current app
 
-No known bugs. Known limitations (by design for now):
+### Open bugs (review of PR #3)
+
+- **R-1** `CONFIRMED` — xz and `.lzma` size the output buffer from the size recorded in the file
+  (`recordedSize` in `src/engine/xz.ts`, the header size in `src/engine/lzmaAlone.ts`) before
+  decoding, with no ratio check (gzip has `MAX_DEFLATE_RATIO`). A small crafted file claiming a
+  huge size reserves up to `min(maxUncompressedSize, MAX_BUFFER_SIZE)` up front, which can give a
+  false "not enough memory" error. Fix: cap the initial size (e.g. a multiple of the input size)
+  and let `GrowableBuffer` grow.
+- **R-2** `CONFIRMED` — `decompressInWorker` (`src/engine/workerClient.ts`) only adds its abort
+  listener after reading the blob and importing the worker; an abort during those steps is missed
+  and the worker runs to the end. Fix: reject at once if `signal.aborted` before adding the
+  listener.
+- **R-3** `PLAUSIBLE` — `isOutOfMemory` (`src/engine/buffer.ts`) also matches "invalid array
+  length", which damaged data can raise too, so some corrupt archives may show "not enough free
+  memory" instead of "damaged". Fix: drop that pattern if a test confirms it.
+
+### Limitations
+
+Known limitations (by design for now):
 
 | #   | Limitation                                                                                                                                                                                                                                                | Planned                      |
 | --- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------- |

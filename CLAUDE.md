@@ -100,8 +100,8 @@ Commands: `pnpm install`, `pnpm build`, `pnpm check:types`, `pnpm lint`, `pnpm f
 
 ### Known issues
 
-- [docs/known-issues/bugs.md](docs/known-issues/bugs.md) — known limitations (K1–K5, K7, K8),
-  memory bugs fixed by browser testing (M-1–M-6), and how the old viewer's bugs were resolved.
+- [docs/known-issues/bugs.md](docs/known-issues/bugs.md) — open bugs from the PR #3 review
+  (R-1–R-3), known limitations (K1–K5, K7, K8), memory bugs fixed by browser testing (M-1–M-6), and how the old viewer's bugs were resolved.
 - [docs/known-issues/security.md](docs/known-issues/security.md) — untrusted-archive rules and how
   the viewer meets them (no `v-html`, limits, SVG, filenames, auth, CSP).
 
