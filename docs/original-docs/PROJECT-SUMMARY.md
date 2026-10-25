@@ -1,5 +1,7 @@
 # OpenCloud Archive Viewer - Project Summary
 
+> **Original uploaded doc — not verified against the code.** For the actual current state see [project status](../overview/project-status.md) and the index in `CLAUDE.md`.
+
 ## Overview
 A comprehensive, memory-efficient web application for viewing, editing, and managing archive files within OpenCloud.eu. Built entirely with JavaScript (no Python dependencies) and designed to handle 20GB+ archives efficiently.
 

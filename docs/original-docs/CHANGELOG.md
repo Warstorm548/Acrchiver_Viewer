@@ -1,5 +1,7 @@
 # Changelog
 
+> **Original uploaded doc — not verified against the code.** For the actual current state see [project status](../overview/project-status.md) and the index in `CLAUDE.md`.
+
 All notable changes to the OpenCloud Archive Viewer will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
@@ -166,4 +168,4 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines on contributing to this pr
 
 ## License
 
-MIT License - See [LICENSE](LICENSE) file for details
+MIT License - See [LICENSE](../../LICENSE) file for details

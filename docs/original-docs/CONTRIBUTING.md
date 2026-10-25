@@ -1,5 +1,7 @@
 # Contributing to OpenCloud Archive Viewer
 
+> **Original uploaded doc — not verified against the code.** For the actual current state see [project status](../overview/project-status.md) and the index in `CLAUDE.md`.
+
 Thank you for your interest in contributing to OpenCloud Archive Viewer! This document provides guidelines and instructions for contributing.
 
 ## Code of Conduct
