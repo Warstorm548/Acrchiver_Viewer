@@ -13,7 +13,7 @@ A comprehensive web-based archive viewer for OpenCloud.eu that supports multiple
   - Download individual files
   - Batch download selected files
 - **Archive Creation**: Create new archives from uploaded files
-- **OpenCloud Integration**: 
+- **OpenCloud Integration**:
   - Seamless sharing via OpenCloud links
   - Integration with OpenCloud storage
   - Authentication and permissions
@@ -66,19 +66,19 @@ The app is designed to handle very large archives efficiently:
 
 ### Supported Formats
 
-| Format | Read | Write | View Files | Extract | Notes |
-|--------|------|-------|------------|---------|-------|
-| ZIP | ✓ | ✓ | ✓ | ✓ | Full support using fflate |
-| TAR | ✓ | ✓ | ✓ | ✓ | POSIX ustar format |
-| TAR.GZ | ✓ | ✓ | ✓ | ✓ | Gzip compression |
-| GZ | ✓ | ✓ | ✓ | ✓ | Single file compression |
-| TGZ | ✓ | ✓ | ✓ | ✓ | Alias for TAR.GZ |
-| TAR.BZ2 | ✓ | - | ✓ | ✓ | Requires BZ2 library |
-| BZ2 | ✓ | - | ✓ | ✓ | Requires BZ2 library |
-| TAR.XZ | ✓ | - | ✓ | ✓ | Requires XZ library |
-| XZ | ✓ | - | ✓ | ✓ | Requires XZ library |
-| 7Z | ✓* | - | ✓* | ✓* | Requires 7z library |
-| RAR | ✓* | - | ✓* | ✓* | Requires unrar library |
+| Format  | Read | Write | View Files | Extract | Notes                     |
+| ------- | ---- | ----- | ---------- | ------- | ------------------------- |
+| ZIP     | ✓    | ✓     | ✓          | ✓       | Full support using fflate |
+| TAR     | ✓    | ✓     | ✓          | ✓       | POSIX ustar format        |
+| TAR.GZ  | ✓    | ✓     | ✓          | ✓       | Gzip compression          |
+| GZ      | ✓    | ✓     | ✓          | ✓       | Single file compression   |
+| TGZ     | ✓    | ✓     | ✓          | ✓       | Alias for TAR.GZ          |
+| TAR.BZ2 | ✓    | -     | ✓          | ✓       | Requires BZ2 library      |
+| BZ2     | ✓    | -     | ✓          | ✓       | Requires BZ2 library      |
+| TAR.XZ  | ✓    | -     | ✓          | ✓       | Requires XZ library       |
+| XZ      | ✓    | -     | ✓          | ✓       | Requires XZ library       |
+| 7Z      | ✓*   | -     | ✓*         | ✓*      | Requires 7z library       |
+| RAR     | ✓*   | -     | ✓*         | ✓*      | Requires unrar library    |
 
 *Note: 7Z and RAR support require additional library integration
 
@@ -87,22 +87,26 @@ The app is designed to handle very large archives efficiently:
 ### For OpenCloud Development
 
 1. Clone this repository:
+
 ```bash
 git clone https://github.com/Warstorm548/Acrchiver_Viewer.git
 cd Acrchiver_Viewer
 ```
 
 2. Install dependencies:
+
 ```bash
 npm install
 ```
 
 3. Build the app:
+
 ```bash
 npm run build
 ```
 
 4. Deploy to OpenCloud:
+
 ```bash
 # Copy dist/ contents to your OpenCloud apps directory
 cp -r dist/* /path/to/opencloud/apps/archive-viewer/
@@ -139,9 +143,11 @@ This starts a webpack dev server at http://localhost:9000
 ### Downloading Files
 
 **Single File:**
+
 - Click download button next to file
 
 **Multiple Files:**
+
 1. Select files using checkboxes
 2. Click "Download Selected"
 3. Files are packaged into a ZIP
@@ -169,17 +175,17 @@ The app integrates with OpenCloud's context API:
 ```javascript
 // Example context usage
 const context = {
-  fileId: "123",
-  fileName: "archive.zip",
-  fileUrl: "https://cloud.example.com/files/archive.zip",
-  
+  fileId: '123',
+  fileName: 'archive.zip',
+  fileUrl: 'https://cloud.example.com/files/archive.zip',
+
   // Methods
-  getFileInfo(fileId) { },
-  getAuthToken() { },
-  saveFile(fileId, data) { },
-  uploadFile(name, data) { },
-  createShare(fileId) { }
-};
+  getFileInfo(fileId) {},
+  getAuthToken() {},
+  saveFile(fileId, data) {},
+  uploadFile(name, data) {},
+  createShare(fileId) {}
+}
 ```
 
 ### Permissions
@@ -242,6 +248,7 @@ Dependencies and build configuration.
 - Edge 90+
 
 Requires:
+
 - ES6+ support
 - Fetch API
 - ArrayBuffer/TypedArrays
@@ -328,6 +335,7 @@ This is an independent project and is not affiliated with or endorsed by OpenClo
 ## Credits
 
 Built for OpenCloud.eu using:
+
 - fflate (ZIP compression)
 - tar-stream (TAR archives)
 - pako (gzip compression)

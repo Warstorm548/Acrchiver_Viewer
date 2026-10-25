@@ -1,10 +1,13 @@
 # CLAUDE.md — Archive Viewer
 
-Archive viewer extension for **OpenCloud Web** (browse/preview/download ZIP, TAR, etc. inside
-OpenCloud). The repo holds two separate implementations: the **Vue 3 + TypeScript app**
-(`src/index.ts`, `src/views/`), which is the real OpenCloud target, and a **legacy vanilla-JS app**
-(`src/index.js`, `src/lib/`) built with webpack. Neither builds yet. Start with
-[project status](docs/overview/project-status.md).
+Archive viewer extension for **OpenCloud Web v8** (browse/preview/download ZIP, TAR, etc. inside
+OpenCloud). Standalone extension at the repo root, built with OpenCloud's toolchain
+(`@opencloud-eu/extension-sdk`, Vite, Vue 3, TypeScript, pnpm, Node 24). Rework step 1 of 6 is
+done: it builds and tests pass, but the viewer is still a placeholder. Old pre-v8 viewer code is
+parked in `reference/` for porting. Start with [project status](docs/overview/project-status.md).
+
+Commands: `pnpm install`, `pnpm build`, `pnpm check:types`, `pnpm lint`, `pnpm format:check`,
+`pnpm test:unit --run` (run `nvm use` first if Node 24 isn't active).
 
 ## How to use this index
 
@@ -12,7 +15,8 @@ OpenCloud). The repo holds two separate implementations: the **Vue 3 + TypeScrip
 - Before working on an area, find its entry and read **that** doc (and the docs it links). Don't
   load every doc up front.
 - If a doc disagrees with the code, the code wins: fix the doc.
-- Files in `docs/original-docs/` came with the upload and are **not verified**; prefer the other docs.
+- Files in `docs/original-docs/` came with the upload, describe the removed legacy app and are
+  **not verified**; prefer the other docs.
 
 ## Maintaining the docs and this index
 
@@ -29,57 +33,62 @@ OpenCloud). The repo holds two separate implementations: the **Vue 3 + TypeScrip
 ## Index
 
 ### Root
-- [README.md](README.md) — original project readme (features, usage, format table); many claims
-  are aspirational, see project status.
+
+- [README.md](README.md) — project readme; still describes the original, aspirational feature set
+  and old setup (rewrite pending), see project status.
 
 ### Overview
-- [docs/overview/project-status.md](docs/overview/project-status.md) — what builds, what works,
-  what's stubbed; README claims vs reality; suggested direction.
-- [docs/overview/repository-layout.md](docs/overview/repository-layout.md) — every file with line
-  count, owning app (Vue / legacy / dead) and purpose; referenced-but-missing files.
+
+- [docs/overview/project-status.md](docs/overview/project-status.md) — build/test status, feature
+  status, the 6-step rework plan, pending decisions, metadata.
+- [docs/overview/repository-layout.md](docs/overview/repository-layout.md) — every tracked file
+  with line count and purpose; what step 1 removed.
 
 ### Tech stack
-- [docs/tech-stack/dependencies.md](docs/tech-stack/dependencies.md) — declared vs imported
-  packages, missing deps, browser APIs used, hand-written type stubs.
-- [docs/tech-stack/build-tooling.md](docs/tech-stack/build-tooling.md) — npm scripts, webpack,
-  Vite, TypeScript, Vitest config, pnpm/lockfile, steps to a working build.
+
+- [docs/tech-stack/dependencies.md](docs/tech-stack/dependencies.md) — devDependencies with ranges
+  and installed versions, known install warnings, removed and planned packages.
+- [docs/tech-stack/build-tooling.md](docs/tech-stack/build-tooling.md) — Node/pnpm, scripts, what
+  the extension-sdk `defineConfig` provides, TypeScript, ESLint, Prettier, `.gitignore`.
 
 ### Architecture
-- [docs/architecture/two-app-split.md](docs/architecture/two-app-split.md) — legacy vs Vue app
-  side by side, which one OpenCloud loads, both runtime flows, recommendation.
-- [docs/architecture/opencloud-integration.md](docs/architecture/opencloud-integration.md) —
-  `defineWebApplication`, file extensions/handler, route, how the file is fetched, MIME types,
-  `manifest.json`, `appinfo/info.json`.
+
+- [docs/architecture/opencloud-integration.md](docs/architecture/opencloud-integration.md) — how
+  OpenCloud loads the extension: manifest, Module Federation, file types, route/wrapper, config.
 - [docs/architecture/opencloud-v8-compatibility.md](docs/architecture/opencloud-v8-compatibility.md)
-  — verdict vs OpenCloud v8.1.0: blockers, mismatches, what still fits, reference app shape.
+  — v8 verdict, resolved vs open items, `AppWrapperRoute` behaviour, archive engines,
+  `web-app-unzip` overlap, open questions, migration outline.
 
 ### Source
-- [docs/source/vue-app.md](docs/source/vue-app.md) — `ArchiveViewer.vue`: template, state,
-  computed, loading paths, actions with line numbers, lifecycle.
-- [docs/source/vue-app-large-variant.md](docs/source/vue-app-large-variant.md) — unused
-  `ArchiveViewerLarge.vue` and `utils/memory.ts`: differences and their bugs.
-- [docs/source/legacy-app.md](docs/source/legacy-app.md) — `index.js`, `StreamProcessor`,
-  `ArchiveReader`, `ArchiveWriter`, `UIManager`, root `index.html` harness.
-- [docs/source/styles-and-i18n.md](docs/source/styles-and-i18n.md) — scoped Vue styles,
-  `main.css`, `translations.json` languages and key coverage.
+
+- [docs/source/extension-entry.md](docs/source/extension-entry.md) — `src/index.ts` and the
+  placeholder `src/App.vue`: registration, route, props.
+- [docs/source/styles-and-i18n.md](docs/source/styles-and-i18n.md) — Tailwind/design-system
+  styling, v8 theme tokens, `l10n/translations.json`, translation tooling.
+- [docs/source/reference-old-viewer.md](docs/source/reference-old-viewer.md) — port notes for the
+  parked `reference/old-views/ArchiveViewer.vue`: template, state, actions, what to port.
+- [docs/source/reference-old-viewer-large.md](docs/source/reference-old-viewer-large.md) — port
+  notes for the parked `ArchiveViewerLarge.vue` and the deleted `utils/memory.ts`.
 
 ### Testing
-- [docs/testing/tests.md](docs/testing/tests.md) — Vitest config, `setup.ts` mocks, spec coverage,
-  expected failures, how to run.
+
+- [docs/testing/tests.md](docs/testing/tests.md) — how to run, SDK test config, current specs,
+  test pattern, parked old tests.
 
 ### Deployment
-- [docs/deployment/docker-and-nginx.md](docs/deployment/docker-and-nginx.md) — Dockerfile,
-  docker-compose, nginx.conf and their problems.
-- [docs/deployment/install-script.md](docs/deployment/install-script.md) — `install.sh` step by
-  step and its issues.
+
+- [docs/deployment/deploying-to-opencloud.md](docs/deployment/deploying-to-opencloud.md) — build
+  output, installing into the OpenCloud apps dir, `apps.yaml` config.
 
 ### Known issues
-- [docs/known-issues/bugs.md](docs/known-issues/bugs.md) — numbered bug list with file:line and
-  confidence (confirmed / plausible), by area.
-- [docs/known-issues/security.md](docs/known-issues/security.md) — legacy XSS, untrusted archive
-  input, zip bombs, headers, unbacked README security claims.
 
-### Original uploaded docs (unverified)
+- [docs/known-issues/bugs.md](docs/known-issues/bugs.md) — bugs in the parked old viewer to fix
+  while porting, with line and confidence; what was fixed or removed.
+- [docs/known-issues/security.md](docs/known-issues/security.md) — untrusted archive input, rules
+  for the port (no `v-html`, zip bombs, SVG, filenames), CSP, unbacked README claims.
+
+### Original uploaded docs (historical, unverified)
+
 - [docs/original-docs/CHANGELOG.md](docs/original-docs/CHANGELOG.md) — original 1.0.0 changelog
   and roadmap.
 - [docs/original-docs/CONTRIBUTING.md](docs/original-docs/CONTRIBUTING.md) — original contribution

@@ -1,72 +1,65 @@
 # Repository Layout
 
-Every tracked file, what it is, and which implementation it belongs to.
-**Legend:** `VUE` = OpenCloud Vue/TS app, `LEGACY` = vanilla-JS webpack app, `SHARED` = used by
-both or by neither specifically, `DEAD` = present but not referenced.
+Every tracked file after rework step 1, what it is, and its line count. `REF` = parked old code
+(not built). Generated/ignored: `node_modules/`, `dist/`, `coverage/`, `.__mf__temp/`.
 
 ## Root
 
-| Path | Lines | Belongs to | Purpose |
-|------|------:|-----------|---------|
-| `README.md` | 339 | SHARED | Project readme; describes mostly the legacy app; many claims unverified |
-| `CLAUDE.md` | — | SHARED | Index into `docs/` (this knowledge base) |
-| `LICENSE` | 661 | SHARED | GNU AGPL-3.0 (canonical gnu.org text); copyright notice is in `README.md` |
-| `package.json` | 49 | LEGACY | npm manifest; only webpack/legacy deps and scripts |
-| `manifest.json` | 50 | SHARED | App manifest (id, formats, MIME types, features); AGPL-3.0, author Warstorm548 |
-| `appinfo/info.json` | 33 | SHARED | Nextcloud-style app info (`licence`, `types`, `mimes`) |
-| `index.html` | 56 | LEGACY | Standalone test page with a mock OpenCloud context |
-| `webpack.config.js` | 53 | LEGACY | Builds `src/index.js` → `dist/app.js` (UMD) |
-| `vite.config.ts` | 26 | VUE | Vite config using `@opencloud-eu/extension-sdk` |
-| `vitest.config.ts` | 28 | VUE | Test runner config (jsdom, `@` alias → `src`) |
-| `tsconfig.json` | 25 | VUE | Strict TS, bundler resolution, `noEmit` |
-| `tsconfig.node.json` | 10 | VUE | TS config for `vite.config.ts` only |
-| `Dockerfile` | 38 | SHARED | pnpm build → nginx image |
-| `docker-compose.yml` | 31 | SHARED | Runs the image on port 8080 |
-| `nginx.conf` | 39 | SHARED | Serves `/archive-viewer/` |
-| `install.sh` | 146 | SHARED | Interactive build + copy + optional Docker deploy |
-| `.nvmrc` | 1 | SHARED | Node version for nvm (`24`); see [build-tooling](../tech-stack/build-tooling.md) |
+| Path               | Lines | Purpose                                                                    |
+| ------------------ | ----: | -------------------------------------------------------------------------- |
+| `README.md`        |   339 | Project readme (still describes the original feature set; rewrite pending) |
+| `CLAUDE.md`        |   100 | Index into `docs/`                                                         |
+| `LICENSE`          |   661 | GNU AGPL-3.0 (canonical gnu.org text); copyright notice is in `README.md`  |
+| `package.json`     |    58 | Package metadata, scripts, devDependencies, `packageManager`               |
+| `pnpm-lock.yaml`   |  5360 | Locked dependency tree                                                     |
+| `.nvmrc`           |     1 | Node version for nvm (`24`)                                                |
+| `vite.config.ts`   |     9 | `defineConfig` from extension-sdk (+ excludes `reference/` from tests)     |
+| `tsconfig.json`    |     4 | Extends `@opencloud-eu/tsconfig`; excludes `reference/`                    |
+| `extension.d.ts`   |     1 | Vite client types                                                          |
+| `eslint.config.js` |     3 | OpenCloud ESLint config + ignores                                          |
+| `.prettierrc.json` |     1 | OpenCloud Prettier config                                                  |
+| `.prettierignore`  |     7 | dist, coverage, reference, lockfile, LICENSE, original docs, `.__mf__temp` |
+| `.gitignore`       |    13 | node_modules, dist, coverage, editor/env files, `.__mf__temp/`             |
 
 ## `src/`
 
-| Path | Lines | Belongs to | Purpose |
-|------|------:|-----------|---------|
-| `src/index.ts` | 125 | VUE | `defineWebApplication` entry: extensions, route, translations |
-| `src/views/ArchiveViewer.vue` | 1232 | VUE | The viewer component actually routed to |
-| `src/views/ArchiveViewerLarge.vue` | 1305 | DEAD | Alternate "large archive" viewer, never imported |
-| `src/utils/memory.ts` | 365 | DEAD | Memory/streaming helpers, never imported |
-| `src/types.d.ts` | 159 | VUE | Hand-written module types for libarchive.js, web-pkg, extension-sdk |
-| `src/translations.json` | 102 | VUE | en/de/es/fr strings (23 keys each) |
-| `src/index.js` | 361 | LEGACY | `ArchiveViewerApp` class + `OC.Plugins.register` |
-| `src/lib/StreamProcessor.js` | 472 | LEGACY | HTTP Range-based ZIP/TAR reading |
-| `src/lib/ArchiveReader.js` | 142 | LEGACY (DEAD) | In-memory ZIP/TAR listing; instantiated but never called |
-| `src/lib/ArchiveWriter.js` | 241 | LEGACY | Create ZIP/TAR/TAR.GZ; edit/add/remove are stubs |
-| `src/lib/UIManager.js` | 735 | LEGACY | DOM rendering via `innerHTML` templates |
-| `src/styles/main.css` | 608 | LEGACY | Styles for `UIManager` markup (Vue views use scoped styles) |
+| Path           | Lines | Purpose                                                                       |
+| -------------- | ----: | ----------------------------------------------------------------------------- |
+| `src/index.ts` |    48 | `defineWebApplication`: file types, route via `AppWrapperRoute`, translations |
+| `src/App.vue`  |    32 | Placeholder viewer (name + size)                                              |
+
+Details: [extension-entry](../source/extension-entry.md).
+
+## `l10n/`
+
+| Path                     | Lines | Purpose                                                   |
+| ------------------------ | ----: | --------------------------------------------------------- |
+| `l10n/translations.json` |   102 | en/de/es/fr strings (23 keys each, mostly for the old UI) |
 
 ## `tests/`
 
-| Path | Lines | Belongs to | Purpose |
-|------|------:|-----------|---------|
-| `tests/setup.ts` | 65 | VUE | Mocks libarchive.js, web-pkg, vue-router; stubs observers |
-| `tests/unit/ArchiveViewer.spec.ts` | 172 | VUE | Unit tests for `ArchiveViewer.vue` helpers and state |
+| Path                     | Lines | Purpose                  |
+| ------------------------ | ----: | ------------------------ |
+| `tests/unit/App.spec.ts` |    34 | Unit tests for `App.vue` |
 
-## `public/`
+## `reference/` (REF — parked for the step 3 port, then deleted)
 
-| Path | Lines | Belongs to | Purpose |
-|------|------:|-----------|---------|
-| `public/index.html` | 17 | VUE (?) | Loads `/archive-viewer/index.js` as a module (neither build outputs that file; webpack emits `app.js`); favicons it references don't exist. OpenCloud extensions are loaded by the host, so this page is likely unnecessary |
+| Path                                         | Lines | Purpose                                                                             |
+| -------------------------------------------- | ----: | ----------------------------------------------------------------------------------- |
+| `reference/README.md`                        |    12 | What's parked and why                                                               |
+| `reference/old-views/ArchiveViewer.vue`      |  1232 | Old viewer ([port notes](../source/reference-old-viewer.md))                        |
+| `reference/old-views/ArchiveViewerLarge.vue` |  1305 | Old unused large-archive variant ([notes](../source/reference-old-viewer-large.md)) |
+| `reference/old-tests/setup.ts`               |    65 | Old vitest mocks                                                                    |
+| `reference/old-tests/ArchiveViewer.spec.ts`  |   172 | Old spec                                                                            |
 
 ## `docs/`
 
-This knowledge base. See `CLAUDE.md` for the index. Original uploaded docs (API, INSTALL,
-CHANGELOG, CONTRIBUTING, PROJECT-SUMMARY, QUICK-REFERENCE) live in `docs/original-docs/`.
+This knowledge base; see `CLAUDE.md`. `docs/original-docs/` holds the original uploaded docs
+(historical, unverified).
 
-## Not in the repo (but referenced)
+## Removed in step 1
 
-- `pnpm-lock.yaml` — referenced by `Dockerfile` and `install.sh`.
-- `libarchive.worker-bundle.js` — expected at `/archive-viewer/` by `src/index.ts:14`.
-- `img/screenshot.png` — referenced by `appinfo/info.json`.
-- `favicon.svg` / `favicon.png` — referenced by `public/index.html`.
-- `404.html` / `50x.html` — referenced by `nginx.conf`.
-- `.eslintrc*`, `.babelrc`, `.gitignore` — none present (`npm run lint` has no config).
-- `WEB-APP-ARCHIVE-VIEWER-COMPLETE.md` — referenced by `QUICK-REFERENCE.md`.
+Legacy app (`src/index.js`, `src/lib/*`, `src/styles/main.css`, root `index.html`,
+`webpack.config.js`), `src/types.d.ts`, `src/utils/memory.ts`, `vitest.config.ts`,
+`tsconfig.node.json`, `public/index.html`, root `manifest.json`, `appinfo/info.json`, `Dockerfile`,
+`docker-compose.yml`, `nginx.conf`, `install.sh`. All recoverable from commit `3a2ed58`.

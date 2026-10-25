@@ -1,85 +1,52 @@
 # Known Bugs
 
-Found by reading the code; none confirmed by running it yet.
-**Confidence:** `CONFIRMED` = certain from the code (and, where noted, the library/OpenCloud source or docs); `PLAUSIBLE` = depends on library or host
-behaviour that needs a test. Remove entries when fixed (and say so in the commit).
+**Confidence:** `CONFIRMED` = certain from the code (and, where noted, the library/OpenCloud source
+or docs); `PLAUSIBLE` = depends on library or host behaviour that needs a test. Remove entries
+when fixed (and say so in the commit).
 
-## Build / setup (blockers)
+## Current app (`src/`)
 
-| # | Where | Bug | Conf. |
-|---|-------|-----|-------|
-| B1 | `package.json` | Vue app deps (vue, vue-router, vite, libarchive.js, web-pkg, vitest…) not declared | CONFIRMED |
-| B2 | `webpack.config.js:33-36` | `require.resolve` of uninstalled polyfills throws on config load | CONFIRMED |
-| B3 | `Dockerfile:13`, `install.sh:44` | `--frozen-lockfile` with no `pnpm-lock.yaml` | CONFIRMED |
-| B4 | `src/index.ts:14` | Worker URL `/archive-viewer/libarchive.worker-bundle.js` — the real file is `libarchive.js/dist/worker-bundle.js` (+ WASM), it's never copied into the build, and an absolute path won't resolve for a v8 extension | CONFIRMED |
+No known bugs. The app is a placeholder (rework step 1); see the open questions in
+[opencloud-v8-compatibility](../architecture/opencloud-v8-compatibility.md).
 
-## Vue app — `src/views/ArchiveViewer.vue`
+## Parked old viewer — fix or avoid while porting (step 3)
 
-| # | Line | Bug | Conf. |
-|---|-----:|-----|-------|
-| V1 | 182 | `v-if="previewFile"` tests the function → preview modal always rendered, title "previewFile"; should be `previewFileRef` (template also uses `previewFile` for `:title`, `isTextFile`, `:alt`, Download) | CONFIRMED |
-| V2 | 327 | `'gc' in global` → `ReferenceError` in browsers. Breaks `previewFile` (shows error instead of preview), `downloadFile` (downloads then shows "Download failed"), `closePreview`, `cleanupMemory` (so `downloadAll` and the fileId watcher also throw) | CONFIRMED |
-| V3 | 482 | >1GB archives: only first 100MB read before `Archive.open`; ZIP/7z indexes are at the end | CONFIRMED |
-| V4 | 449 | <1GB archives loaded fully into memory (ArrayBuffer + File copy) | CONFIRMED |
-| V5 | 541 | Paths taken from `entry.file.name` only; libarchive.js puts folders in `entry.path` → tree flattened, duplicate names collide (libarchive.js README: `getFilesArray()` → `{ file, path: 'addon/' }`) | CONFIRMED |
-| V6 | 361 | `displayedFiles` shows grandchild folders in the current folder (`parts.length === 2 && isDirectory`) | CONFIRMED |
-| V7 | 414 | `resourcesStore.getResource(fileId)` misses on direct link / reload → "Resource not found" | PLAUSIBLE |
-| V8 | 452 | `webdav.getFileContents(resource)` — v8 signature is `(space, { fileId, path }, opts)` returning `{ body, ... }`; call throws (see [v8 compatibility](../architecture/opencloud-v8-compatibility.md) C4) | CONFIRMED |
-| V9 | 799 | `downloadAll` calls `cleanupMemory()` per batch, which clears selection and preview | CONFIRMED |
-| V10 | 777 | Many sequential `<a download>` clicks; browsers block or prompt for multiple downloads | PLAUSIBLE |
-| V11 | 805 | "Create Archive" button only downloads files individually | CONFIRMED |
-| V12 | 556 | Directory entries get `modified: new Date()` (now); sort by date is meaningless for them | CONFIRMED |
-| V13 | 675 | Any download error replaces the whole page with the error view (`error.value`) | CONFIRMED |
-| V14 | 681, 695, 733, 837 | Uses static `Archive.extract(file)`, which libarchive.js 2.0.2 doesn't document; single files are extracted with `compressedFile.extract()` | CONFIRMED |
-| V16 | 496 | Streaming loop yields only when `totalRead` is an exact multiple of 10MB (almost never) | CONFIRMED |
-| V17 | 921 | `formatSize` units stop at GB; ≥1TB prints "undefined" | CONFIRMED |
-| V18 | 654, 755, 782 | Native `confirm()` dialogs instead of OpenCloud modals | CONFIRMED |
+Lines refer to `reference/old-views/ArchiveViewer.vue` (port notes:
+[reference-old-viewer](../source/reference-old-viewer.md)). Items marked _gone_ no longer apply
+to the v8 design but are kept as warnings.
 
-## Vue app — `src/index.ts`
+| #   |                    Line | Bug                                                                                                                                                                                                      | Conf.     |
+| --- | ----------------------: | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- |
+| V1  |                     182 | `v-if="previewFile"` tests the function → preview modal always rendered, title "previewFile"; should be `previewFileRef` (template also uses `previewFile` for `:title`, `isTextFile`, `:alt`, Download) | CONFIRMED |
+| V2  |                     327 | `'gc' in global` → `ReferenceError` in browsers; breaks preview, download, close and cleanup paths. _Gone_ if the memory helpers aren't ported                                                           | CONFIRMED |
+| V3  |                     482 | >1GB archives: only first 100MB read before `Archive.open`; ZIP/7z indexes are at the end                                                                                                                | CONFIRMED |
+| V4  |                     449 | Whole archive held in memory (ArrayBuffer + File copy)                                                                                                                                                   | CONFIRMED |
+| V5  |                     541 | Paths taken from `entry.file.name` only; libarchive.js puts folders in `entry.path` → tree flattened, duplicate names collide (libarchive.js README: `getFilesArray()` → `{ file, path: 'addon/' }`)     | CONFIRMED |
+| V6  |                     361 | `displayedFiles` shows grandchild folders in the current folder (`parts.length === 2 && isDirectory`)                                                                                                    | CONFIRMED |
+| V7  |                     414 | `resourcesStore.getResource(fileId)` misses on reload. _Gone_: v8 passes `resource` as a prop                                                                                                            | PLAUSIBLE |
+| V8  |                     452 | `webdav.getFileContents(resource)` uses the wrong v8 signature. _Gone_: use `AppWrapperRoute` props                                                                                                      | CONFIRMED |
+| V9  |                     799 | `downloadAll` calls `cleanupMemory()` per batch, which clears selection and preview                                                                                                                      | CONFIRMED |
+| V10 |                     777 | Many sequential `<a download>` clicks; browsers block or prompt for multiple downloads                                                                                                                   | PLAUSIBLE |
+| V11 |                     805 | "Create Archive" button only downloads files individually                                                                                                                                                | CONFIRMED |
+| V12 |                     556 | Directory entries get `modified: new Date()` (now); sort by date is meaningless for them                                                                                                                 | CONFIRMED |
+| V13 |                     675 | Any download error replaces the whole page with the error view (`error.value`)                                                                                                                           | CONFIRMED |
+| V14 |      681, 695, 733, 837 | Uses static `Archive.extract(file)`, which libarchive.js 2.0.2 doesn't document; single files are extracted with `compressedFile.extract()`                                                              | CONFIRMED |
+| V16 |                     496 | Streaming loop yields only when `totalRead` is an exact multiple of 10MB (almost never)                                                                                                                  | CONFIRMED |
+| V17 |                     921 | `formatSize` units stop at GB; ≥1TB prints "undefined" — use web-pkg `formatFileSize`                                                                                                                    | CONFIRMED |
+| V18 |           654, 755, 782 | Native `confirm()` dialogs instead of OpenCloud modals                                                                                                                                                   | CONFIRMED |
+| B4  | (old `src/index.ts:14`) | libarchive.js worker path: real file is `dist/worker-bundle.js` (+ WASM); must be bundled and referenced relative to the build                                                                           | CONFIRMED |
 
-| # | Line | Bug | Conf. |
-|---|-----:|-----|-------|
-| I1 | 44-51 | Handler passes `fileId` as a route param the path doesn't define; `driveAliasAndItem` is only the alias | PLAUSIBLE |
-| I2 | 57-98 | Every extension entry claims all 11 MIME types | CONFIRMED |
-| I3 | 1-7 | Unused imports fail `noUnusedLocals` type-check | CONFIRMED |
+`reference/old-views/ArchiveViewerLarge.vue`: Download Selected / Extract All no-op (L716-717),
+non-reactive virtual scroll (L419), `global.gc` (L470) — see
+[reference-old-viewer-large](../source/reference-old-viewer-large.md).
 
-## Unused `ArchiveViewerLarge.vue` / `utils/memory.ts`
+## Fixed or removed
 
-See [vue-app-large-variant](../source/vue-app-large-variant.md): Download Selected / Extract All
-no-op (L716-717), non-reactive virtual scroll (L419), `global.gc` (L470), `ManagedStream` data loss.
-
-## Legacy app
-
-| # | Where | Bug | Conf. |
-|---|-------|-----|-------|
-| L1 | `StreamProcessor.js:266` | `extractZipMetadata(url, 0)` → invalid Range → every ZIP view/download fails | CONFIRMED |
-| L2 | `StreamProcessor.js:326` | TAR single-file extraction always throws | CONFIRMED |
-| L3 | `StreamProcessor.js:147` | Compressed TAR reads compressed bytes at uncompressed offsets | CONFIRMED |
-| L4 | `StreamProcessor.js:52-54` | No ZIP64 (>4GB, >65535 entries) | CONFIRMED |
-| L5 | `ArchiveWriter.js:190` | `extractEntry` always throws → batch download/share produce empty ZIPs | CONFIRMED |
-| L6 | `ArchiveWriter.js:154` | Editing always throws | CONFIRMED |
-| L7 | `ArchiveReader.js:99` | `entry.size` on `null` header → `TypeError` | CONFIRMED |
-| L8 | `index.js:191` | `revokeObjectURL` right after `click()` may cancel download | PLAUSIBLE |
-| L9 | `UIManager.js:118-121` | Sort dropdown has no effect | CONFIRMED |
-| L10 | `UIManager.js:394` | Compression % is NaN/−∞ when uncompressed size is 0 | CONFIRMED |
-| L11 | `index.js:355` | `registerTabView(new ArchiveViewerApp())` doesn't implement a tab view | PLAUSIBLE |
+- **Rework step 1** removed the legacy JS app (bugs L1–L11), the webpack/Docker/install setup
+  (B1–B3, D1–D4), the old `src/index.ts` (I1–I3) and the hand-written `manifest.json` (M3: claimed
+  encrypted-archive and batch features).
+- **Metadata fix**: license (M1) and author/repo (M2) now AGPL-3.0 / Warstorm548 /
+  `Warstorm548/Acrchiver_Viewer`.
+- V15 was not a bug (`workerUrl` is valid in libarchive.js 2.0.2).
 
 Security issues are tracked separately in [security](security.md).
-
-## Deployment
-
-| # | Where | Bug | Conf. |
-|---|-------|-----|-------|
-| D1 | `docker-compose.yml:12` | Named volume shadows new image contents after rebuild | CONFIRMED |
-| D2 | `nginx.conf:25-28` | 1-year `immutable` cache on unhashed filenames | CONFIRMED |
-| D3 | `nginx.conf:27` | Nested `add_header` drops security headers for static assets | CONFIRMED |
-| D4 | `nginx.conf:22` | SPA fallback to `/archive-viewer/index.html` which the build doesn't produce | CONFIRMED |
-
-## Metadata
-
-| # | Where | Issue |
-|---|-------|-------|
-| M3 | `manifest.json` `features` | Claims encrypted archives and batch operations |
-
-M1 (license mismatch) and M2 (author/repo pointing at OpenCloud's org) were fixed: everything now
-says AGPL-3.0, author Warstorm548, repo `Warstorm548/Acrchiver_Viewer`.

@@ -1,78 +1,68 @@
 # Build Tooling
 
-Two build systems coexist, one per app. Neither is wired up end to end.
+Copied from OpenCloud's own extensions (`opencloud-eu/web-extensions`), adapted to a standalone
+repo. Everything below was run successfully in rework step 1.
 
-## npm scripts (`package.json`)
+## Node and pnpm
 
-| Script | Command | Target |
-|--------|---------|--------|
-| `build` | `webpack --mode production` | LEGACY |
-| `dev` | `webpack serve --mode development` | LEGACY (port 9000) |
-| `watch` | `webpack --mode development --watch` | LEGACY |
-| `lint` | `eslint src/` | both (no ESLint config present) |
+- `.nvmrc` pins Node **24** (LTS; OpenCloud web pins `24.22.1`, `engines >=22`). With nvm:
+  `nvm use` in the repo root, or automatic on `cd` with the nvm auto-use shell hook.
+- `package.json` `packageManager: pnpm@11.28.8`; Corepack (bundled with Node 24) provides it after
+  `corepack enable`. Node 25+ no longer bundles Corepack.
+- `engines.node >=22`.
+- `pnpm-lock.yaml` is committed; install with `pnpm install` (CI: `--frozen-lockfile`).
 
-There is **no** script for Vite, `vue-tsc`, or `vitest`.
+## Scripts (`package.json`)
 
-## Webpack (legacy app) — `webpack.config.js`
+| Script                          | Command                                 | Purpose                                    |
+| ------------------------------- | --------------------------------------- | ------------------------------------------ |
+| `build`                         | `vite build`                            | Production build to `dist/`                |
+| `build:w`                       | `vite build --watch --mode development` | Rebuild on change (for a mounted apps dir) |
+| `check:types`                   | `vue-tsc --noEmit`                      | Type-check `.ts` and `.vue`                |
+| `lint`                          | `eslint .`                              | `@opencloud-eu/eslint-config`              |
+| `format:check` / `format:write` | `prettier . --check/--write`            | `@opencloud-eu/prettier-config`            |
+| `test:unit`                     | `vitest`                                | Unit tests (watch; add `--run` for once)   |
 
-- Entry `./src/index.js` → `dist/app.js`, UMD library `ArchiveViewer`, `libraryExport: 'default'`.
-- Loaders: `babel-loader` (`@babel/preset-env`) for `.js`; `style-loader` + `css-loader` for `.css`.
-  No loader for `.ts` or `.vue`, so webpack cannot build the Vue app.
-- `resolve.fallback` calls `require.resolve` on `stream-browserify`, `buffer/`, `util/`,
-  `path-browserify`. None are installed, so **loading the config throws** before any build.
-  None of these polyfills are actually needed by the legacy source.
-- `devServer` serves `dist/` on port 9000 with HMR.
-- `performance.hints: false`.
+## Vite — `vite.config.ts`
 
-Root `index.html` loads `dist/app.js` and starts the app with a mock context, for standalone testing.
-It links `styles/main.css`, which doesn't exist at that path (the CSS is at `src/styles/main.css`
-and is bundled by webpack anyway).
+`defineConfig({ name: 'archive-viewer', test: { exclude: ['reference/**'] } })` from
+`@opencloud-eu/extension-sdk` 8.1.0. The SDK supplies:
 
-## Vite (Vue app) — `vite.config.ts`
+- `@vitejs/plugin-vue`, `@tailwindcss/vite`, `@vitejs/plugin-basic-ssl` (dev server).
+- Module Federation (`@module-federation/vite`): exposes `./src/index.ts`, output
+  `js/remoteEntry-[hash].mjs`, shares the host's `vue`, `pinia`, `luxon`, `vue3-gettext`,
+  `@opencloud-eu/web-pkg`, `@opencloud-eu/web-client/*`, `yjs` as singletons (not bundled).
+- Manifest generation (`dist/manifest.json`), see [deploying-to-opencloud](../deployment/deploying-to-opencloud.md).
+- Dev server at `https://host.docker.internal:9210`, registering with an OpenCloud web host at
+  `https://host.docker.internal:9201` (`OPENCLOUD_WEB_HOST_URL`) — used in step 2.
+- Vitest config: `happy-dom`, globals, `clearMocks`, `**/*.spec.ts`, v8 coverage to `./coverage`.
+  Overrides are merged with Vite's `mergeConfig`, so `test.exclude` **adds** `reference/**` to the
+  SDK's excludes.
 
-- Spreads `defaultConfig` from `@opencloud-eu/extension-sdk`, then **overrides** `plugins` and
-  `build` entirely, which likely discards the SDK's own plugins/build settings (unverified —
-  depends on what `defaultConfig` contains).
-- `plugins: [vue()]`.
-- `build.rollupOptions.external: ['vue']` with global `Vue`. `vue-router` and
-  `@opencloud-eu/web-pkg` are not externalized, so they would be bundled into the extension
-  instead of shared with the host (**verify** what the SDK's `defaultConfig` already handles).
-- `optimizeDeps.include: ['libarchive.js']`.
-- `server.fs.allow: ['..']`.
-- No entry/lib config of its own; no step copies the libarchive.js worker bundle into the output.
+Build-time notes seen in step 1 (harmless, from the SDK/its deps): "Yjs was already imported" and a
+Vite deprecation warning about `resolve.alias` `customResolver`. The build creates `.__mf__temp/`
+(gitignored, ignored by ESLint/Prettier).
 
-## TypeScript
+## TypeScript — `tsconfig.json`, `extension.d.ts`
 
-- `tsconfig.json`: ES2020, `moduleResolution: bundler`, `strict`, `noUnusedLocals`,
-  `noUnusedParameters`, `noEmit`, includes `src/**/*.{ts,d.ts,tsx,vue}`.
-- `tsconfig.node.json`: composite config for `vite.config.ts`.
-- Type-check would currently flag (once deps exist), for example:
-  - `src/index.ts` imports `useClientService`, `useResourcesStore`, `useLoadingService` unused,
-    and `applicationConfig` is unused.
-  - `ArchiveViewer.vue` `downloadFileStreaming` declares `chunks`/`totalExtracted` unused.
-  - `global` is not a browser global (no `@types/node`).
+- `extends @opencloud-eu/tsconfig`: ES2022, `module: preserve`, `strict` with
+  `strictNullChecks: false` and `useUnknownInCatchVariables: false`, `resolveJsonModule`,
+  `isolatedModules`, `types: ['vitest/globals']`.
+- `exclude: ['node_modules', 'dist', 'reference']`.
+- `extension.d.ts`: `/// <reference types="vite/client" />`.
+- `typescript ^6` (TypeScript 7 exists but OpenCloud stays on 6; `vue-tsc ^3`).
 
-## Vitest — `vitest.config.ts`
+## Lint / format
 
-`globals: true`, `environment: 'jsdom'`, `setupFiles: ['./tests/setup.ts']`, v8 coverage,
-alias `@` → `./src`. See [tests](../testing/tests.md).
+- `eslint.config.js`: `[...openCloudConfig, { ignores: ['dist', 'coverage', 'reference', '.__mf__temp'] }]`.
+- `.prettierrc.json`: `"@opencloud-eu/prettier-config"`.
+- `.prettierignore`: dist, coverage, reference, `pnpm-lock.yaml`, LICENSE, `docs/original-docs`,
+  `.__mf__temp`.
 
-## Node version
+## `.gitignore`
 
-`.nvmrc` pins Node **24** (LTS, matching OpenCloud web's Volta pin `24.22.1` and `engines >=22`).
-With nvm: `nvm use` in the repo root (or automatic on `cd` if the nvm auto-use shell hook is set
-up). Node 24 bundles Corepack, so `corepack enable` provides pnpm; Node 25+ no longer bundles it.
+node_modules, dist, coverage, logs, `.env`/`.envrc`, `.DS_Store`, `.idea`, `.vscode`, `.__mf__temp/`.
 
-## Package manager
+## When changing
 
-`Dockerfile` and `install.sh` use **pnpm** (`pnpm@9.0.0` in Docker) with `--frozen-lockfile`,
-but no `pnpm-lock.yaml` is committed, so both fail at install. No `packageManager` field yet;
-OpenCloud's own repos pin `pnpm@11.28.x`, which Corepack would pick up once added.
-
-## Minimum to get a working build (Vue app)
-
-1. Add the undeclared packages listed in [dependencies](dependencies.md).
-2. Add scripts, e.g. `build: vite build`, `test: vitest`, `typecheck: vue-tsc --noEmit`.
-3. Commit a lockfile.
-4. Ship `libarchive.js`'s worker bundle (and WASM) at the URL `src/index.ts` points to.
-5. Remove `webpack.config.js` and webpack deps if the legacy app is dropped.
+Update this file and [dependencies](dependencies.md).

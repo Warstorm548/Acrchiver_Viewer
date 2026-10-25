@@ -1,26 +1,9 @@
-import { defineConfig } from 'vite'
-import vue from '@vitejs/plugin-vue'
-import { defaultConfig } from '@opencloud-eu/extension-sdk'
+import { defineConfig } from '@opencloud-eu/extension-sdk'
 
 export default defineConfig({
-  ...defaultConfig,
-  plugins: [vue()],
-  build: {
-    rollupOptions: {
-      external: ['vue'],
-      output: {
-        globals: {
-          vue: 'Vue'
-        }
-      }
-    }
-  },
-  optimizeDeps: {
-    include: ['libarchive.js']
-  },
-  server: {
-    fs: {
-      allow: ['..']
-    }
+  name: 'archive-viewer',
+  test: {
+    // old code parked for porting; not part of the app (see reference/README.md)
+    exclude: ['reference/**']
   }
 })

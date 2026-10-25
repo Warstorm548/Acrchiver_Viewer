@@ -1,82 +1,54 @@
 # OpenCloud Integration
 
-How the Vue app plugs into OpenCloud Web, plus the metadata files. This describes what the code
-*does*; for how that compares with the real OpenCloud v8 API (it doesn't match) see
-[opencloud-v8-compatibility](opencloud-v8-compatibility.md).
+How the extension plugs into OpenCloud Web v8 after rework step 1. Comparison with the full v8 API
+and what is still missing: [opencloud-v8-compatibility](opencloud-v8-compatibility.md).
 
-## `src/index.ts`
+## Loading path
 
-1. Calls `Archive.init({ workerUrl: '/archive-viewer/libarchive.worker-bundle.js' })` at module load
-   (`src/index.ts:13`). Nothing in the build copies that worker (or its WASM) to that URL, and the
-   absolute path assumes the app is served at `/archive-viewer/`.
-2. `defineWebApplication({ setup({ applicationConfig }) { ... } })` returns:
-   - `appInfo`: `name 'Archive Viewer'`, `id 'archive-viewer'`, `icon 'file-zip'`, `color '#FFA500'`,
-     `defaultExtension 'zip'`, `extensions ['zip','tar','gz','tgz','bz2','7z','rar','xz']`.
-   - `extensions`: 8 `ApplicationFileExtension` objects built by spreading one template and
-     overriding `extension`/`name`. **Every entry carries the full MIME list**, not just its own type.
-     `canBeDefault: true`.
-   - `routes`: one route `name 'archive-viewer'`, `path '/:driveAliasAndItem*'`, component
-     `ArchiveViewer`, `meta.title 'Archive Viewer'`.
-   - `translations` from `src/translations.json`.
-3. Imports `useClientService`, `useResourcesStore`, `useLoadingService` but never uses them.
+1. OpenCloud reads `dist/manifest.json` from its web apps directory
+   ([deploying-to-opencloud](../deployment/deploying-to-opencloud.md)) and loads the
+   `entrypoint` (`js/remoteEntry-<hash>.mjs`) via Module Federation.
+2. The remote exposes `./src/index.ts`, whose default export is `defineWebApplication(...)`.
+3. `setup()` returns `appInfo`, `routes`, `translations` (details in
+   [extension-entry](../source/extension-entry.md)).
 
-### Extension handler
+## File types
 
-```ts
-handler: async ({ space, resource }) => ({
-  app: appId,
-  route: { name: 'archive-viewer',
-           params: { driveAliasAndItem: space.driveAlias, fileId: resource.fileId },
-           query:  { fileId: resource.fileId } }
-})
-```
-- `driveAliasAndItem` is set to only the drive alias, not alias + item path.
-- `fileId` is passed as a route param, but the route path has no `:fileId` segment.
-- The component reads only `route.query.fileId`.
-- Whether `handler`/`ApplicationFileExtension` match the real web-pkg API is **unverified** — the
-  shapes come from the hand-written `src/types.d.ts`, not from the package.
+`appInfo.extensions` registers `zip, tar, gz, tgz, bz2, xz, 7z, rar`, each
+`{ extension, routeName: 'archive-viewer' }`. This is what puts "Open with Archive Viewer" on
+those files and allows the app to be the default for them. MIME types are not declared; OpenCloud
+matches by extension. Compound extensions (`tar.gz`, `tar.bz2`, `tar.xz`) are an open question —
+`.tar.gz` files may only match via `gz`.
 
-## How the component gets the file
+## Route and wrapper
 
-`ArchiveViewer.vue:401` `loadArchive`:
-1. `fileId = route.query.fileId` — error if missing.
-2. `resource = resourcesStore.getResource(fileId)` — this only finds resources already loaded in
-   the store (e.g. the current folder listing). Opening the viewer via a direct link or after a
-   page reload would likely give "Resource not found" (**plausible, unverified**).
-3. `clientService.webdav.getFileContents(resource)` then `.arrayBuffer()` or `.body.getReader()`.
-   Assumes a fetch `Response`; see [dependencies](../tech-stack/dependencies.md) type-stub notes.
+Route `archive-viewer`, `path '/:driveAliasAndItem(.*)?'`, component
+`AppWrapperRoute(App, { applicationId: 'archive-viewer' })`, `meta.authContext 'hybrid'`
+(works for logged-in users and public links), `patchCleanPath: true`.
 
-## MIME types
+`AppWrapperRoute` resolves the space and resource from the route, checks permissions, shows the
+loading/error UI, and renders `App` with props. `App` currently takes only `resource` and
+`applicationConfig`; it declares neither `currentContent` nor `url`, so no file content is
+fetched yet.
 
-Same list appears in `src/index.ts`, `manifest.json` and (minus `application/x-gtar`)
-`appinfo/info.json`:
-`application/zip`, `application/x-zip-compressed`, `application/x-tar`, `application/x-gtar`,
-`application/x-gzip`, `application/gzip`, `application/x-bzip2`, `application/x-7z-compressed`,
-`application/x-rar-compressed`, `application/vnd.rar`, `application/x-xz`.
+## Configuration
 
-## `manifest.json`
+`applicationConfig` comes from `apps.yaml` (`archive-viewer: config: …`) or an app `config.json`.
+No options are read yet; a size limit is planned for step 4.
 
-`name`, `id 'archive-viewer'`, `version 1.0.0`, `category 'Productivity'`, `icon 'file-zip'`,
-`author 'Warstorm548'`, `license 'AGPL-3.0'`, `repository` → `Warstorm548/Acrchiver_Viewer`,
-`entrypoint 'index.js'`, `supportedFormats`, `mimeTypes`, `features` (lists "encrypted archives"
-and "batch operations", neither implemented), `permissions ['files.read','files.download']`,
-`minVersion 1.0.0`, `screenshots []`. Whether OpenCloud reads any of these fields beyond
-`entrypoint` is **unverified**.
+## Shared modules
 
-## `appinfo/info.json`
+`vue`, `vue3-gettext`, `@opencloud-eu/web-pkg`, `@opencloud-eu/web-client` (and others, see
+[build-tooling](../tech-stack/build-tooling.md)) are taken from the host at runtime, not bundled.
 
-Nextcloud-style app descriptor: `licence 'AGPL-3.0'` (British spelling), `author 'Warstorm548'`, `namespace 'OpenCloud'`,
-`category 'files'`, `types ['filesystem']`, `mimes [...]`, `screenshot 'img/screenshot.png'`
-(missing), `website`/`bugs`/`repository` → `Warstorm548/Acrchiver_Viewer`. OpenCloud Web does not use
-`appinfo/`; this file serves the legacy approach at most.
+## Removed in step 1
 
-## Legacy app context (for completeness)
-
-The legacy app expects a host-provided `context` with `fileId`, `fileName`, `fileUrl`,
-`getFileInfo(id)`, `getAuthToken()`, `saveFile(id, data)`, `uploadFile(name, data)`,
-`createShare(id)`. No real host provides this object; only the mock in root `index.html` does.
+The old integration (extensions with a `handler` in the registry key, route query `fileId`,
+`resourcesStore.getResource`, direct `webdav.getFileContents(resource)`, `Archive.init` worker URL,
+hand-written `manifest.json`, `appinfo/info.json`) is gone. The old viewer's behaviour is recorded
+in [reference-old-viewer](../source/reference-old-viewer.md).
 
 ## When changing integration
 
-Update this file, [two-app-split](two-app-split.md), and the MIME/metadata notes in
-[project-status](../overview/project-status.md).
+Update this file, [extension-entry](../source/extension-entry.md) and
+[opencloud-v8-compatibility](opencloud-v8-compatibility.md).

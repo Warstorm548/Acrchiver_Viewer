@@ -1,72 +1,58 @@
 # Dependencies
 
-Declared packages (`package.json`) versus what the source actually imports.
+State after rework step 1. All packages are **devDependencies**, matching OpenCloud's extensions:
+the host provides the shared runtime modules, and the build bundles anything else that's used.
+There are **no runtime dependencies yet** — the archive engine (libarchive.js and/or zip.js) is
+added in step 3/4.
 
-## Declared in `package.json`
+## devDependencies (installed versions from `pnpm-lock.yaml`)
 
-### `dependencies`
+| Package                          | Range   | Installed | Role                                                                                          |
+| -------------------------------- | ------- | --------- | --------------------------------------------------------------------------------------------- |
+| `@opencloud-eu/web-pkg`          | ^8.1.0  | 8.1.0     | `defineWebApplication`, `AppWrapperRoute`, `formatFileSize`, types (host-provided at runtime) |
+| `@opencloud-eu/web-client`       | ^8.1.0  | 8.1.0     | `Resource` type, WebDAV client (host-provided)                                                |
+| `@opencloud-eu/extension-sdk`    | ^8.1.0  | 8.1.0     | `defineConfig` for Vite/Vitest                                                                |
+| `@opencloud-eu/tsconfig`         | ^8.1.0  | 8.1.0     | Base `tsconfig`                                                                               |
+| `@opencloud-eu/eslint-config`    | ^8.1.0  | 8.1.0     | ESLint rules                                                                                  |
+| `@opencloud-eu/prettier-config`  | ^8.1.0  | 8.1.0     | Prettier rules                                                                                |
+| `@opencloud-eu/web-test-helpers` | ^8.1.0  | 8.1.0     | `mount`, `defaultPlugins` for tests                                                           |
+| `vue`                            | ^3.5.10 | 3.5.44    | Host-provided at runtime                                                                      |
+| `vue3-gettext`                   | 4.0.1   | 4.0.1     | `useGettext` (host-provided)                                                                  |
+| `vite`                           | ^8.0.3  | 8.3.5     | Build                                                                                         |
+| `vitest`                         | ^5.0.0  | 5.0.5     | Tests                                                                                         |
+| `happy-dom`                      | ^20.0.0 | 20.14.6   | Test DOM                                                                                      |
+| `@vue/test-utils`                | ^2.4.6  | 2.5.1     | Component mounting                                                                            |
+| `vitest-mock-extended`           | ^5.0.0  | 5.1.1     | `mock<T>()`                                                                                   |
+| `typescript`                     | ^6.0.3  | 6.0.3     | Type-check                                                                                    |
+| `vue-tsc`                        | ^3.2.6  | 3.3.13    | `.vue` type-check                                                                             |
+| `eslint`                         | ^10.1.0 | 10.13.0   | Lint                                                                                          |
+| `prettier`                       | ^3.8.1  | 3.9.10    | Format                                                                                        |
+| `tailwindcss`                    | ^4.0.0  | 4.3.3     | Utility CSS (SDK runs `@tailwindcss/vite`)                                                    |
+| `@types/node`                    | ^24.0.0 | 24.19.2   | Node types for config files                                                                   |
 
-| Package | Range | Used by | Notes |
-|---------|-------|---------|-------|
-| `fflate` | ^0.8.1 | LEGACY | `unzip`, `ungzip`, `inflate`, `zip`, `gzip` via dynamic `import()` |
-| `pako` | ^2.1.0 | LEGACY | Imported in `StreamProcessor.decompress` but never used |
-| `node-7z` | ^3.0.0 | none | Node-only wrapper for the 7z CLI; cannot run in a browser |
-| `unrar-js` | ^2.0.0 | none | Never imported |
-| `tar-stream` | ^3.1.6 | none | Never imported (Node streams) |
+## Known install warnings (harmless, upstream)
 
-### `devDependencies`
+`pnpm peers check` reports two unmet peers inside OpenCloud's own dependency tree:
 
-`@babel/core`, `@babel/preset-env`, `babel-loader`, `webpack`, `webpack-cli`,
-`webpack-dev-server`, `css-loader`, `style-loader`, `eslint` (^8.52). All serve the legacy
-webpack build. There is no ESLint config file, so `npm run lint` would use defaults/fail.
+- `@module-federation/dts-plugin` wants `typescript ^4.9 || ^5` (we use 6; the SDK sets `dts: false`).
+- `focus-trap-vue` wants `focus-trap ^7` (8 installed via web-pkg).
 
-### `peerDependencies`
+Also two deprecated sub-dependencies (`cron-parser@4`, `node-domexception`). OpenCloud's own repo
+has the same tree.
 
-`@opencloud/core: "*"` — not imported anywhere, and the Vue code uses `@opencloud-eu/web-pkg`
-instead (a different scope).
+## Removed in step 1
 
-## Imported but NOT declared
+`fflate`, `pako`, `node-7z`, `unrar-js`, `tar-stream` (legacy app / never used), the
+`@opencloud/core` peer (doesn't exist), and all webpack/Babel tooling.
 
-These are needed by the Vue app, its build or its tests:
+## Planned (step 3/4, pending decision)
 
-| Package | Imported in |
-|---------|-------------|
-| `vue` | `ArchiveViewer.vue`, `ArchiveViewerLarge.vue`, `types.d.ts` |
-| `vue-router` | both `.vue` views, `tests/setup.ts`, `types.d.ts` |
-| `@opencloud-eu/web-pkg` | `src/index.ts`, both views, `tests/setup.ts` |
-| `@opencloud-eu/extension-sdk` | `vite.config.ts` |
-| `libarchive.js` | `src/index.ts`, both views, `tests/setup.ts` (imports `libarchive.js/main.js`) |
-| `vite` | `vite.config.ts` |
-| `@vitejs/plugin-vue` | `vite.config.ts`, `vitest.config.ts` |
-| `vitest` | `vitest.config.ts`, tests |
-| `@vue/test-utils` | `tests/unit/ArchiveViewer.spec.ts` |
-| `jsdom` | `vitest.config.ts` (`environment: 'jsdom'`) |
-| `@vitest/coverage-v8` | `vitest.config.ts` (`coverage.provider: 'v8'`) |
-| `typescript` (+ `vue-tsc`) | implied by `tsconfig.json` / `.vue` `lang="ts"` |
-| `stream-browserify`, `buffer`, `util`, `path-browserify` | `webpack.config.js` `resolve.fallback` |
+- `libarchive.js` 2.0.2 (many formats, whole file in memory, WASM worker) and/or
+- `@zip.js/zip.js` 2.24.x (ZIP, Range reads possible; used by `web-app-unzip`).
 
-## Runtime/browser APIs relied on
-
-- `fetch` with `Range` header (legacy `StreamProcessor.fetchRange`).
-- `ReadableStream` reader (`ArchiveViewer.vue` streaming path).
-- `Blob`, `URL.createObjectURL`, `TextDecoder`/`TextEncoder`, `FileReader`.
-- `performance.memory` (Chrome-only, non-standard) for memory warnings.
-- `document.execCommand('copy')` (deprecated) in legacy share dialog.
-- Web Worker + WASM for `libarchive.js` (worker file must be served; see
-  [opencloud-integration](../architecture/opencloud-integration.md)).
-
-## Hand-written type stubs
-
-`src/types.d.ts` declares modules for `libarchive.js/main.js`, `@opencloud-eu/web-pkg` and
-`@opencloud-eu/extension-sdk`. These are the author's guesses, not the packages' real types:
-- `ArchiveEntry` is typed as `{ file }` only; libarchive.js entries also carry a `path`.
-- `useClientService().webdav.getFileContents(resource)` is typed as returning a fetch `Response`;
-  the real v8 signature is `getFileContents(space, { fileId, path }, { responseType })` returning
-  `{ response, body, headers }` — confirmed, see
-  [opencloud-v8-compatibility](../architecture/opencloud-v8-compatibility.md).
-- If the real packages are installed, their own types would conflict with or shadow these.
+See [opencloud-v8-compatibility](../architecture/opencloud-v8-compatibility.md).
 
 ## When changing dependencies
 
-Update this file, [build-tooling](build-tooling.md), and the dependency sections of
-[project-status](../overview/project-status.md).
+Update this table (ranges and installed versions), [build-tooling](build-tooling.md) and
+[project-status](../overview/project-status.md). Commit the updated `pnpm-lock.yaml`.
