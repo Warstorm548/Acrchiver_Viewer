@@ -1,0 +1,4 @@
+{
+  "extends": "@opencloud-eu/tsconfig",
+  "exclude": ["node_modules", "dist"]
+}

@@ -1,0 +1,9 @@
+dist
+coverage
+pnpm-lock.yaml
+LICENSE
+docs/original-docs
+.__mf__temp
+release
+l10n/template.pot
+l10n/locale

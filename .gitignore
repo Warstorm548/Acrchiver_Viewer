@@ -1,0 +1,16 @@
+node_modules
+dist
+coverage
+
+*.log
+.DS_Store
+.env
+.envrc
+.idea
+.vscode
+
+# module federation temp files
+.__mf__temp/
+
+# release zips (pnpm package)
+release/

@@ -1,0 +1,150 @@
+# Spanish translations for the Archive Viewer.
+# Draft translations by Claude (AI). Review by a native speaker welcome.
+msgid ""
+msgstr ""
+"Project-Id-Version: archive-viewer\n"
+"Language: es\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+msgid "Loading archive"
+msgstr "Cargando el archivo comprimido"
+
+msgid "Download archive"
+msgstr "Descargar archivo comprimido"
+
+msgid "Reading archive index…"
+msgstr "Leyendo el índice del archivo comprimido…"
+
+msgid "Decompressing…"
+msgstr "Descomprimiendo…"
+
+msgid "Downloading… %{percent}%"
+msgstr "Descargando… %{percent}%"
+
+msgid "Downloading… %{size}"
+msgstr "Descargando… %{size}"
+
+msgid "This archive format is not supported yet. You can download it instead."
+msgstr ""
+"Este formato de archivo comprimido aún no es compatible. Puede descargarlo "
+"en su lugar."
+
+msgid "The archive expands to more data than the browser is allowed to open."
+msgstr ""
+"El archivo comprimido se descomprime en más datos de los que el navegador "
+"puede abrir."
+
+msgid "The archive seems to be damaged or is not a valid archive."
+msgstr "El archivo comprimido parece estar dañado o no es válido."
+
+msgid "The archive could not be loaded."
+msgstr "No se pudo cargar el archivo comprimido."
+
+msgid ""
+"This archive is larger than %{limit}, the most this viewer opens in the "
+"browser on this device. You can download it instead."
+msgstr ""
+"Este archivo comprimido supera los %{limit}, el máximo que este visor abre "
+"en el navegador en este dispositivo. Puede descargarlo en su lugar."
+
+msgid "Search in archive"
+msgstr "Buscar en el archivo comprimido"
+
+msgid "Extracting"
+msgstr "Extrayendo"
+
+msgid "%{count} result"
+msgid_plural "%{count} results"
+msgstr[0] "%{count} resultado"
+msgstr[1] "%{count} resultados"
+
+msgid "Select all"
+msgstr "Seleccionar todo"
+
+msgid "Actions"
+msgstr "Acciones"
+
+msgid "Select %{name}"
+msgstr "Seleccionar %{name}"
+
+msgid "Preview %{name}"
+msgstr "Vista previa de %{name}"
+
+msgid "Download %{name}"
+msgstr "Descargar %{name}"
+
+msgid "No matching files"
+msgstr "No hay archivos que coincidan"
+
+msgid "This folder is empty"
+msgstr "Esta carpeta está vacía"
+
+msgid "Name"
+msgstr "Nombre"
+
+msgid "Size"
+msgstr "Tamaño"
+
+msgid "Modified"
+msgstr "Modificado"
+
+msgid "Download selected (%{count})"
+msgstr "Descargar selección (%{count})"
+
+msgid "Download selected"
+msgstr "Descargar selección"
+
+msgid ""
+"Files larger than %{limit} cannot be extracted in the browser on this "
+"device. Download the whole archive instead."
+msgstr ""
+"Los archivos de más de %{limit} no se pueden extraer en el navegador en este "
+"dispositivo. Descargue el archivo comprimido completo en su lugar."
+
+msgid "Extracting %{name}…"
+msgstr "Extrayendo %{name}…"
+
+msgid "Extracting %{name}… %{percent}%"
+msgstr "Extrayendo %{name}… %{percent}%"
+
+msgid "Failed to download \"%{name}\""
+msgstr "No se pudo descargar «%{name}»"
+
+msgid "Failed to download the selection"
+msgstr "No se pudo descargar la selección"
+
+msgid "Loading preview"
+msgstr "Cargando vista previa"
+
+msgid "Only the beginning of the file is shown."
+msgstr "Solo se muestra el principio del archivo."
+
+msgid "Download"
+msgstr "Descargar"
+
+msgid "Close"
+msgstr "Cerrar"
+
+msgid "This file is password protected and cannot be previewed."
+msgstr ""
+"Este archivo está protegido con contraseña y no se puede previsualizar."
+
+msgid "This file cannot be read."
+msgstr "Este archivo no se puede leer."
+
+msgid "No preview available for this file type."
+msgstr "No hay vista previa disponible para este tipo de archivo."
+
+msgid "This file is too large to preview. Download it instead."
+msgstr ""
+"Este archivo es demasiado grande para la vista previa. Descárguelo en su "
+"lugar."
+
+msgid "The preview could not be loaded."
+msgstr "No se pudo cargar la vista previa."
+
+msgid "Archive Viewer"
+msgstr "Visor de archivos comprimidos"
