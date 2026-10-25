@@ -1,9 +1,9 @@
 # OpenCloud v8 Compatibility
 
-**Verdict (after rework step 4b): compatible and functional on OpenCloud 8.0.1** for ZIP, TAR,
+**Verdict (after rework step 5): compatible and functional on OpenCloud 8.0.1** for ZIP, TAR,
 TAR.GZ/TGZ, TAR.BZ2/TBZ2, TAR.XZ/TXZ, legacy TAR.LZMA/TLZ and single .gz/.bz2/.xz/.lzma files
-(pure JavaScript, no CSP change; bzip2/xz/lzma run in a `blob:` Web Worker). Large-archive
-streaming follows in step 5. The toolchain, app registration and route wiring match OpenCloud v8. The app is built
+(pure JavaScript, no CSP change; bzip2/xz/lzma run in a `blob:` Web Worker). ZIPs of any size
+are read by HTTP Range requests (step 5). The toolchain, app registration and route wiring match OpenCloud v8. The app is built
 against the 8.0 packages (the main server runs rolling **8.0.1**; latest is 8.1.0) and was
 verified on a local opencloud-compose stack: "Open in Archive Viewer" works for zip, tar and
 tar.gz. Researched 2026-10-25 against `opencloud-eu/web-extensions` (`web-app-json-viewer`,
@@ -44,8 +44,9 @@ From `packages/web-pkg/src/components/AppTemplates/AppWrapper.vue` / `AppWrapper
     (binary if `fileContentOptions.responseType` is `arraybuffer`/`blob`; default `text`).
   - declares `url` → wrapper calls `getUrlForResource` → `webdav.getFileUrl(space, resource, …)`
     and passes a URL (a signed URL when the server supports URL signing; vault files become an
-    in-memory blob URL). A signed URL is what would allow HTTP Range reads of large archives —
-    **Range support on it is untested**.
+    in-memory blob URL). **Verified (step 5):** the signed URL answers `Range` with 206 (also
+    through Traefik and on public links), `HEAD` with 401, and expires after 30 minutes — see
+    [zip-range-reading](../source/zip-range-reading.md).
   - always available: `resource`, `space`, `applicationConfig`, `currentFileContext`,
     `isReadOnly`, `isDirty`, `activeFiles`, `isFolderLoading`.
 - Declaring `update:currentContent` in `emits` turns the app into an editor (autosave etc.); a
@@ -128,7 +129,7 @@ export default defineWebApplication({
 
 ## Open questions to test
 
-- Does the signed URL from the `url` prop honour HTTP `Range` requests (through Traefik)?
+- ~~Does the signed URL honour HTTP `Range`?~~ Yes (step 5).
 - If a WASM engine is chosen: does it work once `'wasm-unsafe-eval'` is added to the server CSP?
 
 ## Migration outline (decisions pending)
@@ -141,10 +142,11 @@ export default defineWebApplication({
    viewer UI on the `url` prop; old bugs V1, V5, V6, V14 fixed by design.
 4. **Done (step 4):** bzip2 via a ported pure-JS decoder in an inline worker; single `.gz`/`.bz2`
    files; size limits from `apps.yaml` (since step 3). Step 4b: XZ.
-5. Large ZIPs via the `url` prop + Range reads, if the open question above checks out.
+5. **Done (step 5):** large ZIPs via Range reads with signed-URL renewal; device-aware limits
+   (1 GiB desktop / 256 MiB mobile).
 6. Tests (`web-test-helpers`), translations, docs, README.
 
-Decided: approach A (pure JS), view + download, 256 MiB default limit. Alternatives (server
+Decided: approach A (pure JS), view + download, range reads for ZIP, 1 GiB / 256 MiB limits. Alternatives (server
 helper, libarchive as plain JS, extract-to-folder) are parked in
 [roadmap-considerations](../overview/roadmap-considerations.md).
 

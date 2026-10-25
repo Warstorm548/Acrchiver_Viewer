@@ -15,9 +15,9 @@ const handle = () =>
     ])
   )
 
-const createWrapper = (archiveName = 'sample.tar') =>
+const createWrapper = (archiveName = 'sample.tar', props: Record<string, unknown> = {}) =>
   mount(ArchiveBrowser, {
-    props: { handle: handle(), archiveName },
+    props: { handle: handle(), archiveName, ...props },
     global: { plugins: [...defaultPlugins()], stubs: { OcIcon: true, PreviewModal: true } }
   })
 
@@ -92,5 +92,40 @@ describe('ArchiveBrowser', () => {
     wrapper.vm.toggleSelection(wrapper.vm.rows[0])
     await wrapper.vm.downloadSelection()
     expect(trigger).toHaveBeenCalledWith(expect.any(Blob), expected)
+  })
+
+  it('refuses files over the entry cap without reading them', async () => {
+    const trigger = vi.spyOn(download, 'triggerDownload').mockImplementation(() => {})
+    const wrapper = createWrapper('sample.tar', { maxEntrySize: 10 })
+    const read = vi.spyOn(wrapper.props('handle'), 'read')
+    await wrapper.find('.archive-row[data-path="big.txt"] .archive-download').trigger('click')
+    await flushPromises()
+    expect(read).not.toHaveBeenCalled()
+    expect(trigger).not.toHaveBeenCalled()
+  })
+
+  it('refuses a selection whose total is over the entry cap', async () => {
+    const zip = vi.spyOn(download, 'zipEntries')
+    // The docs folder holds 7 + 7 bytes.
+    const wrapper = createWrapper('sample.tar', { maxEntrySize: 10 })
+    wrapper.vm.toggleSelection(wrapper.vm.rows[0])
+    await wrapper.vm.downloadSelection()
+    expect(zip).not.toHaveBeenCalled()
+  })
+
+  it('shows extraction progress from the bytes read by range', async () => {
+    let finish: (blob: Blob) => void
+    const wrapper = createWrapper('sample.tar', { bytesRead: 1000 })
+    vi.spyOn(wrapper.props('handle'), 'read').mockReturnValue(
+      new Promise((resolve) => (finish = resolve))
+    )
+    vi.spyOn(download, 'triggerDownload').mockImplementation(() => {})
+    await wrapper.find('.archive-row[data-path="big.txt"] .archive-download').trigger('click')
+    expect(wrapper.find('.archive-extracting').text()).toBe('Extracting big.txt…')
+    await wrapper.setProps({ bytesRead: 1025 })
+    expect(wrapper.find('.archive-extracting').text()).toBe('Extracting big.txt… 50%')
+    finish(new Blob(['x']))
+    await flushPromises()
+    expect(wrapper.find('.archive-extracting').exists()).toBe(false)
   })
 })

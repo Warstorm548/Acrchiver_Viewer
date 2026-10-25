@@ -39,7 +39,8 @@ viewer checks the size limit first, then fetches that URL itself with progress �
 
 `applicationConfig` = manifest `config` (defaults from `src/manifest.json`) merged with
 `apps.yaml` (`archive-viewer: config: …`) or an app `config.json`. Read options:
-`maxArchiveSize` (default 256 MiB) and `maxUncompressedSize` (default 1 GiB).
+`maxArchiveSize`, `maxUncompressedSize`, `maxEntrySize` and their `…Mobile` variants (defaults
+and meaning: [zip-range-reading](../source/zip-range-reading.md)).
 
 ## Shared modules
 

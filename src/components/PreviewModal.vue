@@ -61,7 +61,13 @@ export default defineComponent({
   name: 'PreviewModal',
   props: {
     handle: { type: Object as PropType<ArchiveHandle>, required: true },
-    entry: { type: Object as PropType<ArchiveEntry>, required: true }
+    entry: { type: Object as PropType<ArchiveEntry>, required: true },
+    /** Reads the entry (with the browser's size cap and progress); defaults to `handle.read`. */
+    read: {
+      type: Function as PropType<(entry: ArchiveEntry) => Promise<Blob>>,
+      required: false,
+      default: null
+    }
   },
   emits: ['close', 'download'],
   setup(props) {
@@ -88,7 +94,7 @@ export default defineComponent({
         message.value = $gettext('This file is too large to preview. Download it instead.')
         return
       }
-      const blob = await props.handle.read(entry)
+      const blob = await (props.read ? props.read(entry) : props.handle.read(entry))
       if (isTextFile(entry.name)) {
         truncated.value = blob.size > MAX_TEXT_PREVIEW
         text.value = new TextDecoder().decode(await blob.slice(0, MAX_TEXT_PREVIEW).arrayBuffer())

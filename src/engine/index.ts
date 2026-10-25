@@ -9,6 +9,8 @@ import { openZip } from './zip'
 export * from './types'
 export { archiveExtension, resolveFormat, SIGNATURE_LENGTH } from './detect'
 export { buildIndex, parentPath } from './tree'
+export { HttpRangeReader, RangeRequestError } from './rangeReader'
+export { openZip } from './zip'
 export type { ArchiveIndex } from './tree'
 
 /** Formats that are decompressed in full before they can be read (shown as "Decompressing…"). */
@@ -40,7 +42,7 @@ export const openArchive = async (
 ): Promise<ArchiveHandle> => {
   switch (format) {
     case 'zip':
-      return openZip(blob)
+      return openZip(blob, { maxEntrySize: limits.maxEntrySize })
     case 'tar':
       return openTar(new Uint8Array(await blob.arrayBuffer()))
     case 'tar.gz':

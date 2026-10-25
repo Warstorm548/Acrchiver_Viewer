@@ -7,15 +7,15 @@ docs); `PLAUSIBLE` = needs a test. Remove entries when fixed (and say so in the 
 
 No known bugs. Known limitations (by design for now):
 
-| #   | Limitation                                                                                                                    | Planned      |
-| --- | ----------------------------------------------------------------------------------------------------------------------------- | ------------ |
-| K1  | 7z and RAR show "not supported yet" (download offered); xz files using the ARM64 or RISC-V filter report "unsupported filter" | roadmap      |
-| K2  | Whole archive is downloaded into browser memory (up to `maxArchiveSize`, default 256 MiB)                                     | step 5 (ZIP) |
-| K3  | Password-protected ZIP entries are listed but can't be previewed or downloaded                                                | roadmap      |
-| K4  | ZIP entry sizes come from the archive's own headers; only previews (10 MiB) are capped, not user-requested downloads          | —            |
-| K5  | Deflate64 / bzip2 / LZMA compression _inside_ ZIP is unsupported (native zip.js build)                                        | —            |
-| K6  | New UI strings are English-only until translation tooling exists                                                              | step 6       |
-| K7  | bzip2/xz/lzma are decoded in full in memory (no streaming); large files take seconds (in a worker)                            | —            |
+| #   | Limitation                                                                                                                                                                       | Planned                      |
+| --- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------- |
+| K1  | 7z and RAR show "not supported yet" (download offered); xz files using the ARM64 or RISC-V filter report "unsupported filter"                                                    | roadmap                      |
+| K2  | Non-ZIP archives are downloaded whole into browser memory (up to `maxArchiveSize`, 1 GiB desktop / 256 MiB mobile); ZIPs are read by range since step 5                          | roadmap (TAR header hopping) |
+| K3  | Password-protected ZIP entries are listed but can't be previewed or downloaded                                                                                                   | roadmap                      |
+| K4  | An extracted file is held in memory, so single files and selections are capped at `maxEntrySize` (1 GiB / 256 MiB); bigger ones must be fetched by downloading the whole archive | —                            |
+| K5  | Deflate64 / bzip2 / LZMA compression _inside_ ZIP is unsupported (native zip.js build)                                                                                           | —                            |
+| K6  | New UI strings are English-only until translation tooling exists                                                                                                                 | step 6                       |
+| K7  | bzip2/xz/lzma are decoded in full in memory (no streaming); large files take seconds (in a worker)                                                                               | —                            |
 
 ## Old viewer bugs (resolved)
 

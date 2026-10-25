@@ -3,10 +3,11 @@
 Archive viewer extension for **OpenCloud Web v8** (browse/preview/download ZIP, TAR, etc. inside
 OpenCloud). Standalone extension at the repo root, built with OpenCloud's toolchain
 (`@opencloud-eu/extension-sdk`, Vite, Vue 3, TypeScript, pnpm, Node 24), pinned to OpenCloud
-**8.0** to match the main server (rolling 8.0.1). Rework steps 1–4b of 6 are done: it opens ZIP,
+**8.0** to match the main server (rolling 8.0.1). Rework steps 1–5 of 6 are done: it opens ZIP,
 TAR, TAR.GZ/TGZ, TAR.BZ2/TBZ2, TAR.XZ/TXZ, TAR.LZMA and single .gz/.bz2/.xz/.lzma files in the
 browser with pure JavaScript (no WebAssembly, no CSP change) — browse, search, sort, preview,
-download. Next: step 5 (large ZIPs). Start with [project status](docs/overview/project-status.md).
+download; ZIPs of any size are read by HTTP Range requests. Next: step 6 (translations, README,
+release). Start with [project status](docs/overview/project-status.md).
 
 Commands: `pnpm install`, `pnpm build`, `pnpm check:types`, `pnpm lint`, `pnpm format:check`,
 `pnpm test:unit --run` (run `nvm use` first if Node 24 isn't active).
@@ -48,7 +49,8 @@ Commands: `pnpm install`, `pnpm build`, `pnpm check:types`, `pnpm lint`, `pnpm f
 - [docs/overview/repository-layout.md](docs/overview/repository-layout.md) — every tracked file
   with line count and purpose; what steps 1 and 3 removed.
 - [docs/overview/roadmap-considerations.md](docs/overview/roadmap-considerations.md) — parked
-  options: server helper service, libarchive as plain JS, WebAssembly + CSP, extract to folder.
+  options: server helper service, libarchive as plain JS, WebAssembly + CSP, extract to folder,
+  plain TAR header hopping (deferred).
 
 ### Tech stack
 
@@ -71,6 +73,9 @@ Commands: `pnpm install`, `pnpm build`, `pnpm check:types`, `pnpm lint`, `pnpm f
   `src/manifest.json`: Tailwind import, file types, route, default config.
 - [docs/source/xz-lzma-decoder.md](docs/source/xz-lzma-decoder.md) — XZ container, LZMA/LZMA2
   decoder, filters, checks, legacy `.lzma`: origins, design notes, verification, speed.
+- [docs/source/zip-range-reading.md](docs/source/zip-range-reading.md) — ZIP over HTTP Range
+  (`HttpRangeReader`, URL renewal, fallback), device-aware limits (`src/limits.ts`), entry cap,
+  step 5 verification.
 - [docs/source/viewer-ui.md](docs/source/viewer-ui.md) — `App.vue` loading flow, `ArchiveBrowser`,
   `PreviewModal`, `download.ts`, styling conventions.
 - [docs/source/archive-engine.md](docs/source/archive-engine.md) — `src/engine/`: formats table,
@@ -80,20 +85,20 @@ Commands: `pnpm install`, `pnpm build`, `pnpm check:types`, `pnpm lint`, `pnpm f
 
 ### Testing
 
-- [docs/testing/tests.md](docs/testing/tests.md) — how to run, SDK test config, the 7 spec files,
-  test patterns (stubs, fetch/zip mocks), what only the manual checklist covers.
+- [docs/testing/tests.md](docs/testing/tests.md) — how to run, SDK test config, the 12 spec files,
+  test patterns (stubs, range-server fetch mock, zip), what only the manual checklist covers.
 
 ### Deployment
 
 - [docs/deployment/deploying-to-opencloud.md](docs/deployment/deploying-to-opencloud.md) — build
-  output, installing on a server (opencloud-compose), install checks, `apps.yaml`, production CSP.
+  output, installing on a server (opencloud-compose), install checks, `apps.yaml` limit keys, production CSP.
 - [docs/deployment/local-dev-environment.md](docs/deployment/local-dev-environment.md) — the local
   opencloud-compose stack (rolling 8.0.1) outside the repo: setup to recreate it, sudo commands,
-  dev loop, fixtures, browser checklist, step results, troubleshooting.
+  dev loop, fixtures, browser checklist, large-ZIP test + cleanup, step results, troubleshooting.
 
 ### Known issues
 
-- [docs/known-issues/bugs.md](docs/known-issues/bugs.md) — known limitations (K1–K6) and how the
+- [docs/known-issues/bugs.md](docs/known-issues/bugs.md) — known limitations (K1–K7) and how the
   old viewer's bugs were resolved.
 - [docs/known-issues/security.md](docs/known-issues/security.md) — untrusted-archive rules and how
   the viewer meets them (no `v-html`, limits, SVG, filenames, auth, CSP).

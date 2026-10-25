@@ -58,8 +58,24 @@ An "Extract here" action that writes archive contents into OpenCloud (like the o
   name collisions; quota; many small uploads; partial failure handling.
 - **Overlap**: duplicates `web-app-unzip` for ZIP; the value would be the other formats.
 
+## Plain TAR header hopping (deferred)
+
+Deferred in step 5; to revisit later. Today a `.tar` is downloaded whole (up to the archive limit).
+
+- **What it is**: a plain (uncompressed) TAR is a chain of 512-byte headers, each followed by its
+  file data padded to 512 bytes. With Range requests the viewer could read one header, compute
+  where the next one starts from the size field, skip the data, and repeat — listing a huge TAR
+  without downloading it, then fetching a single file's bytes on demand (like ZIP today).
+- **Cost**: one HTTP request per entry just to list the archive (thousands of files → thousands
+  of requests, unlike ZIP's single index), unless headers are read in larger batches; pax/GNU
+  long-name records add extra headers per entry. Needs its own reader built on
+  `HttpRangeReader`.
+- **Limits**: only for uncompressed `.tar`. Compressed TARs (gz/bz2/xz) can't be skipped through,
+  since their data must be decompressed from the start.
+- **Why deferred**: plain TARs are rarer than ZIPs and compressed TARs, and the request count
+  makes it slow on big archives; the user wants to understand the trade-off better first.
+
 ## Also noted
 
-- Large ZIPs without full download: zip.js range reads over the pre-signed `url` (planned step 5;
-  needs a check that the signed URL honours `Range` through Traefik).
+- Large ZIPs without full download: **done in step 5** ([zip-range-reading](../source/zip-range-reading.md)).
 - Password-protected ZIPs: zip.js supports decryption; would need a password prompt.

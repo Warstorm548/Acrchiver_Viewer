@@ -3,7 +3,8 @@
 Reads archives entirely in the browser with **pure JavaScript** (no WebAssembly, so it runs under
 OpenCloud's production CSP). Step 3 added ZIP, TAR, TAR.GZ/TGZ; step 4 added bzip2 and single
 compressed files; step 4b added XZ and legacy LZMA (details:
-[xz-lzma-decoder](xz-lzma-decoder.md)).
+[xz-lzma-decoder](xz-lzma-decoder.md)); step 5 added range reads for ZIP (details:
+[zip-range-reading](zip-range-reading.md)).
 
 ## Formats
 
@@ -27,7 +28,8 @@ Not supported: `7z`, `rar` (roadmap) → `ArchiveError('unsupported-format')`.
 | --------------------------------- | ------------------------------------------------------------------------------------------------------------- |
 | `types.ts`                        | `ArchiveFormat`, `ArchiveEntry`, `ArchiveHandle`, `ArchiveLimits`, `ArchiveError` (+ `code`)                  |
 | `detect.ts`                       | `archiveExtension(name)`, `sniffSignature(head)`, `resolveFormat(extension, head)`, `SIGNATURE_LENGTH`        |
-| `zip.ts`                          | `openZip(blob)`, `configureZip({ useWebWorkers })` — zip.js native build                                      |
+| `zip.ts`                          | `openZip(blob or Reader, { maxEntrySize })`, `configureZip({ useWebWorkers })` — zip.js native build          |
+| `rangeReader.ts`                  | `HttpRangeReader` (zip.js Reader over HTTP Range), `RangeRequestError`                                        |
 | `tar.ts`                          | `openTar(bytes, format?)` — own parser                                                                        |
 | `gzip.ts`                         | `gunzip(blob, maxSize)` (browser `DecompressionStream`), `readGzipHeader(bytes)`                              |
 | `bzip2.ts`                        | `bunzip2(bytes, maxSize)` — TypeScript port of seek-bzip (MIT)                                                |
@@ -61,7 +63,9 @@ the file name), `close()`.
 Imports only from `@zip.js/zip.js/lib/zip-native.js` (no WebAssembly; decompression via
 `DecompressionStream` in an inline `blob:` worker — the default build would load
 `zip-module.wasm`). ZIP64 supported; methods stored (0) and deflate (8); others, encrypted entries
-and symlinks → `supported: false`. `configureZip({ useWebWorkers: false })` in tests.
+and symlinks → `supported: false`. `configureZip({ useWebWorkers: false })` in tests. Opens a
+`Blob` or any zip.js `Reader` (`HttpRangeReader`); `chunkSize` 4 MiB. `read` is capped at
+`maxEntrySize` on the real output bytes (`readLimited`); zip.js errors while extracting → `corrupt`.
 
 ## TAR (`tar.ts`)
 
@@ -108,17 +112,17 @@ turns backslashes into slashes and drops empty / `.` segments; `..` stays displa
 
 | Limit                 | Default                    | Where enforced                                                 |
 | --------------------- | -------------------------- | -------------------------------------------------------------- |
-| `maxArchiveSize`      | 256 MiB                    | `App.vue`, before downloading (see [viewer-ui](viewer-ui.md))  |
-| `maxUncompressedSize` | 1 GiB                      | every decompressor (gzip, bzip2, xz, lzma) while decompressing |
+| `maxArchiveSize`      | 1 GiB / 256 MiB mobile     | `App.vue`, before a full download (not for ranged ZIPs)        |
+| `maxUncompressedSize` | 2 GiB / 512 MiB mobile     | every decompressor (gzip, bzip2, xz, lzma) while decompressing |
+| `maxEntrySize`        | 1 GiB / 256 MiB mobile     | `zip.ts` `readLimited`, `ArchiveBrowser` (file and selection)  |
 | Preview size          | 10 MiB declared entry size | `PreviewModal.vue`                                             |
 | Text shown            | first 1 MiB                | `PreviewModal.vue`                                             |
 
-Known gap: ZIP entry sizes come from the archive's own headers; a huge entry is only bounded by the
-preview cap and by what the user chooses to download.
+Limits are resolved per device by `src/limits.ts` (see [zip-range-reading](zip-range-reading.md)).
 
 ## Tests
 
-`tests/unit/engine/*.spec.ts` (tar, zip, gzip, bzip2, xz, single, tree, detect), helpers
+`tests/unit/engine/*.spec.ts` (tar, zip, rangeReader, gzip, bzip2, xz, single, tree, detect), helpers
 `tarBuilder.ts`, `bzip2Samples.ts` (libbz2 output) and `xzSamples.ts` (liblzma output). See
 [tests](../testing/tests.md).
 

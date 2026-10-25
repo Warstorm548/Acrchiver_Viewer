@@ -1,4 +1,4 @@
-import { Resource } from '@opencloud-eu/web-client'
+import { Resource, SpaceResource } from '@opencloud-eu/web-client'
 import { AppConfigObject } from '@opencloud-eu/web-pkg'
 import { defaultPlugins, mount } from '@opencloud-eu/web-test-helpers'
 import { flushPromises } from '@vue/test-utils'
@@ -6,6 +6,7 @@ import { mock } from 'vitest-mock-extended'
 import { BlobWriter, TextReader, ZipWriter } from '@zip.js/zip.js/lib/zip-native.js'
 import App from '../../src/App.vue'
 import { configureZip } from '../../src/engine/zip'
+import { serveFile } from './rangeServer'
 
 const makeZip = async (): Promise<Blob> => {
   const writer = new ZipWriter(new BlobWriter('application/zip'))
@@ -14,59 +15,105 @@ const makeZip = async (): Promise<Blob> => {
   return writer.close()
 }
 
-const respondWith = (blob: Blob) =>
-  vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response(blob, { status: 200 }))
-
 const createWrapper = ({
   name = 'archive.zip',
   size = 1024,
   url = 'https://cloud.test/signed',
-  config = {}
+  config = {},
+  getUrlForResource = null
 }: {
   name?: string
   size?: number
   url?: string
   config?: Record<string, unknown>
+  getUrlForResource?: () => Promise<string>
 } = {}) =>
   mount(App, {
     props: {
       resource: mock<Resource>({ id: name, name, size }),
       applicationConfig: mock<AppConfigObject>(config),
-      url
+      url,
+      space: getUrlForResource ? mock<SpaceResource>() : null,
+      getUrlForResource
     },
     global: { plugins: [...defaultPlugins()], stubs: { OcIcon: true } }
+  })
+
+const waitForRows = (wrapper: ReturnType<typeof createWrapper>, count: number) =>
+  vi.waitFor(async () => {
+    await flushPromises()
+    expect(wrapper.findAll('.archive-row')).toHaveLength(count)
+  })
+
+const waitForMessage = (wrapper: ReturnType<typeof createWrapper>, text: string) =>
+  vi.waitFor(async () => {
+    await flushPromises()
+    expect(wrapper.find('.archive-viewer-message').text()).toContain(text)
   })
 
 describe('App', () => {
   beforeAll(() => configureZip({ useWebWorkers: false }))
   afterEach(() => vi.restoreAllMocks())
 
-  it('refuses archives above the size limit without downloading them', async () => {
+  it('refuses non-zip archives above the size limit without downloading them', async () => {
     const fetchSpy = vi.spyOn(globalThis, 'fetch')
-    const wrapper = createWrapper({ size: 5000, config: { maxArchiveSize: 1000 } })
+    const wrapper = createWrapper({
+      name: 'big.tar.gz',
+      size: 5000,
+      config: { maxArchiveSize: 1000 }
+    })
     await flushPromises()
     expect(fetchSpy).not.toHaveBeenCalled()
     expect(wrapper.find('.archive-viewer-message').text()).toContain('larger than')
     expect(wrapper.find('.archive-viewer-download').exists()).toBe(true)
   })
 
-  it('downloads, opens and lists a zip archive', async () => {
+  it('reads a zip by range requests, without downloading it', async () => {
     const zip = await makeZip()
-    const fetchSpy = respondWith(zip)
-    const wrapper = createWrapper({ size: zip.size })
-    await vi.waitFor(async () => {
-      await flushPromises()
-      expect(wrapper.findAll('.archive-row')).toHaveLength(2)
-    })
-    expect(fetchSpy).toHaveBeenCalledWith('https://cloud.test/signed', expect.anything())
+    const { requests } = serveFile(zip)
+    // The archive size limit doesn't apply to zips read by range.
+    const wrapper = createWrapper({ size: zip.size, config: { maxArchiveSize: 10 } })
+    await waitForRows(wrapper, 2)
     expect(wrapper.findAll('.archive-name').map((n) => n.text())).toEqual(['docs', 'root.txt'])
+    expect(requests.length).toBeGreaterThan(0)
+    expect(requests.every((r) => r.range?.startsWith('bytes='))).toBe(true)
+  })
+
+  it('renews an expired signed URL and retries', async () => {
+    const zip = await makeZip()
+    const { requests } = serveFile(zip, { expired: ['https://cloud.test/old'] })
+    const getUrlForResource = vi.fn().mockResolvedValue('https://cloud.test/new')
+    const wrapper = createWrapper({
+      size: zip.size,
+      url: 'https://cloud.test/old',
+      getUrlForResource
+    })
+    await waitForRows(wrapper, 2)
+    expect(getUrlForResource).toHaveBeenCalledTimes(1)
+    expect(requests.at(-1).url).toBe('https://cloud.test/new')
+  })
+
+  it('falls back to a full download when the server ignores ranges', async () => {
+    const zip = await makeZip()
+    const { requests } = serveFile(zip, { ranges: false })
+    const wrapper = createWrapper({ size: zip.size + 1 })
+    await waitForRows(wrapper, 2)
+    expect(requests.at(-1).range).toBeNull()
+  })
+
+  it('downloads zips that are in-memory blob: URLs', async () => {
+    const zip = await makeZip()
+    const { requests } = serveFile(zip)
+    const wrapper = createWrapper({ size: zip.size, url: 'blob:https://cloud.test/1' })
+    await waitForRows(wrapper, 2)
+    expect(requests).toEqual([{ url: 'blob:https://cloud.test/1', range: null }])
   })
 
   it('opens a single .gz file as a one-file archive', async () => {
     const gz = await new Response(
       new Blob(['hello']).stream().pipeThrough(new CompressionStream('gzip'))
     ).blob()
-    respondWith(gz)
+    serveFile(gz)
     const wrapper = createWrapper({ name: 'notes.txt.gz', size: gz.size })
     await vi.waitFor(async () => {
       await flushPromises()
@@ -74,30 +121,43 @@ describe('App', () => {
     })
   })
 
+  it('rejects a .zip holding other data after reading only its first bytes', async () => {
+    const gz = await new Response(
+      new Blob(['hello']).stream().pipeThrough(new CompressionStream('gzip'))
+    ).blob()
+    const { requests } = serveFile(gz)
+    const wrapper = createWrapper({ name: 'misnamed.zip', size: gz.size })
+    await waitForMessage(wrapper, 'not supported')
+    expect(requests.map((r) => r.range)).toEqual([`bytes=0-${gz.size - 1}`])
+  })
+
+  it('uses the lower limits on mobile devices', async () => {
+    vi.spyOn(navigator, 'userAgent', 'get').mockReturnValue('Mozilla/5.0 (Linux; Android 14)')
+    const fetchSpy = vi.spyOn(globalThis, 'fetch')
+    const wrapper = createWrapper({ name: 'big.tar', size: 300 * 1024 * 1024 })
+    await flushPromises()
+    expect(fetchSpy).not.toHaveBeenCalled()
+    expect(wrapper.find('.archive-viewer-message').text()).toContain('268.4 MB')
+  })
+
   it('shows an error for damaged archives', async () => {
-    respondWith(new Blob(['PK\u0003\u0004 not really a zip']))
-    const wrapper = createWrapper()
-    await vi.waitFor(async () => {
-      await flushPromises()
-      expect(wrapper.find('.archive-viewer-message').text()).toContain('damaged')
-    })
+    const data = new Blob(['PK\u0003\u0004 not really a zip'])
+    serveFile(data)
+    const wrapper = createWrapper({ size: data.size })
+    await waitForMessage(wrapper, 'damaged')
   })
 
   it('explains unsupported formats', async () => {
-    respondWith(new Blob(['7z content']))
+    serveFile(new Blob(['7z content']))
     const wrapper = createWrapper({ name: 'archive.7z' })
-    await vi.waitFor(async () => {
-      await flushPromises()
-      expect(wrapper.find('.archive-viewer-message').text()).toContain('not supported yet')
-    })
+    await waitForMessage(wrapper, 'not supported yet')
   })
 
   it('reports failed downloads', async () => {
-    vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response(null, { status: 403 }))
+    vi.spyOn(globalThis, 'fetch').mockImplementation(() =>
+      Promise.resolve(new Response(null, { status: 403 }))
+    )
     const wrapper = createWrapper()
-    await vi.waitFor(async () => {
-      await flushPromises()
-      expect(wrapper.find('.archive-viewer-message').text()).toContain('could not be loaded')
-    })
+    await waitForMessage(wrapper, 'could not be loaded')
   })
 })

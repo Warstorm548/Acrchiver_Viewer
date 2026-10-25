@@ -30,7 +30,16 @@ No `extensions` (registry) key — no menu items or file actions.
 ## `src/manifest.json`
 
 ```json
-{ "config": { "maxArchiveSize": 268435456, "maxUncompressedSize": 1073741824 } }
+{
+  "config": {
+    "maxArchiveSize": 1073741824,
+    "maxUncompressedSize": 2147483648,
+    "maxEntrySize": 1073741824,
+    "maxArchiveSizeMobile": 268435456,
+    "maxUncompressedSizeMobile": 536870912,
+    "maxEntrySizeMobile": 268435456
+  }
+}
 ```
 
 The SDK merges it into `dist/manifest.json` (with name, version, license, author and

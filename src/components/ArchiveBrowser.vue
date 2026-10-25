@@ -19,6 +19,15 @@
       </oc-button>
     </div>
 
+    <p
+      v-if="extracting"
+      class="archive-extracting ext:flex ext:items-center ext:gap-2 ext:text-sm"
+      role="status"
+    >
+      <oc-spinner size="small" :aria-label="$gettext('Extracting')" />
+      <span v-text="extractingText" />
+    </p>
+
     <nav
       v-if="!searchQuery"
       class="archive-breadcrumb ext:flex ext:flex-wrap ext:items-center ext:gap-1 ext:text-sm"
@@ -144,6 +153,7 @@
       v-if="previewEntry"
       :handle="handle"
       :entry="previewEntry"
+      :read="readEntry"
       @close="previewEntry = null"
       @download="downloadEntry"
     />
@@ -154,7 +164,14 @@
 import { computed, defineComponent, PropType, ref } from 'vue'
 import { useGettext } from 'vue3-gettext'
 import { formatFileSize, useMessages } from '@opencloud-eu/web-pkg'
-import { ArchiveEntry, ArchiveHandle, archiveExtension, buildIndex, parentPath } from '../engine'
+import {
+  ArchiveEntry,
+  ArchiveError,
+  ArchiveHandle,
+  archiveExtension,
+  buildIndex,
+  parentPath
+} from '../engine'
 import { isImageFile, isTextFile } from '../engine/fileTypes'
 import { triggerDownload, zipEntries } from '../download'
 import PreviewModal from './PreviewModal.vue'
@@ -166,7 +183,11 @@ export default defineComponent({
   components: { PreviewModal },
   props: {
     handle: { type: Object as PropType<ArchiveHandle>, required: true },
-    archiveName: { type: String, required: true }
+    archiveName: { type: String, required: true },
+    /** Largest file (or selection total) that may be read out of the archive. */
+    maxEntrySize: { type: Number, required: false, default: Number.MAX_SAFE_INTEGER },
+    /** Bytes fetched by range requests so far; drives the extraction progress for remote ZIPs. */
+    bytesRead: { type: Number, required: false, default: 0 }
   },
   setup(props) {
     const { $gettext, current: currentLanguage } = useGettext()
@@ -270,14 +291,62 @@ export default defineComponent({
       }
     }
 
+    const formatSize = (size: number) => formatFileSize(size, currentLanguage)
+
+    const tooLargeError = () =>
+      new Error(
+        $gettext(
+          'Files larger than %{limit} cannot be extracted in the browser on this device. Download the whole archive instead.',
+          { limit: formatSize(props.maxEntrySize) }
+        )
+      )
+
     const reportError = (title: string, error: unknown) => {
       console.error(error)
-      showErrorMessage({ title, errors: [error as Error] })
+      const shown =
+        error instanceof ArchiveError && error.code === 'too-large' ? tooLargeError() : error
+      showErrorMessage({ title, errors: [shown as Error] })
+    }
+
+    /** What is being read right now, for the progress line (`start` = bytesRead at the start). */
+    const extracting = ref<{ name: string; start: number; total: number } | null>(null)
+    const extractingText = computed(() => {
+      const current = extracting.value
+      if (!current) {
+        return ''
+      }
+      const done = props.bytesRead - current.start
+      if (done <= 0 || current.total <= 0) {
+        return $gettext('Extracting %{name}…', { name: current.name })
+      }
+      return $gettext('Extracting %{name}… %{percent}%', {
+        name: current.name,
+        percent: String(Math.min(100, Math.round((done / current.total) * 100)))
+      })
+    })
+
+    const withProgress = async <T,>(name: string, total: number, work: () => Promise<T>) => {
+      extracting.value = { name, start: props.bytesRead, total }
+      try {
+        return await work()
+      } finally {
+        extracting.value = null
+      }
+    }
+
+    /** Reads one entry, refusing up front when it is known to be over the cap. */
+    const readEntry = (entry: ArchiveEntry): Promise<Blob> => {
+      if (entry.size > props.maxEntrySize) {
+        return Promise.reject(new ArchiveError('too-large', `"${entry.name}" is too large`))
+      }
+      return withProgress(entry.name, entry.compressedSize ?? entry.size, () =>
+        props.handle.read(entry)
+      )
     }
 
     const downloadEntry = async (entry: ArchiveEntry) => {
       try {
-        triggerDownload(await props.handle.read(entry), entry.name)
+        triggerDownload(await readEntry(entry), entry.name)
       } catch (error) {
         reportError($gettext('Failed to download "%{name}"', { name: entry.name }), error)
       }
@@ -299,16 +368,32 @@ export default defineComponent({
       if (files.length === 0) {
         return
       }
+      const total = files.reduce((sum, file) => sum + file.size, 0)
+      if (total > props.maxEntrySize) {
+        reportError(
+          $gettext('Failed to download the selection'),
+          new ArchiveError('too-large', 'Selection too large')
+        )
+        return
+      }
       downloading.value = true
       try {
         if (files.length === 1) {
-          triggerDownload(await props.handle.read(files[0]), files[0].name)
+          triggerDownload(await readEntry(files[0]), files[0].name)
         } else {
           const extension = archiveExtension(props.archiveName)
           const baseName = extension
             ? props.archiveName.slice(0, -(extension.length + 1))
             : props.archiveName
-          triggerDownload(await zipEntries(props.handle, files), `${baseName}-selection.zip`)
+          const fileName = `${baseName}-selection.zip`
+          const compressed = files.reduce(
+            (sum, file) => sum + (file.compressedSize ?? file.size),
+            0
+          )
+          const zip = await withProgress(fileName, compressed, () =>
+            zipEntries(props.handle, files)
+          )
+          triggerDownload(zip, fileName)
         }
       } catch (error) {
         reportError($gettext('Failed to download the selection'), error)
@@ -327,7 +412,6 @@ export default defineComponent({
       return isTextFile(entry.name) ? 'file-text' : 'file'
     }
 
-    const formatSize = (size: number) => formatFileSize(size, currentLanguage)
     const formatDate = (date?: Date) =>
       date && !isNaN(date.getTime()) ? date.toLocaleString(currentLanguage) : '–'
     const parentOf = (entry: ArchiveEntry) => parentPath(entry.path)
@@ -345,6 +429,9 @@ export default defineComponent({
       selectionLabel,
       previewEntry,
       downloading,
+      extracting,
+      extractingText,
+      readEntry,
       openFolder,
       sortBy,
       toggleSelection,

@@ -56,7 +56,7 @@ Pure-JavaScript decoder for `.xz` / `.tar.xz` / `.txz` and the legacy `.lzma` / 
 ## Performance
 
 Roughly 25–100 MB/s in Node on this machine depending on settings, in a worker in the browser.
-A 256 MiB archive (the default limit) decodes in a few seconds; the page stays responsive.
+A 256 MiB archive (the mobile limit) decodes in a few seconds; the page stays responsive.
 
 ## When changing
 

@@ -62,7 +62,7 @@ services:
 
 ```yaml
 archive-viewer:
-  config: {} # e.g. maxArchiveSize: 1000 to test the "too large" message
+  config: {} # e.g. maxArchiveSize: 1000 to test the "too large" message (non-ZIP)
 ```
 
 Changing the overlay's volumes needs `sudo docker compose up -d` (recreate); config/app changes
@@ -133,7 +133,23 @@ curl -sk -D - -o /dev/null https://cloud.opencloud.test/      # Content-Security
    `archive-in-disguise.gz` → folder tree.
 9. F5 on the viewer page renders it again; F12 console has no CSP / WebAssembly errors.
 10. Too-large path: set `maxArchiveSize: 1000` in `custom/apps.yaml`, restart → message + working
-    "Download archive"; then restore `{}` and restart.
+    "Download archive" for a non-ZIP (ZIPs have no archive limit); then restore `{}` and restart.
+
+## Large-ZIP test and cleanup (step 5)
+
+`test-fixtures/make-fixtures.sh --large-zip` writes **only** `big-test.zip` (~3 GiB, ZIP64) and
+`big-test.sha256`; a normal run never creates them. Upload with
+`curl -sk -u admin:admin -T big-test.zip https://cloud.opencloud.test/remote.php/webdav/big-test.zip`.
+Public test links: OCS `POST /ocs/v2.php/apps/files_sharing/api/v1/shares` with `shareType=3`,
+`permissions=1` and a password (the stack enforces one).
+
+Afterwards remove every copy so large files don't accumulate:
+
+1. Links: OCS `DELETE …/shares/<id>`; `GET …/shares` should list none.
+2. Server: WebDAV `DELETE /remote.php/webdav/big-test.zip` (→ 204; `PROPFIND` then 404).
+3. Trash: personal space id from `GET /graph/v1.0/me/drives?$filter=driveType eq personal`;
+   `PROPFIND /remote.php/dav/spaces/trash-bin/<space>` lists items; `DELETE` the item's href.
+4. Local: delete `big-test.zip`, `big-test.sha256` and test downloads in `~/Downloads`.
 
 Screenshots: Firefox `Ctrl+Shift+S` → Download (`~/Downloads`), or Print Screen
 (`~/Pictures/Screenshots`); Claude can read both.
@@ -200,3 +216,13 @@ https://keycloak.opencloud.test/` — no `'wasm-unsafe-eval'`, so WebAssembly is
 - Old app version in the browser → restart OpenCloud, then hard-reload (Ctrl+Shift+R).
 - Container keeps restarting → `INITIAL_ADMIN_PASSWORD` must be set before the first start;
   `sudo docker compose down -v` resets the data.
+
+## Step 5 results (2026-10-25)
+
+- `/config.json` served the step 5 build with all six limit keys. `big-test.zip` (3.04 GiB)
+  opened by range; the 200 MiB download matched its SHA-256, the `small` selection zip held all
+  3,000 files intact, over-cap file and selection were refused, mobile emulation applied the
+  256 MiB limits, and password-protected public links worked. Full list:
+  [zip-range-reading](../source/zip-range-reading.md).
+- Cleanup confirmed: test links gone, server file 404, trash empty, local and downloaded copies
+  deleted.

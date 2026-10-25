@@ -45,12 +45,19 @@ keyed by app id:
 
 ```yaml
 archive-viewer:
-  config:
-    # future options, e.g. a maximum archive size
+  config: # all optional; sizes in bytes, defaults shown
+    maxArchiveSize: 1073741824 # 1 GiB: largest non-ZIP archive downloaded in full
+    maxUncompressedSize: 2147483648 # 2 GiB: largest decompressed output (gz/bz2/xz/lzma)
+    maxEntrySize: 1073741824 # 1 GiB: largest extracted file or selection
+    maxArchiveSizeMobile: 268435456 # 256 MiB (phones and tablets)
+    maxUncompressedSizeMobile: 536870912 # 512 MiB
+    maxEntrySizeMobile: 268435456 # 256 MiB
 ```
 
 Values are merged with the manifest's `config` and reach the component as the
-`applicationConfig` prop. `disabled: true` (in `apps.yaml` or the app's `config.json`) stops the
+`applicationConfig` prop. ZIPs are read by HTTP Range requests and have no archive size limit
+([zip-range-reading](../source/zip-range-reading.md)); a reverse proxy in front of OpenCloud must
+pass `Range` through (Traefik in opencloud-compose does). `disabled: true` (in `apps.yaml` or the app's `config.json`) stops the
 app from loading.
 
 ## Production security policy (CSP)

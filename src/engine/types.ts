@@ -26,9 +26,17 @@ export interface ArchiveHandle {
 export interface ArchiveLimits {
   /** Maximum number of bytes a compressed stream may expand to (zip-bomb guard). */
   maxUncompressedSize: number
+  /** Maximum size of a single file read out of a ZIP (preview, download). */
+  maxEntrySize?: number
 }
 
-export type ArchiveErrorCode = 'unsupported-format' | 'corrupt' | 'too-large' | 'unreadable-entry'
+export type ArchiveErrorCode =
+  | 'unsupported-format'
+  | 'corrupt'
+  | 'too-large'
+  | 'unreadable-entry'
+  /** The server ignored an HTTP Range request (answered 200 instead of 206). */
+  | 'range-unsupported'
 
 export class ArchiveError extends Error {
   readonly code: ArchiveErrorCode

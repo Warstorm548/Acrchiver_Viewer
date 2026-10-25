@@ -1,8 +1,9 @@
 # Project Status
 
-Where the Archive Viewer stands. Branch `feat/opencloud-v8-compat`, rework **steps 1–4b of 6 done**
+Where the Archive Viewer stands. Branch `feat/opencloud-v8-compat`, rework **steps 1–5 of 6 done**
 (rebuilt setup; verified in a local copy of the production stack; real viewer in pure JavaScript;
-bzip2, XZ/LZMA and single compressed files). Next: step 5 (large ZIPs).
+bzip2, XZ/LZMA and single compressed files; large ZIPs by HTTP Range). Next: step 6 (translations,
+README, release).
 
 ## Summary
 
@@ -10,7 +11,8 @@ A standalone **OpenCloud v8 web extension** built with OpenCloud's own toolchain
 (`@opencloud-eu/extension-sdk`, Vite 8, Vue 3, TypeScript 6, pnpm 11, Node 24), pinned to the
 OpenCloud **8.0** line because the main server runs rolling **8.0.1**. It opens **ZIP, TAR,
 TAR.GZ/TGZ, TAR.BZ2/TBZ2, TAR.XZ/TXZ, TAR.LZMA/TLZ** archives and single **.gz / .bz2 / .xz / .lzma** files in the browser: browse folders, search, sort, preview text and images,
-download single files or a selection as one zip. Everything runs in **plain JavaScript (no
+download single files or a selection as one zip. ZIPs of any size are read by HTTP Range requests
+(tested with 3 GiB), so only the index and the opened files are fetched. Everything runs in **plain JavaScript (no
 WebAssembly)**, so it works under OpenCloud's default production CSP with no server changes.
 History: the original upload held a legacy vanilla-JS app, a broken webpack build and an nginx
 deployment (removed in step 1); the old pre-v8 viewer was ported and deleted in step 3.
@@ -23,23 +25,23 @@ deployment (removed in step 1); the old pre-v8 viewer was ported and deleted in 
 | `pnpm build`                  | OK → `dist/manifest.json`, `dist/js/*.mjs`, `dist/assets/*.css`; no `.wasm`, no `WebAssembly` |
 | `pnpm check:types`            | OK                                                                                            |
 | `pnpm lint` / `format:check`  | OK                                                                                            |
-| `pnpm test:unit --run`        | OK, 107/107                                                                                   |
-| Loaded in a running OpenCloud | OK — local opencloud-compose, rolling 8.0.1 (steps 2–3)                                       |
+| `pnpm test:unit --run`        | OK, 131/131                                                                                   |
+| Loaded in a running OpenCloud | OK — local opencloud-compose, rolling 8.0.1 (steps 2–5)                                       |
 
 ## Feature status
 
-| Feature                                                                | State                                                              |
-| ---------------------------------------------------------------------- | ------------------------------------------------------------------ |
-| Registered for zip, tar, tar.gz/bz2/xz, tgz, gz, bz2, xz, 7z, rar      | Done                                                               |
-| Read ZIP, TAR, TAR.GZ, TGZ                                             | Done (step 3)                                                      |
-| Folders, breadcrumb, whole-archive search, sort                        | Done (step 3)                                                      |
-| Preview text (first 1 MiB) and images (≤ 10 MiB)                       | Done (step 3)                                                      |
-| Download a file / a selection as one zip                               | Done (step 3)                                                      |
-| Size limits from `apps.yaml` (`maxArchiveSize`, `maxUncompressedSize`) | Done (step 3; defaults 256 MiB / 1 GiB)                            |
-| TAR.BZ2/TBZ2, single .gz/.bz2 (bzip2 in a Web Worker)                  | Done (step 4)                                                      |
-| TAR.XZ/TXZ, TAR.LZMA/TLZ, single .xz/.lzma (own decoder in the worker) | Done (step 4b)                                                     |
-| Large ZIPs via Range requests                                          | Step 5                                                             |
-| 7z / RAR, extract to folder, server helper                             | Roadmap only ([roadmap-considerations](roadmap-considerations.md)) |
+| Feature                                                                | State                                                                    |
+| ---------------------------------------------------------------------- | ------------------------------------------------------------------------ |
+| Registered for zip, tar, tar.gz/bz2/xz, tgz, gz, bz2, xz, 7z, rar      | Done                                                                     |
+| Read ZIP, TAR, TAR.GZ, TGZ                                             | Done (step 3)                                                            |
+| Folders, breadcrumb, whole-archive search, sort                        | Done (step 3)                                                            |
+| Preview text (first 1 MiB) and images (≤ 10 MiB)                       | Done (step 3)                                                            |
+| Download a file / a selection as one zip                               | Done (step 3)                                                            |
+| Size limits from `apps.yaml` (archive, uncompressed, entry; mobile)    | Done (step 5: 1 GiB / 2 GiB / 1 GiB desktop, 256 / 512 / 256 MiB mobile) |
+| TAR.BZ2/TBZ2, single .gz/.bz2 (bzip2 in a Web Worker)                  | Done (step 4)                                                            |
+| TAR.XZ/TXZ, TAR.LZMA/TLZ, single .xz/.lzma (own decoder in the worker) | Done (step 4b)                                                           |
+| Large ZIPs via Range requests, signed-URL renewal, public links        | Done (step 5)                                                            |
+| 7z / RAR, extract to folder, server helper                             | Roadmap only ([roadmap-considerations](roadmap-considerations.md))       |
 
 `README.md` still describes the original, aspirational feature set and the old webpack setup; it
 gets rewritten in step 6.
@@ -51,11 +53,12 @@ gets rewritten in step 6.
 3. ~~Real viewer: pure-JS engine (ZIP/TAR/TAR.GZ), browser, preview, downloads, limits~~ (done).
 4. ~~bzip2 (TAR.BZ2/TBZ2/BZ2) and single compressed files, pure JS in a worker~~ (done).
    4b. ~~XZ / TAR.XZ and legacy LZMA, own pure-JS decoder~~ (done).
-5. Large ZIPs via the `url` prop + Range reads (if the signed URL honours `Range`).
+5. ~~Large ZIPs via the `url` prop + Range reads; device-aware limits~~ (done).
 6. Translations tooling, README rewrite, release packaging, final docs pass.
 
 Decisions so far: approach A (pure JS, no CSP change), view + download (no writing to OpenCloud),
-256 MiB default size limit. Details:
+range reads for every ZIP, 1 GiB desktop / 256 MiB mobile limits, TAR header hopping deferred.
+Details:
 [opencloud-v8-compatibility](../architecture/opencloud-v8-compatibility.md).
 
 ## Metadata
