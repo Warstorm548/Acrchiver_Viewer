@@ -16,14 +16,13 @@ Problems:
 
 ## `docker-compose.yml`
 
-- Service `archive-viewer`, `build: .`, image `opencloud/web-app-archive-viewer:1.0.0`,
+- Service `archive-viewer`, `build: .`, image `warstorm548/web-app-archive-viewer:1.0.0`,
   `container_name: archive-viewer`, `restart: unless-stopped`, port `8080:80`.
 - Named volume `archive-viewer-data` mounted at `/usr/share/nginx/html/archive-viewer`.
   Docker fills a new named volume from the image once; afterwards the volume **hides newer
   image contents**, so rebuilt versions are never served until the volume is removed.
 - Network `opencloud-net` declared `external: true` — must already exist or `up` fails.
 - `version: '3.8'` key is obsolete in Compose v2 (warning only).
-- Image name uses the `opencloud/` namespace.
 
 ## `nginx.conf`
 

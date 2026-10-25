@@ -162,10 +162,10 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines on contributing to this pr
 ## Support
 
 - Documentation: https://docs.opencloud.eu/archive-viewer
-- Issues: https://github.com/opencloud-eu/web-extensions/issues
+- Issues: https://github.com/Warstorm548/Acrchiver_Viewer/issues
 - Forum: https://forum.opencloud.eu
 - Email: support@opencloud.eu
 
 ## License
 
-MIT License - See [LICENSE](../../LICENSE) file for details
+AGPL-3.0 - See [LICENSE](../../LICENSE) file for details

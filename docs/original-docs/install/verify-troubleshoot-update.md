@@ -149,12 +149,11 @@ rm -rf .env
 
 - [README.md](../../../README.md) - Full documentation
 - [OpenCloud Docs](https://docs.opencloud.eu)
-- [GitHub Issues](https://github.com/opencloud-eu/web-extensions/issues)
-- [npm packages](https://www.npmjs.com/package/@opencloud/web-app-archive-viewer)
+- [GitHub Issues](https://github.com/Warstorm548/Acrchiver_Viewer/issues)
 
 ## Support
 
 For installation help:
-1. Check [GitHub Issues](https://github.com/opencloud-eu/web-extensions/issues)
+1. Check [GitHub Issues](https://github.com/Warstorm548/Acrchiver_Viewer/issues)
 2. Visit [OpenCloud Forum](https://forum.opencloud.eu)
 3. Contact support at support@opencloud.eu

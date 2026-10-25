@@ -15,7 +15,7 @@ Parts: **1. Build, deploy, configure** · [2. Verify, troubleshoot, update, unin
 ### 1. Clone Repository
 
 ```bash
-git clone https://github.com/opencloud-eu/web-extensions.git
+git clone https://github.com/Warstorm548/Acrchiver_Viewer.git
 cd web-extensions/packages/web-app-archive-viewer
 ```
 

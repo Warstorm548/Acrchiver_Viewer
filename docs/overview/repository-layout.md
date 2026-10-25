@@ -8,11 +8,11 @@ both or by neither specifically, `DEAD` = present but not referenced.
 
 | Path | Lines | Belongs to | Purpose |
 |------|------:|-----------|---------|
-| `README.md` | 335 | SHARED | Project readme; describes mostly the legacy app; many claims unverified |
+| `README.md` | 339 | SHARED | Project readme; describes mostly the legacy app; many claims unverified |
 | `CLAUDE.md` | — | SHARED | Index into `docs/` (this knowledge base) |
-| `LICENSE` | 21 | SHARED | MIT, "Copyright (c) 2025 OpenCloud.eu" |
-| `package.json` | 44 | LEGACY | npm manifest; only webpack/legacy deps and scripts |
-| `manifest.json` | 50 | SHARED | App manifest (id, formats, MIME types, features); says Apache-2.0 |
+| `LICENSE` | 661 | SHARED | GNU AGPL-3.0 (canonical gnu.org text); copyright notice is in `README.md` |
+| `package.json` | 49 | LEGACY | npm manifest; only webpack/legacy deps and scripts |
+| `manifest.json` | 50 | SHARED | App manifest (id, formats, MIME types, features); AGPL-3.0, author Warstorm548 |
 | `appinfo/info.json` | 33 | SHARED | Nextcloud-style app info (`licence`, `types`, `mimes`) |
 | `index.html` | 56 | LEGACY | Standalone test page with a mock OpenCloud context |
 | `webpack.config.js` | 53 | LEGACY | Builds `src/index.js` → `dist/app.js` (UMD) |

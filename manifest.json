@@ -5,9 +5,9 @@
   "description": "View and extract multiple archive formats (ZIP, TAR, 7Z, RAR, etc.) directly in OpenCloud",
   "category": "Productivity",
   "icon": "file-zip",
-  "author": "OpenCloud Contributors",
-  "license": "Apache-2.0",
-  "repository": "https://github.com/opencloud-eu/web-app-archive-viewer",
+  "author": "Warstorm548",
+  "license": "AGPL-3.0",
+  "repository": "https://github.com/Warstorm548/Acrchiver_Viewer",
   "entrypoint": "index.js",
   "supportedFormats": [
     "zip",

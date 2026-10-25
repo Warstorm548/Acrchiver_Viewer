@@ -221,13 +221,13 @@ To add a new language:
 
 ## Questions?
 
-- Open a [Discussion](https://github.com/opencloud-eu/web-app-archive-viewer/discussions)
+- Open a [Discussion](https://github.com/Warstorm548/Acrchiver_Viewer/discussions)
 - Join the [OpenCloud Matrix channel](https://matrix.to/#/#opencloud:matrix.org)
 - Email: community@opencloud.eu
 
 ## License
 
-By contributing, you agree that your contributions will be licensed under the Apache License 2.0.
+By contributing, you agree that your contributions will be licensed under the GNU Affero General Public License v3.0 (AGPL-3.0).
 
 ## Recognition
 

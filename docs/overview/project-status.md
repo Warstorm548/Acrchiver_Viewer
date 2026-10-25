@@ -62,11 +62,14 @@ Details: [legacy-app](../source/legacy-app.md).
 - `src/utils/memory.ts` — utilities, not imported anywhere.
 - Declared but unused deps: `node-7z`, `unrar-js`, `tar-stream` (and `pako` only imported, never used).
 
-## Metadata inconsistencies
+## Metadata
 
-- License: MIT in `LICENSE`, `package.json`, `appinfo/info.json`; Apache-2.0 in `manifest.json`.
-- Author/repo fields name "OpenCloud.eu" / "OpenCloud Contributors" and `opencloud-eu` GitHub
-  repos, while the code lives in `Warstorm548/Acrchiver_Viewer`.
+- License is **AGPL-3.0** everywhere (`LICENSE` = canonical gnu.org text, `package.json`,
+  `manifest.json`, `appinfo/info.json`, README).
+- Author is **Warstorm548**; repo/bugs links point to `Warstorm548/Acrchiver_Viewer`. README states
+  the project is independent and not affiliated with OpenCloud GmbH.
+- Earlier metadata (OpenCloud.eu as author, `opencloud-eu` repos, MIT/Apache mix) was never
+  accurate and has been replaced.
 - `CHANGELOG.md` dates release 1.0.0 as 2025-11-04 and marks it "Production Ready"; it is not.
 
 ## Suggested direction (not yet decided)

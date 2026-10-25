@@ -1,5 +1,5 @@
 {
-  "name": "@opencloud/web-app-archive-viewer",
+  "name": "web-app-archive-viewer",
   "version": "1.0.0",
   "description": "OpenCloud Archive Viewer - View, edit, and extract archive files without Python",
   "main": "dist/index.js",
@@ -18,8 +18,13 @@
     "rar",
     "viewer"
   ],
-  "author": "OpenCloud.eu",
-  "license": "MIT",
+  "author": "Warstorm548",
+  "license": "AGPL-3.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Warstorm548/Acrchiver_Viewer.git"
+  },
+  "bugs": "https://github.com/Warstorm548/Acrchiver_Viewer/issues",
   "dependencies": {
     "fflate": "^0.8.1",
     "node-7z": "^3.0.0",

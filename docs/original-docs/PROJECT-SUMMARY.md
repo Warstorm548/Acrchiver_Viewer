@@ -78,7 +78,7 @@ web-app-archive-viewer/
 ├── INSTALL.md                   # Installation guide
 ├── API.md                       # API documentation
 ├── CHANGELOG.md                 # Version history
-└── LICENSE                      # MIT License
+└── LICENSE                      # AGPL-3.0
 ```
 
 ## Installation Quick Start
@@ -210,15 +210,15 @@ const context = {
 - **CHANGELOG.md** - Version history
 
 ## Support
-- GitHub: https://github.com/opencloud-eu/web-extensions/issues
+- GitHub: https://github.com/Warstorm548/Acrchiver_Viewer/issues
 - Forum: https://forum.opencloud.eu
 - Email: support@opencloud.eu
 
 ## License
-MIT License - Free for commercial and personal use
+AGPL-3.0
 
 ## Author
-OpenCloud.eu Team
+Warstorm548
 
 ## Version
 1.0.0 (Initial Release - 2025-11-04)

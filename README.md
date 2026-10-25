@@ -88,8 +88,8 @@ The app is designed to handle very large archives efficiently:
 
 1. Clone this repository:
 ```bash
-git clone https://github.com/opencloud-eu/web-extensions.git
-cd web-extensions/packages/web-app-archive-viewer
+git clone https://github.com/Warstorm548/Acrchiver_Viewer.git
+cd Acrchiver_Viewer
 ```
 
 2. Install dependencies:
@@ -319,7 +319,11 @@ npm run watch
 
 ## License
 
-MIT License - see LICENSE file for details
+Copyright (C) 2025-2026 Warstorm548
+
+Licensed under the GNU Affero General Public License v3.0 (AGPL-3.0) - see the LICENSE file for details.
+
+This is an independent project and is not affiliated with or endorsed by OpenCloud GmbH.
 
 ## Credits
 
@@ -331,5 +335,5 @@ Built for OpenCloud.eu using:
 ## Support
 
 - Documentation: https://docs.opencloud.eu
-- Issues: https://github.com/opencloud-eu/web-extensions/issues
+- Issues: https://github.com/Warstorm548/Acrchiver_Viewer/issues
 - Forum: https://forum.opencloud.eu

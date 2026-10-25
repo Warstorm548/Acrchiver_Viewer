@@ -61,8 +61,8 @@ for how `fileId`/`resource` are found. Then:
   builds directory entries from path segments of `entry.file.name`, pushes file entries, yields
   to the UI every 1000 entries. In streaming mode `file` is set to `null` so later extraction
   goes through `extractFileByPath`.
-  Uses only `entry.file.name`; libarchive.js typically keeps the folder in `entry.path`, which
-  would flatten all files into the root (**plausible, needs testing**).
+  Uses only `entry.file.name`; libarchive.js keeps the folder in `entry.path` (per its README), so
+  all files are flattened into the root — bug V5.
 
 ## Actions
 
@@ -86,8 +86,8 @@ Helpers: `getFileIcon` (ext → `oc-icon` name), `isTextFile` (txt md json js ts
 csv), `isImageFile` (jpg jpeg png gif svg webp bmp), `formatSize` (B–GB; ≥1TB prints
 "undefined"), `formatDate`.
 
-Extraction everywhere uses the static `Archive.extract(entry.file)`; whether libarchive.js offers
-that (vs. `entry.file.extract()`) is unverified — see bug V14. Large-download and memory warnings
+Extraction everywhere uses the static `Archive.extract(entry.file)`, which libarchive.js 2.0.2
+doesn't document; the documented call is `entry.file.extract()` — bug V14. Large-download and memory warnings
 use native `confirm()` dialogs.
 
 ## Memory helpers (inline)

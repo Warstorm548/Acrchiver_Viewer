@@ -1,7 +1,7 @@
 # Known Bugs
 
 Found by reading the code; none confirmed by running it yet.
-**Confidence:** `CONFIRMED` = certain from the code alone; `PLAUSIBLE` = depends on library or host
+**Confidence:** `CONFIRMED` = certain from the code (and, where noted, the library/OpenCloud source or docs); `PLAUSIBLE` = depends on library or host
 behaviour that needs a test. Remove entries when fixed (and say so in the commit).
 
 ## Build / setup (blockers)
@@ -11,7 +11,7 @@ behaviour that needs a test. Remove entries when fixed (and say so in the commit
 | B1 | `package.json` | Vue app deps (vue, vue-router, vite, libarchive.js, web-pkg, vitest…) not declared | CONFIRMED |
 | B2 | `webpack.config.js:33-36` | `require.resolve` of uninstalled polyfills throws on config load | CONFIRMED |
 | B3 | `Dockerfile:13`, `install.sh:44` | `--frozen-lockfile` with no `pnpm-lock.yaml` | CONFIRMED |
-| B4 | `src/index.ts:14` | libarchive.js worker bundle never copied to `/archive-viewer/` | CONFIRMED |
+| B4 | `src/index.ts:14` | Worker URL `/archive-viewer/libarchive.worker-bundle.js` — the real file is `libarchive.js/dist/worker-bundle.js` (+ WASM), it's never copied into the build, and an absolute path won't resolve for a v8 extension | CONFIRMED |
 
 ## Vue app — `src/views/ArchiveViewer.vue`
 
@@ -21,7 +21,7 @@ behaviour that needs a test. Remove entries when fixed (and say so in the commit
 | V2 | 327 | `'gc' in global` → `ReferenceError` in browsers. Breaks `previewFile` (shows error instead of preview), `downloadFile` (downloads then shows "Download failed"), `closePreview`, `cleanupMemory` (so `downloadAll` and the fileId watcher also throw) | CONFIRMED |
 | V3 | 482 | >1GB archives: only first 100MB read before `Archive.open`; ZIP/7z indexes are at the end | CONFIRMED |
 | V4 | 449 | <1GB archives loaded fully into memory (ArrayBuffer + File copy) | CONFIRMED |
-| V5 | 541 | Paths taken from `entry.file.name` only; libarchive.js puts folders in `entry.path` → tree flattened, duplicate names collide | PLAUSIBLE |
+| V5 | 541 | Paths taken from `entry.file.name` only; libarchive.js puts folders in `entry.path` → tree flattened, duplicate names collide (libarchive.js README: `getFilesArray()` → `{ file, path: 'addon/' }`) | CONFIRMED |
 | V6 | 361 | `displayedFiles` shows grandchild folders in the current folder (`parts.length === 2 && isDirectory`) | CONFIRMED |
 | V7 | 414 | `resourcesStore.getResource(fileId)` misses on direct link / reload → "Resource not found" | PLAUSIBLE |
 | V8 | 452 | `webdav.getFileContents(resource)` — v8 signature is `(space, { fileId, path }, opts)` returning `{ body, ... }`; call throws (see [v8 compatibility](../architecture/opencloud-v8-compatibility.md) C4) | CONFIRMED |
@@ -30,8 +30,7 @@ behaviour that needs a test. Remove entries when fixed (and say so in the commit
 | V11 | 805 | "Create Archive" button only downloads files individually | CONFIRMED |
 | V12 | 556 | Directory entries get `modified: new Date()` (now); sort by date is meaningless for them | CONFIRMED |
 | V13 | 675 | Any download error replaces the whole page with the error view (`error.value`) | CONFIRMED |
-| V14 | 681 | Uses static `Archive.extract(file)`; libarchive.js extracts via the entry object (`compressedFile.extract()`) — static method may not exist | PLAUSIBLE |
-| V15 | 13 (`index.ts`) | `Archive.init({ workerUrl })` option name depends on libarchive.js version | PLAUSIBLE |
+| V14 | 681, 695, 733, 837 | Uses static `Archive.extract(file)`, which libarchive.js 2.0.2 doesn't document; single files are extracted with `compressedFile.extract()` | CONFIRMED |
 | V16 | 496 | Streaming loop yields only when `totalRead` is an exact multiple of 10MB (almost never) | CONFIRMED |
 | V17 | 921 | `formatSize` units stop at GB; ≥1TB prints "undefined" | CONFIRMED |
 | V18 | 654, 755, 782 | Native `confirm()` dialogs instead of OpenCloud modals | CONFIRMED |
@@ -80,6 +79,7 @@ Security issues are tracked separately in [security](security.md).
 
 | # | Where | Issue |
 |---|-------|-------|
-| M1 | `manifest.json` vs `LICENSE`/`package.json`/`appinfo` | Apache-2.0 vs MIT |
-| M2 | `manifest.json`, `appinfo/info.json`, `package.json`, `LICENSE` | Author/repo point to OpenCloud's org, not this repo |
 | M3 | `manifest.json` `features` | Claims encrypted archives and batch operations |
+
+M1 (license mismatch) and M2 (author/repo pointing at OpenCloud's org) were fixed: everything now
+says AGPL-3.0, author Warstorm548, repo `Warstorm548/Acrchiver_Viewer`.

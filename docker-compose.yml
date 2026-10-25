@@ -3,7 +3,7 @@ version: '3.8'
 services:
   archive-viewer:
     build: .
-    image: opencloud/web-app-archive-viewer:1.0.0
+    image: warstorm548/web-app-archive-viewer:1.0.0
     container_name: archive-viewer
     restart: unless-stopped
     ports:
@@ -19,8 +19,8 @@ services:
       retries: 3
       start_period: 40s
     labels:
-      - "com.opencloud.app=archive-viewer"
-      - "com.opencloud.version=1.0.0"
+      - "com.github.warstorm548.app=archive-viewer"
+      - "com.github.warstorm548.version=1.0.0"
 
 volumes:
   archive-viewer-data:

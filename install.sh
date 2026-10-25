@@ -123,7 +123,7 @@ read -p "Deploy using Docker? (y/N): " -n 1 -r
 echo
 if [[ $REPLY =~ ^[Yy]$ ]]; then
     echo "Building Docker image..."
-    docker build -t opencloud/web-app-archive-viewer:1.0.0 .
+    docker build -t warstorm548/web-app-archive-viewer:1.0.0 .
     
     echo "Starting container..."
     docker-compose up -d
@@ -143,4 +143,4 @@ echo "2. Refresh the web interface"
 echo "3. Open an archive file to use Archive Viewer"
 echo ""
 echo "For documentation, visit:"
-echo "https://docs.opencloud.eu/apps/archive-viewer"
+echo "https://github.com/Warstorm548/Acrchiver_Viewer"

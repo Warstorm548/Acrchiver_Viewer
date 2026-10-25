@@ -57,7 +57,7 @@ Same list appears in `src/index.ts`, `manifest.json` and (minus `application/x-g
 ## `manifest.json`
 
 `name`, `id 'archive-viewer'`, `version 1.0.0`, `category 'Productivity'`, `icon 'file-zip'`,
-`license 'Apache-2.0'`, `repository` → `opencloud-eu/web-app-archive-viewer`,
+`author 'Warstorm548'`, `license 'AGPL-3.0'`, `repository` → `Warstorm548/Acrchiver_Viewer`,
 `entrypoint 'index.js'`, `supportedFormats`, `mimeTypes`, `features` (lists "encrypted archives"
 and "batch operations", neither implemented), `permissions ['files.read','files.download']`,
 `minVersion 1.0.0`, `screenshots []`. Whether OpenCloud reads any of these fields beyond
@@ -65,9 +65,9 @@ and "batch operations", neither implemented), `permissions ['files.read','files.
 
 ## `appinfo/info.json`
 
-Nextcloud-style app descriptor: `licence 'MIT'` (British spelling), `namespace 'OpenCloud'`,
+Nextcloud-style app descriptor: `licence 'AGPL-3.0'` (British spelling), `author 'Warstorm548'`, `namespace 'OpenCloud'`,
 `category 'files'`, `types ['filesystem']`, `mimes [...]`, `screenshot 'img/screenshot.png'`
-(missing), `bugs`/`repository` → `opencloud-eu/web-extensions`. OpenCloud Web does not use
+(missing), `website`/`bugs`/`repository` → `Warstorm548/Acrchiver_Viewer`. OpenCloud Web does not use
 `appinfo/`; this file serves the legacy approach at most.
 
 ## Legacy app context (for completeness)

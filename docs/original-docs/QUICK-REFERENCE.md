@@ -99,4 +99,4 @@ await app.shareFiles(['file1', 'file2']);
 ❌ Split archives
 
 ## Status: Production Ready ✅
-Version 1.0.0 | MIT License | OpenCloud.eu
+Version 1.0.0 | AGPL-3.0 | Warstorm548

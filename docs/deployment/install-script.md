@@ -13,10 +13,9 @@ Interactive bash script (`set -e`), 146 lines.
 7. `cp -r dist "$APP_DEST"`; `chmod -R 755` (makes every file executable).
 8. Print a "manual step" JSON snippet (`{"apps":[{"id":"archive-viewer","path":...}]}`) to add to
    an OpenCloud `config.json` — this format is not verified against OpenCloud's actual config.
-9. Optionally `docker build -t opencloud/web-app-archive-viewer:1.0.0 .` and
+9. Optionally `docker build -t warstorm548/web-app-archive-viewer:1.0.0 .` and
    `docker-compose up -d` (v1 CLI name; Compose v2 is `docker compose`).
-10. Print next steps and a docs URL (`https://docs.opencloud.eu/apps/archive-viewer`) that is not
-    known to exist.
+10. Print next steps and the project repo URL.
 
 ## Issues
 
