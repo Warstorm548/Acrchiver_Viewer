@@ -1,3 +1,4 @@
+import '@opencloud-eu/extension-sdk/tailwind.css'
 import { AppWrapperRoute, defineWebApplication } from '@opencloud-eu/web-pkg'
 import { useGettext } from 'vue3-gettext'
 import App from './App.vue'

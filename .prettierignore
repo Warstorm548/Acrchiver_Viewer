@@ -1,6 +1,5 @@
 dist
 coverage
-reference
 pnpm-lock.yaml
 LICENSE
 docs/original-docs

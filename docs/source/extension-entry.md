@@ -1,18 +1,22 @@
-# Extension Entry and Viewer — `src/index.ts`, `src/App.vue`
+# Extension Entry — `src/index.ts`, `src/manifest.json`
 
-The current app code after rework step 1: a minimal OpenCloud v8 viewer that registers for archive
-file types and shows a placeholder. The archive engine and real UI arrive in step 3 (port notes:
-[reference-old-viewer](reference-old-viewer.md)).
+How the app registers with OpenCloud. The viewer itself is described in
+[viewer-ui](viewer-ui.md), the archive reading in [archive-engine](archive-engine.md).
 
 ## `src/index.ts`
 
 `export default defineWebApplication({ setup() { … } })` from `@opencloud-eu/web-pkg`, following
 `web-app-json-viewer`:
 
-- `applicationId = 'archive-viewer'` (also the `defineConfig({ name })` in `vite.config.ts`).
+- First line: `import '@opencloud-eu/extension-sdk/tailwind.css'` — the SDK's Tailwind build
+  (utilities prefixed `ext:`), same as OpenCloud's own extensions (e.g. `web-app-notes`).
+- `applicationId = 'archive-viewer'` (also the `defineConfig({ name })` in `vite.config.ts` and
+  the install folder name).
 - `supportedExtensions = ['zip', 'tar', 'tar.gz', 'tar.bz2', 'tar.xz', 'tgz', 'gz', 'bz2', 'xz',
 '7z', 'rar']`. OpenCloud treats `tar.gz`/`tar.bz2`/`tar.xz` as single extensions, so they are
-  listed explicitly (found in step 2: `sample.tar.gz` didn't match `gz`).
+  listed explicitly (found in step 2). All of them get "Open in Archive Viewer"; formats the
+  engine can't read yet (bz2, xz, plain gz, 7z, rar) open to a "not supported yet" message with a
+  download button.
 - `useGettext()` from `vue3-gettext` for `$gettext`.
 - `routes`: one route, `name 'archive-viewer'`, `path '/:driveAliasAndItem(.*)?'`,
   `component: AppWrapperRoute(App, { applicationId })`,
@@ -21,30 +25,19 @@ file types and shows a placeholder. The archive engine and real UI arrive in ste
   `extensions: supportedExtensions.map(extension => ({ extension, routeName: applicationId }))`.
 - `translations` from `../l10n/translations.json`.
 
-No `extensions` (registry) key yet — no menu items or file actions.
+No `extensions` (registry) key — no menu items or file actions.
 
-## `src/App.vue`
+## `src/manifest.json`
 
-Options-API component `name: 'ArchiveViewer'`, rendered by `AppWrapperRoute`.
+```json
+{ "config": { "maxArchiveSize": 268435456, "maxUncompressedSize": 1073741824 } }
+```
 
-| Prop                | Type                                        | Source                        |
-| ------------------- | ------------------------------------------- | ----------------------------- |
-| `resource`          | `Resource` (`@opencloud-eu/web-client`)     | the opened file               |
-| `applicationConfig` | `AppConfigObject` (`@opencloud-eu/web-pkg`) | `apps.yaml` / manifest config |
-
-It deliberately declares **neither `currentContent` nor `url`**, so the wrapper downloads nothing.
-Step 3 adds one of them (see the `AppWrapperRoute` section of
-[opencloud-v8-compatibility](../architecture/opencloud-v8-compatibility.md)).
-
-Template: `oc-icon file-zip`, `.archive-viewer-name` (resource name), `.archive-viewer-size`
-(`formatFileSize(resource.size, currentLanguage)` from web-pkg), `.archive-viewer-placeholder`
-("Archive contents will appear here."). Uses Tailwind utility classes provided by the SDK build.
-
-## Tests
-
-`tests/unit/App.spec.ts` — see [tests](../testing/tests.md).
+The SDK merges it into `dist/manifest.json` (with name, version, license, author and
+`entrypoint`). OpenCloud merges the `config` block with `apps.yaml`, and the result reaches the
+viewer as `applicationConfig`. The same defaults are hard-coded in `App.vue` as a fallback.
 
 ## When changing
 
-Keep this doc, [opencloud-integration](../architecture/opencloud-integration.md) and the "still
-open" rows of [opencloud-v8-compatibility](../architecture/opencloud-v8-compatibility.md) in sync.
+Keep this doc, [opencloud-integration](../architecture/opencloud-integration.md) and
+[opencloud-v8-compatibility](../architecture/opencloud-v8-compatibility.md) in sync.

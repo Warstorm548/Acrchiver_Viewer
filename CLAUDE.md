@@ -3,10 +3,9 @@
 Archive viewer extension for **OpenCloud Web v8** (browse/preview/download ZIP, TAR, etc. inside
 OpenCloud). Standalone extension at the repo root, built with OpenCloud's toolchain
 (`@opencloud-eu/extension-sdk`, Vite, Vue 3, TypeScript, pnpm, Node 24), pinned to OpenCloud
-**8.0** to match the main server (rolling 8.0.1). Rework steps 1–2 of 6 are done: it builds,
-tests pass, and it installs and opens in a local production stack; the viewer is still a
-placeholder. Old pre-v8 viewer code is
-parked in `reference/` for porting. Start with [project status](docs/overview/project-status.md).
+**8.0** to match the main server (rolling 8.0.1). Rework steps 1–3 of 6 are done: it opens ZIP,
+TAR and TAR.GZ/TGZ in the browser with pure JavaScript (no WebAssembly, no CSP change) — browse,
+search, sort, preview, download. Start with [project status](docs/overview/project-status.md).
 
 Commands: `pnpm install`, `pnpm build`, `pnpm check:types`, `pnpm lint`, `pnpm format:check`,
 `pnpm test:unit --run` (run `nvm use` first if Node 24 isn't active).
@@ -42,14 +41,16 @@ Commands: `pnpm install`, `pnpm build`, `pnpm check:types`, `pnpm lint`, `pnpm f
 ### Overview
 
 - [docs/overview/project-status.md](docs/overview/project-status.md) — build/test status, feature
-  status, the 6-step rework plan, pending decisions, metadata.
+  status, the 6-step rework plan, decisions, metadata.
 - [docs/overview/repository-layout.md](docs/overview/repository-layout.md) — every tracked file
-  with line count and purpose; what step 1 removed.
+  with line count and purpose; what steps 1 and 3 removed.
+- [docs/overview/roadmap-considerations.md](docs/overview/roadmap-considerations.md) — parked
+  options: server helper service, libarchive as plain JS, WebAssembly + CSP, extract to folder.
 
 ### Tech stack
 
-- [docs/tech-stack/dependencies.md](docs/tech-stack/dependencies.md) — devDependencies with ranges
-  and installed versions, known install warnings, removed and planned packages.
+- [docs/tech-stack/dependencies.md](docs/tech-stack/dependencies.md) — zip.js (native build only)
+  and devDependencies with versions, 8.0 alignment rule, install warnings, step 4 candidates.
 - [docs/tech-stack/build-tooling.md](docs/tech-stack/build-tooling.md) — Node/pnpm, scripts, what
   the extension-sdk `defineConfig` provides, TypeScript, ESLint, Prettier, `.gitignore`.
 
@@ -63,19 +64,19 @@ Commands: `pnpm install`, `pnpm build`, `pnpm check:types`, `pnpm lint`, `pnpm f
 
 ### Source
 
-- [docs/source/extension-entry.md](docs/source/extension-entry.md) — `src/index.ts` and the
-  placeholder `src/App.vue`: registration, route, props.
+- [docs/source/extension-entry.md](docs/source/extension-entry.md) — `src/index.ts` and
+  `src/manifest.json`: Tailwind import, file types, route, default config.
+- [docs/source/viewer-ui.md](docs/source/viewer-ui.md) — `App.vue` loading flow, `ArchiveBrowser`,
+  `PreviewModal`, `download.ts`, styling conventions.
+- [docs/source/archive-engine.md](docs/source/archive-engine.md) — `src/engine/`: format detection,
+  ZIP (zip.js native), TAR parser, gzip, folder index, limits.
 - [docs/source/styles-and-i18n.md](docs/source/styles-and-i18n.md) — Tailwind/design-system
   styling, v8 theme tokens, `l10n/translations.json`, translation tooling.
-- [docs/source/reference-old-viewer.md](docs/source/reference-old-viewer.md) — port notes for the
-  parked `reference/old-views/ArchiveViewer.vue`: template, state, actions, what to port.
-- [docs/source/reference-old-viewer-large.md](docs/source/reference-old-viewer-large.md) — port
-  notes for the parked `ArchiveViewerLarge.vue` and the deleted `utils/memory.ts`.
 
 ### Testing
 
-- [docs/testing/tests.md](docs/testing/tests.md) — how to run, SDK test config, current specs,
-  test pattern, parked old tests.
+- [docs/testing/tests.md](docs/testing/tests.md) — how to run, SDK test config, the 7 spec files,
+  test patterns (stubs, fetch/zip mocks), what only the manual checklist covers.
 
 ### Deployment
 
@@ -83,14 +84,14 @@ Commands: `pnpm install`, `pnpm build`, `pnpm check:types`, `pnpm lint`, `pnpm f
   output, installing on a server (opencloud-compose), install checks, `apps.yaml`, production CSP.
 - [docs/deployment/local-dev-environment.md](docs/deployment/local-dev-environment.md) — the local
   opencloud-compose stack (rolling 8.0.1) outside the repo: setup to recreate it, sudo commands,
-  dev loop, fixtures, checks, step 2 results, troubleshooting.
+  dev loop, fixtures, browser checklist, step results, troubleshooting.
 
 ### Known issues
 
-- [docs/known-issues/bugs.md](docs/known-issues/bugs.md) — bugs in the parked old viewer to fix
-  while porting, with line and confidence; what was fixed or removed.
-- [docs/known-issues/security.md](docs/known-issues/security.md) — untrusted archive input, rules
-  for the port (no `v-html`, zip bombs, SVG, filenames), CSP, unbacked README claims.
+- [docs/known-issues/bugs.md](docs/known-issues/bugs.md) — known limitations (K1–K6) and how the
+  old viewer's bugs were resolved.
+- [docs/known-issues/security.md](docs/known-issues/security.md) — untrusted-archive rules and how
+  the viewer meets them (no `v-html`, limits, SVG, filenames, auth, CSP).
 
 ### Original uploaded docs (historical, unverified)
 

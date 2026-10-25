@@ -4,34 +4,24 @@ Archive contents (file names, data) are **untrusted input**: anyone who can put 
 a user's storage, or share one by public link, controls them. Review every place entry names or
 contents reach the DOM, memory or storage.
 
-## Current code (after rework step 1)
+## How the viewer handles untrusted archives (step 3)
 
-`src/App.vue` renders only `resource.name` and a formatted size through `v-text`, which Vue
-escapes. No `v-html`. Nothing from inside an archive is read yet.
-
-## Rules for the step 3 port
-
-- **Render names with `{{ }}` / `v-text` / bound attributes only** — never `v-html` or
-  `innerHTML`. (The removed legacy app had a real XSS here: it built rows with template strings and
-  an `escapeHtml` that didn't escape quotes, so an entry named `x" onmouseover="…"` ran script.)
-- **SVG previews**: show only via `<img src="blob:…">` (scripts don't run there). Never open the
-  blob as a document or embed it with `<object>`/`<iframe>`. Give blobs an explicit MIME type.
-- **Resource exhaustion ("zip bomb")**: declared sizes in archive headers can lie. Enforce limits on
-  the archive size (from `applicationConfig`, like `web-app-unzip`'s `maxArchiveSize`) and on bytes
-  actually extracted for a preview, not just on the declared entry size.
-- **Download filenames**: names come from the archive; strip path separators and control
-  characters before using them for `a.download`.
-- **Path traversal** (`../`, absolute paths): irrelevant while nothing is written, but mandatory to
-  handle if an "extract to folder" feature is added.
-- **Auth**: fetch file content only through `AppWrapperRoute` props / OpenCloud's
-  `clientService`, never with hand-built `fetch` + tokens.
+| Rule              | Implementation                                                                                                                                                                                                                                                                |
+| ----------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| No HTML injection | Names, paths and text previews render only via `v-text`, `{{ }}` and bound attributes; no `v-html`/`innerHTML` anywhere. Test fixture `x" onmouseover="alert(1)".txt` checks this in the browser. (The removed legacy app had a real XSS here.)                               |
+| SVG / images      | Shown only as `<img :src="blob:…">` (scripts in SVG don't run in `<img>`); blobs get an explicit MIME type from the extension; object URLs revoked on close.                                                                                                                  |
+| Archive size      | `maxArchiveSize` (default 256 MiB) checked against `resource.size` **before** downloading.                                                                                                                                                                                    |
+| Zip bombs         | `.tar.gz` decompression aborts above `maxUncompressedSize` (default 1 GiB). Previews only for entries ≤ 10 MiB (declared size) and show at most 1 MiB of text. Gap: a ZIP entry that lies about its size is bounded only when the user downloads it — see [bugs](bugs.md) K4. |
+| Download names    | `sanitizeFileName` replaces `/`, `\` and control characters before `a.download`.                                                                                                                                                                                              |
+| Path traversal    | Nothing is written to disk or to OpenCloud; `..` stays display text. Mandatory to handle if "extract to folder" is ever added ([roadmap-considerations](../overview/roadmap-considerations.md)).                                                                              |
+| Auth              | The archive is fetched only from the pre-signed `url` OpenCloud's `AppWrapperRoute` provides; no tokens handled by the app.                                                                                                                                                   |
+| CSP               | Works under the default production CSP: no WebAssembly (zip.js native build), workers only from `blob:` (allowed by `worker-src`).                                                                                                                                            |
 
 ## Hosting headers
 
-The old nginx container (and its header problems) was removed. In v8 the app is served by
-OpenCloud itself, which sets its own CSP (`PROXY_CSP_CONFIG_FILE_LOCATION`). If the archive
-engine needs a WASM worker, check that OpenCloud's CSP allows it (`worker-src`, `wasm-unsafe-eval`)
-— to verify in step 2/3.
+The app is served by OpenCloud itself, which sets its CSP (`PROXY_CSP_CONFIG_FILE_LOCATION`;
+opencloud-compose `config/opencloud/csp.yaml`). No CSP change is needed or recommended; the risks of
+allowing WebAssembly are recorded in [roadmap-considerations](../overview/roadmap-considerations.md).
 
 ## README claims not backed by code
 

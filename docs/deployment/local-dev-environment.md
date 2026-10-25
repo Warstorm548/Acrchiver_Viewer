@@ -12,7 +12,8 @@ It lives **outside this repo** (not pushed), so this doc records how to recreate
   opencloud-compose/     # git clone of github.com/opencloud-eu/opencloud-compose (main)
     .env                 # our settings (gitignored upstream)
     custom/archive-viewer.yml   # our overlay (custom/ is gitignored upstream)
-  test-fixtures/         # make-fixtures.sh + sample.zip / sample.tar / sample.tar.gz
+    custom/apps.yaml     # copy of config/opencloud/apps.yaml + archive-viewer section
+  test-fixtures/         # make-fixtures.sh + sample archives, large.zip
   README.md              # short map + commands
 ```
 
@@ -53,7 +54,19 @@ services:
   opencloud:
     volumes:
       - ../Acrchiver_Viewer/dist:/var/lib/opencloud/web/assets/apps/archive-viewer:ro
+      # replaces the upstream apps.yaml mount (same target path)
+      - ./custom/apps.yaml:/etc/opencloud/apps.yaml
 ```
+
+`custom/apps.yaml` = upstream `config/opencloud/apps.yaml` (the `maps` entry) plus:
+
+```yaml
+archive-viewer:
+  config: {} # e.g. maxArchiveSize: 1000 to test the "too large" message
+```
+
+Changing the overlay's volumes needs `sudo docker compose up -d` (recreate); config/app changes
+need `sudo docker compose restart opencloud`.
 
 `config/opencloud/apps/archive-viewer/` is pre-created (as the user) as the mount point.
 `/etc/hosts` needs `127.0.0.1 cloud.opencloud.test`.
@@ -82,8 +95,10 @@ first `up` so `dist/` exists.
 ## Test fixtures
 
 `~/Projects/OpenCloud/test-fixtures/make-fixtures.sh` (Python stdlib) writes `sample.zip`,
-`sample.tar`, `sample.tar.gz`, each with `README.txt`, `docs/notes.md`, `docs/deep/data.json`,
-`images/pixel.png`. Upload (needs basic auth enabled):
+`sample.tar`, `sample.tar.gz`, `sample.tgz` (same content: nested `docs/deep/deeper/`, text files,
+PNG + SVG, `binary.bin`, an empty folder, `folder with spaces/Ünïcödé file.txt`, a >100-character
+path (pax long name), and the hostile name `x" onmouseover="alert(1)".txt`) plus `large.zip`
+(~6 MB of random data, to see the download progress). Upload (needs basic auth enabled):
 
 ```
 curl -sk -u admin:admin -T sample.zip https://cloud.opencloud.test/remote.php/webdav/sample.zip
@@ -102,8 +117,16 @@ curl -sk -D - -o /dev/null https://cloud.opencloud.test/      # Content-Security
 
 1. `https://cloud.opencloud.test`, accept the certificate warning, log in `admin` / `admin`.
 2. Personal files shows the fixtures.
-3. Right-click an archive → "Open in Archive Viewer" → placeholder page with icon, name, size.
-4. F5 on the viewer page renders it again.
+3. Right-click an archive → "Open in Archive Viewer" → file table (folders first).
+4. Navigate folders + breadcrumb; empty folder message; search (e.g. `config` → shows
+   `docs/deep/deeper`); sort by each column.
+5. Preview txt/md/json/yaml, PNG, SVG; `binary.bin` → "No preview".
+6. Download one file; select folders → "Download selected (n)" → `<archive>-selection.zip`.
+7. Hostile file name shows as plain text (no popup on hover).
+8. `large.zip` shows "Downloading… N%" first.
+9. F5 on the viewer page renders it again; F12 console has no CSP / WebAssembly errors.
+10. Too-large path: set `maxArchiveSize: 1000` in `custom/apps.yaml`, restart → message + working
+    "Download archive"; then restore `{}` and restart.
 
 Screenshots: Firefox `Ctrl+Shift+S` → Download (`~/Downloads`), or Print Screen
 (`~/Pictures/Screenshots`); Claude can read both.
@@ -120,6 +143,21 @@ Screenshots: Firefox `Ctrl+Shift+S` → Download (`~/Downloads`), or Print Scree
 - Reloading the viewer page (F5) renders it again (direct-URL load works).
 - Production CSP observed: `worker-src 'self' blob:`; `script-src 'self' 'unsafe-inline'
 https://keycloak.opencloud.test/` — no `'wasm-unsafe-eval'`, so WebAssembly is blocked.
+
+## Step 3 results (2026-10-25)
+
+- Archives opened in the real viewer on 8.0.1; downloads verified **byte-for-byte** against the
+  fixtures: `readme.txt` = `big/readme.txt` from `large.zip`; `sample-selection.zip` passed its CRC
+  check and all 10 files matched the originals (paths, Unicode name, 115-character path and
+  `binary.bin` intact). The selection zip contains files only (empty folders are skipped).
+- Browser console while using the viewer: only OpenCloud's own messages (auth context, version
+  banner "OpenCloud Web UI 8.0.0 / OpenCloud 8.0.1 rolling", an informational note that
+  `frame-ancestors` overrides `x-frame-options`). **No errors, no CSP or WebAssembly blocks**, no
+  output from the app.
+- Size limit: with `maxArchiveSize: 1000` in `custom/apps.yaml`, `/config.json` served
+  `{maxArchiveSize: 1000, maxUncompressedSize: 1073741824}` (apps.yaml merged over the manifest
+  defaults) and the viewer showed the "larger than" message instead of downloading. Restored to
+  `config: {}` afterwards.
 
 ## Troubleshooting
 

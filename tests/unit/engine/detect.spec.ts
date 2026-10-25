@@ -1,0 +1,45 @@
+import { resolveFormat, sniffSignature } from '../../../src/engine/detect'
+import { ArchiveError } from '../../../src/engine/types'
+import { buildTar } from './tarBuilder'
+
+const bytes = (...values: number[]) => {
+  const head = new Uint8Array(262)
+  head.set(values)
+  return head
+}
+
+const zipHead = bytes(0x50, 0x4b, 0x03, 0x04)
+const gzipHead = bytes(0x1f, 0x8b, 0x08)
+const tarHead = buildTar([{ name: 'a.txt', content: 'x' }]).subarray(0, 262)
+const unknownHead = bytes(0x01, 0x02)
+
+describe('sniffSignature', () => {
+  it('recognizes zip, gzip and tar', () => {
+    expect(sniffSignature(zipHead)).toBe('zip')
+    expect(sniffSignature(gzipHead)).toBe('gzip')
+    expect(sniffSignature(tarHead)).toBe('tar')
+    expect(sniffSignature(unknownHead)).toBeNull()
+  })
+})
+
+describe('resolveFormat', () => {
+  it('uses matching extension and content', () => {
+    expect(resolveFormat('zip', zipHead)).toBe('zip')
+    expect(resolveFormat('tar', tarHead)).toBe('tar')
+    expect(resolveFormat('tar.gz', gzipHead)).toBe('tar.gz')
+    expect(resolveFormat('tgz', gzipHead)).toBe('tar.gz')
+  })
+
+  it('trusts content over a wrong extension', () => {
+    expect(resolveFormat('tar', zipHead)).toBe('zip')
+  })
+
+  it('accepts signature-less tar by extension', () => {
+    expect(resolveFormat('tar', unknownHead)).toBe('tar')
+  })
+
+  it('rejects formats this version cannot open', () => {
+    expect(() => resolveFormat('gz', gzipHead)).toThrow(ArchiveError)
+    expect(() => resolveFormat('7z', unknownHead)).toThrow(ArchiveError)
+  })
+})

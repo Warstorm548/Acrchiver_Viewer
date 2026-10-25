@@ -1,0 +1,6 @@
+{
+  "config": {
+    "maxArchiveSize": 268435456,
+    "maxUncompressedSize": 1073741824
+  }
+}

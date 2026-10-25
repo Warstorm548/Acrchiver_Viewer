@@ -54,5 +54,8 @@
     "vue-tsc": "^3.2.6",
     "vue3-gettext": "4.0.1"
   },
-  "packageManager": "pnpm@11.28.8"
+  "packageManager": "pnpm@11.28.8",
+  "dependencies": {
+    "@zip.js/zip.js": "2.24.0"
+  }
 }

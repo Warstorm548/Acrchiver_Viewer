@@ -1,9 +1,16 @@
 # Dependencies
 
-State after rework step 2. All packages are **devDependencies**, matching OpenCloud's extensions:
-the host provides the shared runtime modules, and the build bundles anything else that's used.
-There are **no runtime dependencies yet** — the archive engine (libarchive.js and/or zip.js) is
-added in step 3/4.
+State after rework step 3. OpenCloud packages are **devDependencies**, matching OpenCloud's
+extensions: the host provides those shared modules at runtime. The one **runtime dependency** is
+the ZIP library, which is bundled into the app.
+
+## dependencies (bundled)
+
+| Package          | Range                                  | Role                                                                                                                                                                                                                                                                                                             |
+| ---------------- | -------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `@zip.js/zip.js` | `2.24.0` (exact, like `web-app-unzip`) | ZIP reading and writing. Imported **only** from `@zip.js/zip.js/lib/zip-native.js`: the default build uses WebAssembly (`zip-module.wasm`), which OpenCloud's production CSP blocks; the native build uses the browser's `DecompressionStream` in an inline `blob:` worker. Do not import from the package root. |
+
+TAR and gzip need no library (own parser + browser `DecompressionStream`).
 
 ## devDependencies (installed versions from `pnpm-lock.yaml`)
 
@@ -53,12 +60,12 @@ has the same tree.
 `fflate`, `pako`, `node-7z`, `unrar-js`, `tar-stream` (legacy app / never used), the
 `@opencloud/core` peer (doesn't exist), and all webpack/Babel tooling.
 
-## Planned (step 3/4, pending decision)
+## Candidates (step 4, pure JavaScript only)
 
-- `libarchive.js` 2.0.2 (many formats, whole file in memory, WASM worker) and/or
-- `@zip.js/zip.js` 2.24.x (ZIP, Range reads possible; used by `web-app-unzip`).
-
-See [opencloud-v8-compatibility](../architecture/opencloud-v8-compatibility.md).
+- A pure-JS bzip2 decoder (e.g. `seek-bzip`) for BZ2 / TAR.BZ2.
+- A pure-JS xz/LZMA decoder for XZ / TAR.XZ (most common ones are WebAssembly — must be checked).
+- `libarchive.js` is **not** an option without a CSP change (WebAssembly); see
+  [roadmap-considerations](../overview/roadmap-considerations.md).
 
 ## When changing dependencies
 

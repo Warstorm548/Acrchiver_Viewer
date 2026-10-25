@@ -1,10 +1,11 @@
 # OpenCloud v8 Compatibility
 
-**Verdict (after rework step 2): installs and opens in OpenCloud 8.0.1; viewer not functional
-yet.** The toolchain, app registration and route wiring match OpenCloud v8. The app is built
+**Verdict (after rework step 3): compatible and functional on OpenCloud 8.0.1** for ZIP, TAR and
+TAR.GZ/TGZ (pure JavaScript, no CSP change). Other formats and large-archive streaming follow in
+steps 4–5. The toolchain, app registration and route wiring match OpenCloud v8. The app is built
 against the 8.0 packages (the main server runs rolling **8.0.1**; latest is 8.1.0) and was
 verified on a local opencloud-compose stack: "Open in Archive Viewer" works for zip, tar and
-tar.gz, and the placeholder viewer renders. Reading archives comes in step 3. Researched 2026-10-25 against `opencloud-eu/web-extensions` (`web-app-json-viewer`,
+tar.gz. Researched 2026-10-25 against `opencloud-eu/web-extensions` (`web-app-json-viewer`,
 `web-app-unzip`) and the `opencloud-eu/web` source (`packages/extension-sdk`,
 `packages/web-client`, `packages/web-pkg`).
 
@@ -21,14 +22,14 @@ tar.gz, and the placeholder viewer renders. Reading archives comes in step 3. Re
 | C9  | Deployment     | nginx container, `install.sh`, `appinfo/`              | Removed; v8 apps-dir install documented in [deploying-to-opencloud](../deployment/deploying-to-opencloud.md) (to be exercised in step 2) |
 | C10 | License        | MIT/Apache mix                                         | AGPL-3.0                                                                                                                                 |
 
-## Still open (step 3+)
+## Resolved in step 3
 
-| #   | Area               | Note                                                                                                                                                                                                                                                                         |
-| --- | ------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| C4  | Fetching the file  | Use `AppWrapperRoute` props: `currentContent` + `fileContentOptions: { responseType: 'arraybuffer' }`, or `url` for Range reads. Never call `getFileContents(resource)` directly (v8 signature is `(space, { fileId, path }, opts)` returning `{ response, body, headers }`) |
-| C7  | Theme tokens       | Old views use `--oc-color-swatch-*` (not in v8); use `--oc-role-*` (e.g. `--oc-role-chrome`) or Tailwind                                                                                                                                                                     |
-| C11 | Archive worker     | Worker must ship inside the build and be referenced relative to it (Vite `?worker&url` / `new URL(..., import.meta.url)`), as `web-app-unzip` does for zip.js                                                                                                                |
-| C12 | Dialogs / messages | Use the host modal service and `useMessages()`, not `confirm()` / full-page errors                                                                                                                                                                                           |
+| #   | Area               | Now                                                                                                  |
+| --- | ------------------ | ---------------------------------------------------------------------------------------------------- |
+| C4  | Fetching the file  | Viewer declares the `url` prop (pre-signed `downloadURL`) and fetches it itself after a size check   |
+| C7  | Theme tokens       | Tailwind (`ext:` prefix) with OpenCloud role colours; no `--oc-color-swatch-*`                       |
+| C11 | Archive worker     | zip.js **native** build: inline `blob:` worker, no WebAssembly, nothing to ship separately           |
+| C12 | Dialogs / messages | `oc-modal` preview, `useMessages().showErrorMessage`; no `confirm()`, no full-page error on failures |
 
 ## How `AppWrapperRoute` feeds a v8 viewer
 
@@ -135,13 +136,15 @@ export default defineWebApplication({
    `vite.config.ts`, lockfile; minimal viewer builds, type-checks, lints and passes tests.
 2. **Done (step 2):** local opencloud-compose stack on rolling 8.0.1, packages pinned to 8.0,
    app installed, "Open in Archive Viewer" verified (zip, tar, tar.gz).
-3. Port the UI onto `AppWrapperRoute` props; fix V1, V5, V6, V14 from [bugs](../known-issues/bugs.md).
+3. **Done (step 3):** pure-JS engine (zip.js native, own TAR reader, browser gzip) and ported
+   viewer UI on the `url` prop; old bugs V1, V5, V6, V14 fixed by design.
 4. Add remaining formats with size limits from `apps.yaml`.
 5. Large ZIPs via the `url` prop + Range reads, if the open question above checks out.
 6. Tests (`web-test-helpers`), translations, docs, README.
 
-Pending decisions: scope (viewer vs. also extract), engine (libarchive.js, zip.js, or both —
-note the CSP finding above), size limits.
+Decided: approach A (pure JS), view + download, 256 MiB default limit. Alternatives (server
+helper, libarchive as plain JS, extract-to-folder) are parked in
+[roadmap-considerations](../overview/roadmap-considerations.md).
 
 ## Sources
 

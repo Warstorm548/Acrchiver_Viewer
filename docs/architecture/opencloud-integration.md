@@ -28,14 +28,18 @@ Route `archive-viewer`, `path '/:driveAliasAndItem(.*)?'`, component
 (works for logged-in users and public links), `patchCleanPath: true`.
 
 `AppWrapperRoute` resolves the space and resource from the route, checks permissions, shows the
-loading/error UI, and renders `App` with props. `App` currently takes only `resource` and
-`applicationConfig`; it declares neither `currentContent` nor `url`, so no file content is
-fetched yet.
+loading/error UI, and renders `App` with props. `App` declares `resource`, `applicationConfig` and
+**`url`** (not `currentContent`). With the default `urlForResourceOptions` (`null`), web-client
+`getFileUrl` uses `disposition: 'attachment'` and returns the resource's **pre-signed
+`downloadURL`** without downloading anything (only vault files become in-memory blob URLs). The
+viewer checks the size limit first, then fetches that URL itself with progress — see
+[viewer-ui](../source/viewer-ui.md).
 
 ## Configuration
 
-`applicationConfig` comes from `apps.yaml` (`archive-viewer: config: …`) or an app `config.json`.
-No options are read yet; a size limit is planned for step 4.
+`applicationConfig` = manifest `config` (defaults from `src/manifest.json`) merged with
+`apps.yaml` (`archive-viewer: config: …`) or an app `config.json`. Read options:
+`maxArchiveSize` (default 256 MiB) and `maxUncompressedSize` (default 1 GiB).
 
 ## Shared modules
 
@@ -46,8 +50,8 @@ No options are read yet; a size limit is planned for step 4.
 
 The old integration (extensions with a `handler` in the registry key, route query `fileId`,
 `resourcesStore.getResource`, direct `webdav.getFileContents(resource)`, `Archive.init` worker URL,
-hand-written `manifest.json`, `appinfo/info.json`) is gone. The old viewer's behaviour is recorded
-in [reference-old-viewer](../source/reference-old-viewer.md).
+hand-written `manifest.json`, `appinfo/info.json`) is gone. The old viewer's useful UI was ported
+in step 3 and the old code deleted (recoverable from git history, commit `619d40a`).
 
 ## When changing integration
 
