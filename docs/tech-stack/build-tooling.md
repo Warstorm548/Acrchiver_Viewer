@@ -57,10 +57,17 @@ and is bundled by webpack anyway).
 `globals: true`, `environment: 'jsdom'`, `setupFiles: ['./tests/setup.ts']`, v8 coverage,
 alias `@` → `./src`. See [tests](../testing/tests.md).
 
+## Node version
+
+`.nvmrc` pins Node **24** (LTS, matching OpenCloud web's Volta pin `24.22.1` and `engines >=22`).
+With nvm: `nvm use` in the repo root (or automatic on `cd` if the nvm auto-use shell hook is set
+up). Node 24 bundles Corepack, so `corepack enable` provides pnpm; Node 25+ no longer bundles it.
+
 ## Package manager
 
 `Dockerfile` and `install.sh` use **pnpm** (`pnpm@9.0.0` in Docker) with `--frozen-lockfile`,
-but no `pnpm-lock.yaml` is committed, so both fail at install. No `packageManager` field.
+but no `pnpm-lock.yaml` is committed, so both fail at install. No `packageManager` field yet;
+OpenCloud's own repos pin `pnpm@11.28.x`, which Corepack would pick up once added.
 
 ## Minimum to get a working build (Vue app)
 

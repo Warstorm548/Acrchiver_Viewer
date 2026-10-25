@@ -24,6 +24,7 @@ both or by neither specifically, `DEAD` = present but not referenced.
 | `docker-compose.yml` | 31 | SHARED | Runs the image on port 8080 |
 | `nginx.conf` | 39 | SHARED | Serves `/archive-viewer/` |
 | `install.sh` | 146 | SHARED | Interactive build + copy + optional Docker deploy |
+| `.nvmrc` | 1 | SHARED | Node version for nvm (`24`); see [build-tooling](../tech-stack/build-tooling.md) |
 
 ## `src/`
 
