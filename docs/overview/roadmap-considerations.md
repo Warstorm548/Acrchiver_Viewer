@@ -1,9 +1,9 @@
 # Roadmap Considerations
 
-Options discussed but **not scheduled**. The current plan (steps 3–6) is pure JavaScript in the
-browser with no server or CSP changes ("approach A"); see
-[project-status](project-status.md). Revisit these when a need appears (7z/RAR, archives too big
-for the browser, writing into OpenCloud).
+Options discussed but **not scheduled**, plus decisions for later features. Steps 3–6 built
+the viewer in pure JavaScript in the browser with no server or CSP changes ("approach A");
+0.3.0 added the optional server helper (option B below); see [project-status](project-status.md).
+Revisit the others when a need appears (7z/RAR, writing into OpenCloud).
 
 ## Why these are separate
 
@@ -12,22 +12,14 @@ web applications", OpenCloud web service README). The production CSP on the main
 8.0.1) allows web workers (`worker-src 'self' blob:`) but **blocks WebAssembly** (`script-src`
 has no `'wasm-unsafe-eval'`). Approach A works within both rules; the options below each bend one.
 
-## B — Server helper service (any language)
+## B — Server helper service (done in 0.3.0)
 
-A small service (Go fits best: OpenCloud is Go and has mature archive libraries; Python or Rust
-also work) runs as an extra container in the opencloud-compose stack. OpenCloud's proxy routes a
-path to it via `proxy.yaml` `additional_policies` (OpenCloud's own dev setup does this for `/yjs`).
-
-- **Auth**: protected routes (the default) require login, and the proxy adds the user's access
-  token to forwarded requests (`services/proxy/pkg/middleware/account_resolver.go` sets the reva
-  token header). The service fetches the archive from OpenCloud as that user.
-- **Pros**: every format (7z, RAR, XZ, BZ2 via native libraries); huge archives processed with
-  streaming/random access on the server; browser downloads only chosen files; no CSP change.
-- **Cons / risks**: another service to build, deploy and patch; untrusted archives are unpacked
-  **on the server** (zip bombs, path traversal, parser bugs → needs limits, timeouts, sandboxing,
-  temp-space quotas); more moving parts; token forwarding needs a prototype first.
-- **Shape**: `/archive-api/list?file=<id>`, `/archive-api/entry?file=<id>&path=…`; the Vue viewer
-  would use it when present and fall back to approach A otherwise.
+Built as `server/` (Go) with a compose overlay and two proxy routes: large TAR-family and single
+compressed archives are copied as the user into a capped temp folder, listed and streamed from
+there. See [archive-helper overview](../source/archive-helper/overview.md) and
+[deployment](../deployment/archive-helper.md). Possible later improvements: checkpoints in the
+decompressed stream (zlib `zran`-style) for fast random access into big `.tar.gz`; 7z/RAR on the
+server; sharing one temp copy between users of the same file (each read re-checked with the user).
 
 ## C — libarchive compiled to plain JavaScript
 
@@ -46,21 +38,45 @@ builds. Risk is low (`'unsafe-inline'` is already present) but it is server-wide
 on every server that installs the app, and must be kept out of upstream-tracked files (use the
 `custom/` overlay). Decided against so the app works on a default OpenCloud.
 
-## Extract to folder
+## Compress on the server (decided, not built)
 
-An "Extract here" action that writes archive contents into OpenCloud (like the official
-`web-app-unzip`, which only does ZIP up to 64 MB by default).
+A "Compress…" entry in the file context menu (`global.files.context-actions`) that builds an
+archive on the server, using the archive helper's container, temp folder and caps.
 
-- **Pieces**: an `action` extension on `global.files.context-actions`; create a target folder
-  (`clientService.webdav.createFolder`); upload entries through OpenCloud's upload service
-  (`$uppyService`, preserving relative paths) — the pattern in `web-app-unzip`.
-- **Risks**: path traversal (`../`, absolute paths, backslashes) must be rejected before upload;
+- **Formats:** ZIP, TAR, TAR.GZ first (Go standard library); TAR.XZ / TAR.BZ2 need extra
+  libraries; RAR can't be created (proprietary); 7z would need a third-party library.
+- **Space:** the reservation is the total size of the source files (an upper bound for the
+  output); the same "check before starting / hard stop / Server busy" rules apply. The user's
+  OpenCloud quota must hold originals + archive for a moment (checked first).
+- **Delete originals:** asked in the dialog **before compression starts** — "Delete the original
+  files after compressing?" **Yes / No**, with file count and size, a note that deleted files go
+  to the trash bin, and a warning for shared folders. **No** never touches them.
+- **On Yes:** the originals are **locked from that moment** with a server-side WebDAV lock (with
+  a timeout, so a crash can't leave them locked); the UI shows them as locked. Order: read →
+  build the archive in the temp folder → upload to the target → **verify** (size, checksum,
+  re-read the file list) → **then** delete the originals (to the trash bin), skipping any whose
+  ETag changed → release locks → delete the temp file. Any failure before the delete leaves the
+  originals untouched and releases the locks.
+- **Background job:** keeps running when the tab is closed; the user can check its status. Name
+  clashes at the target get a `" (1)"` suffix, never an overwrite.
+- **Prototype first:** locking a whole folder vs. each file, and how the desktop client behaves
+  with locked files.
+
+## Extract to folder (decided, not built)
+
+The reverse of compression, an "Extract here" action that writes archive contents into
+OpenCloud (like the official `web-app-unzip`, which only does ZIP up to 64 MB by default), using
+the same container, temp folder and upload code.
+
+- **Risks:** path traversal (`../`, absolute paths, backslashes) must be rejected before upload;
   name collisions; quota; many small uploads; partial failure handling.
-- **Overlap**: duplicates `web-app-unzip` for ZIP; the value would be the other formats.
+- **Overlap:** duplicates `web-app-unzip` for ZIP; the value would be the other formats and size.
 
 ## Plain TAR header hopping (deferred)
 
-Deferred in step 5; to revisit later. Today a `.tar` is downloaded whole (up to the archive limit).
+Deferred in step 5; to revisit later. Today a `.tar` is downloaded whole (up to the archive
+limit); above it, the server helper (0.3.0) opens it where installed. Header hopping would only
+add value for installs without the helper.
 
 - **What it is**: a plain (uncompressed) TAR is a chain of 512-byte headers, each followed by its
   file data padded to 512 bytes. With Range requests the viewer could read one header, compute

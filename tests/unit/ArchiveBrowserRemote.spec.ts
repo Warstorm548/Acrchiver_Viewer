@@ -81,8 +81,16 @@ describe('ArchiveBrowser with the server helper', () => {
     expect(names(wrapper)).toEqual(['docs', 'a.txt', 'b.txt'])
     expect(wrapper.find('.archive-load-more').exists()).toBe(false)
 
+    // hold the folder's page back to see the loading state
+    let answer: (page: { entries: ArchiveEntry[]; total: number }) => void
+    remote.children.mockImplementationOnce(() => new Promise((resolve) => (answer = resolve)))
     await wrapper.find('.archive-row[data-path="docs"]').trigger('click')
+    // the old folder's rows are gone while the new page loads
+    expect(names(wrapper)).toEqual([])
+    expect(wrapper.find('.archive-listing').exists()).toBe(true)
+    answer({ entries: [entry('docs/guide.md')], total: 1 })
     await flushPromises()
+    expect(wrapper.find('.archive-listing').exists()).toBe(false)
     expect(remote.children).toHaveBeenLastCalledWith('docs', 'name', false, 0)
     expect(names(wrapper)).toEqual(['guide.md'])
   })

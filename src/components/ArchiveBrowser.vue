@@ -357,7 +357,20 @@ export default defineComponent({
     }
 
     if (props.remote) {
-      watch([currentFolder, sortField, sortDirection], () => loadFolder(), { immediate: true })
+      watch(
+        [currentFolder, sortField, sortDirection],
+        ([folder]: [string, SortField, string], previous?: [string, SortField, string]) => {
+          const previousFolder = previous?.[0]
+          // another folder: don't show the old one's rows while its page loads (a sort change
+          // keeps them, to avoid flicker)
+          if (folder !== previousFolder) {
+            remoteRows.value = []
+            folderTotal.value = 0
+          }
+          loadFolder()
+        },
+        { immediate: true }
+      )
       watch(searchQuery, (value) => {
         if (searchTimer) {
           clearTimeout(searchTimer)

@@ -21,3 +21,9 @@ export const DIST_MANIFEST = resolve(repoRoot, 'dist/manifest.json')
 /** Server-side file names the suite generates for the mobile limit tests. */
 export const MOBILE_OVER_ARCHIVE = 'e2e-mobile-130MiB.tar'
 export const MOBILE_OVER_UNCOMPRESSED = 'e2e-mobile-400MiB.tar.gz'
+
+/** The archive helper's temp folder on this machine (ARCHIVE_HELPER_TEMP_DIR of the stack). */
+export const HELPER_TEMP_DIR = resolve(
+  repoRoot,
+  process.env.E2E_HELPER_TEMP_DIR ?? '../opencloud-compose/archive-temp'
+)
