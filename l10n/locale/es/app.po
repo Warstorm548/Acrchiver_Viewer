@@ -12,8 +12,20 @@ msgstr ""
 msgid "Loading archive"
 msgstr "Cargando el archivo comprimido"
 
+msgid "Cancel"
+msgstr "Cancelar"
+
+msgid "Open again"
+msgstr "Abrir de nuevo"
+
 msgid "Download archive"
 msgstr "Descargar archivo comprimido"
+
+msgid "Preparing the archive on the server… %{percent}%"
+msgstr "Preparando el archivo comprimido en el servidor… %{percent}%"
+
+msgid "Reading the archive on the server… %{percent}%"
+msgstr "Leyendo el archivo comprimido en el servidor… %{percent}%"
 
 msgid "Reading archive index…"
 msgstr "Leyendo el índice del archivo comprimido…"
@@ -27,6 +39,38 @@ msgstr "Descargando… %{percent}%"
 msgid "Downloading… %{size}"
 msgstr "Descargando… %{size}"
 
+msgid "This archive format is not supported yet. You can download it instead."
+msgstr ""
+"Este formato de archivo comprimido aún no es compatible. Puede descargarlo "
+"en su lugar."
+
+msgid "The archive seems to be damaged or is not a valid archive."
+msgstr "El archivo comprimido parece estar dañado o no es válido."
+
+msgid ""
+"Server busy: not enough space to open this archive right now. Try again in a "
+"few minutes."
+msgstr "Servidor ocupado: ahora mismo no hay espacio suficiente para abrir este archivo comprimido. Vuelva a intentarlo en unos minutos."
+
+msgid "You have too many large archives open. Close one and try again."
+msgstr "Tiene demasiados archivos comprimidos grandes abiertos. Cierre uno y vuelva a intentarlo."
+
+msgid ""
+"This archive is larger than the server allows (%{limit}). You can download "
+"it instead."
+msgstr "Este archivo comprimido es más grande de lo que permite el servidor (%{limit}). Puede descargarlo en su lugar."
+
+msgid ""
+"This archive is too large or complex to list on the server. You can download "
+"it instead."
+msgstr "Este archivo comprimido es demasiado grande o complejo para listarlo en el servidor. Puede descargarlo en su lugar."
+
+msgid "The archive changed while it was being opened. Please try again."
+msgstr "El archivo comprimido cambió mientras se abría. Vuelva a intentarlo."
+
+msgid "The server could not open this archive. You can download it instead."
+msgstr "El servidor no pudo abrir este archivo comprimido. Puede descargarlo en su lugar."
+
 msgid ""
 "This device does not have enough free memory to open this archive. You can "
 "download it instead."
@@ -34,18 +78,10 @@ msgstr ""
 "Este dispositivo no tiene suficiente memoria libre para abrir este archivo "
 "comprimido. Puede descargarlo en su lugar."
 
-msgid "This archive format is not supported yet. You can download it instead."
-msgstr ""
-"Este formato de archivo comprimido aún no es compatible. Puede descargarlo "
-"en su lugar."
-
 msgid "The archive expands to more data than the browser is allowed to open."
 msgstr ""
 "El archivo comprimido se descomprime en más datos de los que el navegador "
 "puede abrir."
-
-msgid "The archive seems to be damaged or is not a valid archive."
-msgstr "El archivo comprimido parece estar dañado o no es válido."
 
 msgid "The archive could not be loaded."
 msgstr "No se pudo cargar el archivo comprimido."
@@ -57,11 +93,22 @@ msgstr ""
 "Este archivo comprimido supera los %{limit}, el máximo que este visor abre "
 "en el navegador en este dispositivo. Puede descargarlo en su lugar."
 
+msgid ""
+"This archive was closed on the server after a period of inactivity. Reload "
+"the page to open it again."
+msgstr "Este archivo comprimido se cerró en el servidor tras un periodo de inactividad. Recargue la página para abrirlo de nuevo."
+
+msgid "Opening the archive was cancelled."
+msgstr "Se canceló la apertura del archivo comprimido."
+
 msgid "Search in archive"
 msgstr "Buscar en el archivo comprimido"
 
 msgid "Extracting"
 msgstr "Extrayendo"
+
+msgid "Showing the first %{count} results"
+msgstr "Se muestran los primeros %{count} resultados"
 
 msgid "%{count} result"
 msgid_plural "%{count} results"
@@ -89,6 +136,26 @@ msgstr "No hay archivos que coincidan"
 msgid "This folder is empty"
 msgstr "Esta carpeta está vacía"
 
+msgid "Loading"
+msgstr "Cargando"
+
+msgid "Show more (%{shown} of %{total})"
+msgstr "Mostrar más (%{shown} de %{total})"
+
+msgid "Download %{size}?"
+msgstr "¿Descargar %{size}?"
+
+msgid ""
+"%{count} file, %{size} in total. Make sure your device has enough free space."
+msgid_plural ""
+"%{count} files, %{size} in total. Make sure your device has enough free "
+"space."
+msgstr[0] "%{count} archivo, %{size} en total. Asegúrese de que su dispositivo tenga suficiente espacio libre."
+msgstr[1] "%{count} archivos, %{size} en total. Asegúrese de que su dispositivo tenga suficiente espacio libre."
+
+msgid "Download"
+msgstr "Descargar"
+
 msgid "Name"
 msgstr "Nombre"
 
@@ -97,6 +164,9 @@ msgstr "Tamaño"
 
 msgid "Modified"
 msgstr "Modificado"
+
+msgid "Failed to list the archive"
+msgstr "No se pudo listar el archivo comprimido"
 
 msgid "Download selected (%{count})"
 msgstr "Descargar selección (%{count})"
@@ -118,6 +188,24 @@ msgstr ""
 "Este dispositivo no tiene suficiente memoria libre para extraer esto. "
 "Descargue el archivo comprimido completo en su lugar."
 
+msgid "This download is too large (%{size}, limit %{limit})."
+msgstr "Esta descarga es demasiado grande (%{size}, límite %{limit})."
+
+msgid ""
+"You already have %{count} downloads running. Wait for one to finish and try "
+"again."
+msgstr "Ya tiene %{count} descargas en curso. Espere a que termine una y vuelva a intentarlo."
+
+msgid ""
+"This archive was closed on the server. Reload the page to open it again."
+msgstr "Este archivo comprimido se cerró en el servidor. Recargue la página para abrirlo de nuevo."
+
+msgid "The selection contains no files that can be downloaded."
+msgstr "La selección no contiene archivos que se puedan descargar."
+
+msgid "The server could not complete this. Please try again."
+msgstr "El servidor no pudo completar esta acción. Vuelva a intentarlo."
+
 msgid "Extracting %{name}…"
 msgstr "Extrayendo %{name}…"
 
@@ -135,9 +223,6 @@ msgstr "Cargando vista previa"
 
 msgid "Only the beginning of the file is shown."
 msgstr "Solo se muestra el principio del archivo."
-
-msgid "Download"
-msgstr "Descargar"
 
 msgid "Close"
 msgstr "Cerrar"

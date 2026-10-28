@@ -26,6 +26,20 @@ export const triggerDownload = (blob: Blob, fileName: string) => {
 }
 
 /**
+ * Starts a browser download of a same-origin URL (the helper's single-use links). The browser
+ * saves the file to disk as it arrives, so its size isn't limited by memory.
+ */
+export const triggerUrlDownload = (url: string, fileName: string) => {
+  const link = document.createElement('a')
+  link.href = url
+  link.download = sanitizeFileName(fileName)
+  link.rel = 'noopener'
+  document.body.appendChild(link)
+  link.click()
+  link.remove()
+}
+
+/**
  * Path for an entry inside the selection zip. Archive paths are untrusted and may contain `..`
  * (kept as display text in the viewer); they are dropped here so the generated zip can't write
  * outside its target folder when extracted ("zip slip"). Clashes get a " (n)" suffix.

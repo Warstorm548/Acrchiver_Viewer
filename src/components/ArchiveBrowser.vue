@@ -47,9 +47,11 @@
       v-else
       class="archive-search-summary ext:text-sm"
       v-text="
-        $ngettext('%{count} result', '%{count} results', rows.length, {
-          count: String(rows.length)
-        })
+        searchTruncated
+          ? $gettext('Showing the first %{count} results', { count: String(rows.length) })
+          : $ngettext('%{count} result', '%{count} results', rows.length, {
+              count: String(rows.length)
+            })
       "
     />
 
@@ -140,7 +142,7 @@
               </oc-button>
             </td>
           </tr>
-          <tr v-if="rows.length === 0">
+          <tr v-if="rows.length === 0 && !listing">
             <td
               colspan="5"
               class="archive-empty ext:p-4 ext:text-center"
@@ -151,6 +153,21 @@
           </tr>
         </tbody>
       </table>
+      <div v-if="listing" class="archive-listing ext:flex ext:justify-center ext:p-4">
+        <oc-spinner :aria-label="$gettext('Loading')" />
+      </div>
+      <div v-else-if="hasMore" class="ext:flex ext:justify-center ext:p-2">
+        <oc-button class="archive-load-more" appearance="outline" @click="loadMore">
+          <span
+            v-text="
+              $gettext('Show more (%{shown} of %{total})', {
+                shown: String(rows.length),
+                total: String(folderTotal)
+              })
+            "
+          />
+        </oc-button>
+      </div>
     </div>
 
     <preview-modal
@@ -161,11 +178,53 @@
       @close="previewEntry = null"
       @download="downloadEntry"
     />
+
+    <oc-modal
+      v-if="pendingConfirmation"
+      :title="$gettext('Download %{size}?', { size: formatSize(pendingConfirmation.size) })"
+      element-class="archive-confirm-download"
+      hide-actions
+      @cancel="answerConfirmation(false)"
+    >
+      <template #content>
+        <p
+          class="archive-confirm-text"
+          v-text="
+            $ngettext(
+              '%{count} file, %{size} in total. Make sure your device has enough free space.',
+              '%{count} files, %{size} in total. Make sure your device has enough free space.',
+              pendingConfirmation.files,
+              {
+                count: String(pendingConfirmation.files),
+                size: formatSize(pendingConfirmation.size)
+              }
+            )
+          "
+        />
+        <div class="ext:mt-4 ext:flex ext:justify-end ext:gap-2">
+          <oc-button
+            class="archive-confirm-cancel"
+            appearance="outline"
+            @click="answerConfirmation(false)"
+          >
+            <span v-text="$gettext('Cancel')" />
+          </oc-button>
+          <oc-button
+            class="archive-confirm-accept"
+            appearance="filled"
+            @click="answerConfirmation(true)"
+          >
+            <oc-icon name="download" />
+            <span v-text="$gettext('Download')" />
+          </oc-button>
+        </div>
+      </template>
+    </oc-modal>
   </div>
 </template>
 
 <script lang="ts">
-import { computed, defineComponent, PropType, ref } from 'vue'
+import { computed, defineComponent, onBeforeUnmount, PropType, ref, shallowRef, watch } from 'vue'
 import { useGettext } from 'vue3-gettext'
 import { formatFileSize, useMessages } from '@opencloud-eu/web-pkg'
 import {
@@ -178,16 +237,24 @@ import {
   parentPath
 } from '../engine'
 import { isImageFile, isTextFile } from '../engine/fileTypes'
-import { triggerDownload, zipEntries } from '../download'
+import { triggerDownload, triggerUrlDownload, zipEntries } from '../download'
+import { DownloadInfo, HelperError } from '../helper/client'
+import { RemoteArchive } from '../helper/remote'
 import PreviewModal from './PreviewModal.vue'
 
 type SortField = 'name' | 'size' | 'modified'
+
+/** Wait after the last keystroke before searching on the server. */
+const SEARCH_DELAY = 300
 
 export default defineComponent({
   name: 'ArchiveBrowser',
   components: { PreviewModal },
   props: {
-    handle: { type: Object as PropType<ArchiveHandle>, required: true },
+    /** An archive opened in the browser (all entries in memory)… */
+    handle: { type: Object as PropType<ArchiveHandle>, required: false, default: null },
+    /** …or one opened by the server helper (listed and read on the server). */
+    remote: { type: Object as PropType<RemoteArchive>, required: false, default: null },
     archiveName: { type: String, required: true },
     /** Largest file (or selection total) that may be read out of the archive. */
     maxEntrySize: { type: Number, required: false, default: Number.MAX_SAFE_INTEGER },
@@ -197,7 +264,7 @@ export default defineComponent({
   setup(props) {
     const { $gettext, current: currentLanguage } = useGettext()
     const { showErrorMessage } = useMessages()
-    const index = computed(() => buildIndex(props.handle.entries))
+    const index = computed(() => (props.handle ? buildIndex(props.handle.entries) : null))
 
     const currentFolder = ref('')
     const searchQuery = ref('')
@@ -229,8 +296,95 @@ export default defineComponent({
       return sortDirection.value === 'asc' ? result : -result
     }
 
+    // Server mode: the current folder arrives in pages (already sorted by the server), search
+    // results as a capped list.
+    const remoteRows = shallowRef<ArchiveEntry[]>([])
+    const folderTotal = ref(0)
+    const searchResults = shallowRef<ArchiveEntry[]>([])
+    const searchTruncated = ref(false)
+    const listing = ref(false)
+    let listRequest = 0
+
+    const listError = (error: unknown) => {
+      console.error(error)
+      showErrorMessage({ title: $gettext('Failed to list the archive'), errors: [error as Error] })
+    }
+
+    const loadFolder = async (append = false) => {
+      const remote = props.remote
+      if (!remote || searchQuery.value.trim()) {
+        return
+      }
+      const request = ++listRequest
+      listing.value = true
+      try {
+        const page = await remote.children(
+          currentFolder.value,
+          sortField.value,
+          sortDirection.value === 'desc',
+          append ? remoteRows.value.length : 0
+        )
+        if (request === listRequest) {
+          remoteRows.value = append ? [...remoteRows.value, ...page.entries] : page.entries
+          folderTotal.value = page.total
+        }
+      } catch (error) {
+        listError(error)
+      } finally {
+        if (request === listRequest) {
+          listing.value = false
+        }
+      }
+    }
+
+    let searchTimer: ReturnType<typeof setTimeout> | null = null
+    const runSearch = async (query: string) => {
+      const request = ++listRequest
+      listing.value = true
+      try {
+        const result = await props.remote.search(query)
+        if (request === listRequest) {
+          searchResults.value = result.entries
+          searchTruncated.value = result.truncated
+        }
+      } catch (error) {
+        listError(error)
+      } finally {
+        if (request === listRequest) {
+          listing.value = false
+        }
+      }
+    }
+
+    if (props.remote) {
+      watch([currentFolder, sortField, sortDirection], () => loadFolder(), { immediate: true })
+      watch(searchQuery, (value) => {
+        if (searchTimer) {
+          clearTimeout(searchTimer)
+        }
+        searchResults.value = []
+        searchTruncated.value = false
+        const query = value.trim()
+        if (!query) {
+          loadFolder()
+          return
+        }
+        searchTimer = setTimeout(() => runSearch(query), SEARCH_DELAY)
+      })
+      onBeforeUnmount(() => searchTimer && clearTimeout(searchTimer))
+    }
+
+    const hasMore = computed(
+      () =>
+        !!props.remote && !searchQuery.value.trim() && remoteRows.value.length < folderTotal.value
+    )
+    const loadMore = () => loadFolder(true)
+
     const rows = computed(() => {
       const query = searchQuery.value.trim().toLowerCase()
+      if (props.remote) {
+        return query ? [...searchResults.value].sort(compare) : remoteRows.value
+      }
       const entries = query
         ? index.value.entries.filter((entry) => entry.name.toLowerCase().includes(query))
         : index.value.children(currentFolder.value)
@@ -313,10 +467,37 @@ export default defineComponent({
         )
       )
 
+    /** Messages for the helper's download errors (its codes are stable, its texts English). */
+    const helperErrorMessage = (error: HelperError): string => {
+      switch (error.code) {
+        case 'download-too-large':
+          return $gettext('This download is too large (%{size}, limit %{limit}).', {
+            size: formatSize(error.size ?? 0),
+            limit: formatSize(error.limit ?? 0)
+          })
+        case 'too-many-downloads':
+          return $gettext(
+            'You already have %{count} downloads running. Wait for one to finish and try again.',
+            { count: String(props.remote?.health.maxDownloadsPerUser ?? '') }
+          )
+        case 'session-not-found':
+        case 'not-ready':
+          return $gettext(
+            'This archive was closed on the server. Reload the page to open it again.'
+          )
+        case 'nothing-to-download':
+          return $gettext('The selection contains no files that can be downloaded.')
+        default:
+          return $gettext('The server could not complete this. Please try again.')
+      }
+    }
+
     const reportError = (title: string, error: unknown) => {
       console.error(error)
       let shown = error
-      if (error instanceof ArchiveError && error.code === 'too-large') {
+      if (error instanceof HelperError) {
+        shown = new Error(helperErrorMessage(error))
+      } else if (error instanceof ArchiveError && error.code === 'too-large') {
         shown = tooLargeError()
       } else if (
         isOutOfMemory(error) ||
@@ -359,11 +540,48 @@ export default defineComponent({
         return Promise.reject(new ArchiveError('too-large', `"${entry.name}" is too large`))
       }
       return withProgress(entry.name, entry.compressedSize ?? entry.size, () =>
-        props.handle.read(entry)
+        props.remote ? props.remote.read(entry) : props.handle.read(entry)
       )
     }
 
+    /** A download waiting for the user's yes/no because it is over the admin's threshold. */
+    const pendingConfirmation = shallowRef<
+      (DownloadInfo & { answer: (ok: boolean) => void }) | null
+    >(null)
+    const askConfirmation = (info: DownloadInfo) =>
+      new Promise<boolean>((answer) => (pendingConfirmation.value = { ...info, answer }))
+    const answerConfirmation = (ok: boolean) => {
+      pendingConfirmation.value?.answer(ok)
+      pendingConfirmation.value = null
+    }
+
+    /**
+     * Server mode: the helper checks the size and caps first, the user confirms big downloads,
+     * then the browser fetches a single-use link and saves the file itself (no memory limit).
+     */
+    const downloadOnServer = async (paths: string[], title: string) => {
+      downloading.value = true
+      try {
+        const info = await props.remote.prepareDownload(paths, false)
+        if (info.confirm && !(await askConfirmation(info))) {
+          return
+        }
+        const issued = await props.remote.prepareDownload(paths, true)
+        triggerUrlDownload(issued.url, issued.fileName)
+      } catch (error) {
+        reportError(title, error)
+      } finally {
+        downloading.value = false
+      }
+    }
+
     const downloadEntry = async (entry: ArchiveEntry) => {
+      if (props.remote) {
+        return downloadOnServer(
+          [entry.path],
+          $gettext('Failed to download "%{name}"', { name: entry.name })
+        )
+      }
       try {
         triggerDownload(await readEntry(entry), entry.name)
       } catch (error) {
@@ -383,6 +601,13 @@ export default defineComponent({
     }
 
     const downloadSelection = async () => {
+      if (props.remote) {
+        // the helper expands folders and checks the caps itself
+        return downloadOnServer(
+          [...selectedPaths.value],
+          $gettext('Failed to download the selection')
+        )
+      }
       const files = selectedFiles()
       if (files.length === 0) {
         return
@@ -438,6 +663,13 @@ export default defineComponent({
     return {
       columns,
       rows,
+      listing,
+      hasMore,
+      folderTotal,
+      loadMore,
+      searchTruncated,
+      pendingConfirmation,
+      answerConfirmation,
       breadcrumbs,
       currentFolder,
       searchQuery,
