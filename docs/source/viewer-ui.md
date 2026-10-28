@@ -38,14 +38,21 @@ step 1's "too large" message, and when step 2/4 fails with `too-large` / out of 
 calls `tryServer()`. It is used only if `usableHelper()` finds all of: `archiveHelperUrl` set
 (same-origin path, `resolveHelperUrl`), a login token (`useAuthStore().accessToken`; public
 links have none), a WebDAV path (`resource.webDavPath`, else `space.webDavPath` + `resource.path`),
-a TAR-family or single compressed extension (`HELPER_EXTENSIONS`; ZIPs keep range mode), and a
+an extension it reads (`HELPER_EXTENSIONS`: TAR family, single compressed files, ZIP, 7z), and a
 `GET /health` answer (checked once per viewer; any failure → null → browser behaviour unchanged).
 `openOnServer` posts the session, polls its status every second ("Preparing the archive on the
 server… N%" while copying, "Reading the archive on the server… N%" while scanning) with a
 **Cancel** button (state `cancelled`: message + "Open again" + "Download archive"), then starts
 the heartbeat and renders `<archive-browser :remote>`. Helper error codes get their own messages
-(server busy, too many large archives open, larger than the server allows, too complex, changed,
-generic). A lost session (heartbeat 404) switches to an error asking to reload. `closeArchive`
+(server busy, too many large archives open, larger than the server allows, too complex,
+password-protected, changed, generic). 0.4.0 adds three routes
+([zip-and-7z](archive-helper/zip-and-7z.md)): **7z** (`HELPER_ONLY`) goes to `tryServer()` first
+at any size, else "can only be opened when the server helper is installed" without downloading;
+a **ZIP over `maxArchiveSize`** tries the helper before range mode, and a **range-listed ZIP with
+`needsServer` entries** moves to the helper once it is ready. For ZIPs, `tryServerOrRange()` turns
+a helper failure into a notice above the listing (`archive-viewer-notice`) and range mode, and
+`serverFailed` stops a second attempt in the same load. Helper entries with `localTime` (a ZIP's
+DOS date) are shown in the user's zone (`toArchiveEntry` in `remote.ts`). A lost session (heartbeat 404) switches to an error asking to reload. `closeArchive`
 closes the session on unmount/reload/cancel.
 
 Config keys (`apps.yaml` / manifest): `maxArchiveSize`, `maxUncompressedSize`, `maxEntrySize` and

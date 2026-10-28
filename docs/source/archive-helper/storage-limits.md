@@ -58,13 +58,14 @@ How these relate to the browser's limits (`apps.yaml`, `src/limits.ts`): in help
 
 ## Parser limits (archives built to exhaust the server)
 
-| Variable / constant              | Default          | Guards against                                                        |
-| -------------------------------- | ---------------- | --------------------------------------------------------------------- |
-| `ARCHIVE_HELPER_MAX_ENTRIES`     | `500000`         | Listings that take too much memory                                    |
-| `ARCHIVE_HELPER_MAX_SCAN_SIZE`   | `500GB`          | Decompression bombs (data decompressed while listing)                 |
-| `ARCHIVE_HELPER_SCAN_TIMEOUT`    | `60m`            | Endless CPU use                                                       |
-| `MaxDictionarySize` (code)       | 256 MiB          | xz/lzma files declaring huge dictionaries (checked before allocating) |
-| `maxPathLength` / `maxNameBytes` | 64 KiB / 256 MiB | Huge names, names filling memory                                      |
+| Variable / constant              | Default          | Guards against                                                                                                              |
+| -------------------------------- | ---------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| `ARCHIVE_HELPER_MAX_ENTRIES`     | `500000`         | Listings that take too much memory; also caps a ZIP's declared count and every 7z header count before anything is allocated |
+| `ARCHIVE_HELPER_MAX_SCAN_SIZE`   | `500GB`          | Decompression bombs (data decompressed while listing)                                                                       |
+| `ARCHIVE_HELPER_SCAN_TIMEOUT`    | `60m`            | Endless CPU use                                                                                                             |
+| `MaxDictionarySize` (code)       | 256 MiB          | Huge xz/LZMA/LZMA2 dictionaries, PPMd memory and zstd windows (xz, lzma, ZIP, 7z; checked before allocating)                |
+| `maxSevenZipHeaderSize` (code)   | 512 MiB          | 7z headers (stored, or declared size when compressed)                                                                       |
+| `maxPathLength` / `maxNameBytes` | 64 KiB / 256 MiB | Huge names, names filling memory                                                                                            |
 
 Any of these reports `too-complex` ("too large or complex to list on the server").
 

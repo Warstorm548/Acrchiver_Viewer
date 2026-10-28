@@ -44,12 +44,18 @@ whose npm build depends on Node's `Buffer` and can't run in a browser. License t
 
 ## Server helper (`server/go.mod`)
 
-| Module                    | Version | Role                                                                                                                                                                           |
-| ------------------------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Go                        | 1.27    | Toolchain (`golang:1.27-alpine` in the Dockerfile; `~/.local/go` 1.27.3 on the dev machine)                                                                                    |
-| `github.com/ulikunitz/xz` | v0.5.17 | Raw LZMA2 (`lzma.Reader2`) and legacy `.lzma`; BSD-3-Clause ([notices](../../THIRD-PARTY-NOTICES.md)). Its own xz reader is **not** used (no dictionary limit, no BCJ filters) |
+| Module                          | Version | Role                                                                                                                                                                                                                                                           |
+| ------------------------------- | ------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Go                              | 1.27    | Toolchain (`golang:1.27-alpine` in the Dockerfile; `~/.local/go` 1.27.3 on the dev machine)                                                                                                                                                                    |
+| `github.com/ulikunitz/xz`       | v0.5.17 | Raw LZMA/LZMA2 (`lzma.Reader2`) for xz, legacy `.lzma`, ZIP and 7z; BSD-3-Clause ([notices](../../THIRD-PARTY-NOTICES.md)). Its own xz reader is **not** used (no dictionary limit, no BCJ filters)                                                            |
+| `github.com/bodgit/sevenzip`    | v1.6.5  | 7z (0.4.0); BSD-3-Clause. Used through a **patched copy** in `server/third_party/sevenzip` (`replace` in `go.mod`) that caps header counts and size ([zip-and-7z](../source/archive-helper/zip-and-7z.md)); its LZMA/LZMA2/PPMd/zstd/AES decoders are replaced |
+| `github.com/klauspost/compress` | v1.19.0 | zstd for ZIP (method 93) and 7z, window capped at 256 MiB; BSD-3-Clause                                                                                                                                                                                        |
+| `github.com/stangelandcl/ppmd`  | v0.1.1  | PPMd for 7z, memory checked first; MIT                                                                                                                                                                                                                         |
 
-gzip, bzip2, tar, zip (reading in tests), CRC/SHA and HTTP come from Go's standard library. The
+Indirect (through sevenzip): brotli, lz4, bodgit/plumbing, bodgit/windows, golang-lru (MPL-2.0),
+afero, go4.org, golang.org/x/text; licenses in [notices](../../THIRD-PARTY-NOTICES.md). Deflate64
+is our own port of Go's `compress/flate` (`server/internal/deflate64`). gzip, bzip2, deflate, tar,
+CRC/SHA and HTTP come from Go's standard library; `archive/zip` only writes test files. The
 runtime image is `gcr.io/distroless/static-debian12` (no shell, no package manager).
 
 ## OpenCloud version alignment

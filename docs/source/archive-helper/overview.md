@@ -4,8 +4,9 @@
 large for the browser (users' archives are 500 MiB–20 GB). The viewer uses it only when it is
 installed, the user is logged in and the archive is over the browser limit
 ([zip-range-reading](../zip-range-reading.md) for the limits). Without it the viewer works
-exactly as before. Added in 0.3.0. Related docs: [api](api.md),
-[storage-limits](storage-limits.md), [deployment](../../deployment/archive-helper.md).
+exactly as before. Added in 0.3.0; 0.4.0 added 7z and large ZIPs
+([zip-and-7z](zip-and-7z.md)). Related docs: [api](api.md), [storage-limits](storage-limits.md),
+[deployment](../../deployment/archive-helper.md).
 
 ## How a large archive is opened
 
@@ -43,18 +44,21 @@ DELETE /sessions/{id} (leave/close) ──────────────�
 | `config`    | Environment settings with defaults; sizes like `50GB` / `25GiB`, durations like `10m`          |
 | `storage`   | Reservation ledger: total + per-user caps, real free space (statfs), hard stop on writes       |
 | `opencloud` | WebDAV client: PROPFIND (size, ETag), GET as the user; path checks (`/spaces/…`, no `..`)      |
-| `archive`   | Detection, scan → index, extraction; streaming xz container with BCJ/delta filters             |
+| `archive`   | Detection, scan → index, extraction; xz container with BCJ/delta filters; ZIP and 7z           |
+| `deflate64` | Deflate64 decoder (Go's `compress/flate` with the 64 KiB variant), for ZIP and 7z              |
 | `session`   | Sessions (owner, state, heartbeat timeout), copy + scan job, download tickets, startup cleanup |
 | `zipstream` | Store-only ZIP/ZIP64 writer whose size is known in advance (exact `Content-Length`)            |
 | `api`       | HTTP handlers, error codes; `cmd/archive-helper/main.go` wires it all and handles shutdown     |
 
-Only dependency: `github.com/ulikunitz/xz` (BSD-3-Clause), used for raw LZMA2 (`lzma.Reader2`)
-and legacy `.lzma`; gzip, bzip2, tar and zip are Go's standard library.
+Dependencies: `github.com/ulikunitz/xz` (raw LZMA/LZMA2 for xz, `.lzma`, ZIP and 7z),
+`github.com/bodgit/sevenzip` (7z, a patched copy in `server/third_party/`) with its modules,
+`github.com/klauspost/compress` (zstd) and `github.com/stangelandcl/ppmd` (PPMd); gzip, bzip2,
+deflate and tar are Go's standard library ([dependencies](../../tech-stack/dependencies.md)).
 
 ## Archive engine (server side)
 
 - **Same results as the browser:** `archive.Detect` ports `resolveFormat` (content wins over a
-  wrong extension, ZIPs are left to the browser), `NormalizePath` and the index port
+  wrong extension; ZIP and 7z in [zip-and-7z](zip-and-7z.md)), `NormalizePath` and the index port
   `normalizePath` / `buildIndex` (synthesized parent folders, last duplicate wins in place, file
   beats a later folder of the same path), `SingleFileName` ports `singleFileName`. Tar headers
   are read by Go's `archive/tar` (pax, GNU long names, base-256 sizes); symlinks, hard links and

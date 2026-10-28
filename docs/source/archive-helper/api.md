@@ -22,8 +22,9 @@ config). Bodies are JSON; errors are `{"code", "message", "size"?, "limit"?}`. R
 | `POST /sessions/{id}/downloads` | `{paths, issue}`; folders are expanded, `""` = whole archive → `{fileName, size, contentSize, files, confirm, url?}`; `url` only with `issue: true`                                                     |
 | `GET /download/{ticket}`        | No login. Streams one file as is or several as a store-only ZIP, `Content-Length` exact, `Content-Disposition: attachment` (ASCII fallback + `filename*`)                                               |
 
-Entries are `{path, name, isDirectory, size, modified?, supported}` (`modified` in ms). A
-session is visible only to its owner; another user gets `404 session-not-found`, so IDs reveal
+Entries are `{path, name, isDirectory, size, modified?, localTime?, supported}` (`modified` in
+ms; `localTime` marks a ZIP's zoneless DOS date, sent as if UTC). A session is visible only to
+its owner; another user gets `404 session-not-found`, so IDs reveal
 nothing.
 
 ## Error codes
@@ -43,7 +44,8 @@ nothing.
 | `helper-error`                                | 502         | Anything else (logged)                                                                  |
 
 A failed session's status `error` is one of `unsupported-format`, `corrupt`, `too-complex`
-(parser limits or scan timeout), `changed` (ETag or size differs from the PROPFIND: file replaced
+(parser limits or scan timeout), `encrypted` (a 7z with an encrypted header; "password-protected,
+which is not supported"), `changed` (ETag or size differs from the PROPFIND: file replaced
 while copying, or the hard stop), `storage-error`, `download-failed`.
 
 ## Viewer flow
