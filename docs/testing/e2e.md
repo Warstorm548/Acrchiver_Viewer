@@ -2,7 +2,8 @@
 
 `e2e/` drives the real viewer in Chromium against the local OpenCloud stack
 ([local-dev-environment](../deployment/local-dev-environment.md)). It replaces the manual browser
-checklist: 64 tests, about 3 minutes including the 3 GiB ZIP. Unit tests are separate
+checklist: 71 tests, about 3.5 minutes including the 3 GiB ZIP. `helper.spec.ts` needs the archive
+helper in the stack ([archive-helper](../deployment/archive-helper.md)). Unit tests are separate
 ([tests](tests.md)); Vitest skips `e2e/`.
 
 ## Setup (once)
@@ -87,6 +88,10 @@ minute, 3.04 GiB) and deletes it from the server, the trash and `test-fixtures/`
   login step passed in 3.0 minutes. Peak renderer memory for the 900 MiB download: 584–591 MiB
   (PR #3 measured 717 MiB; Firefox about 1 GB). Server, trash and local files clean afterwards;
   language back to English.
+- 2026-10-28, 0.3.0 build with the archive helper in the stack: all 71 tests and the login step
+  passed in 3.3 minutes; `./archive-temp` empty afterwards. The first run found a real bug (server
+  mode showed the previous folder's rows while the next page loaded) and showed that
+  `limits.spec.ts` must turn the helper off, since its archives now open on the server.
 - Sanity: with the CSP rewrite removed, the four fallback tests fail (no "worker unavailable"), so
   the simulation is what makes them pass.
 
