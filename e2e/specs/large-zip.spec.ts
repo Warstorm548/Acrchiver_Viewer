@@ -8,7 +8,7 @@ import { FIXTURES, SKIP_LARGE } from '../env'
 import { archiveHashes, sha256 } from '../helpers/files'
 import { measurePeak } from '../helpers/memory'
 import { removeCompletely, upload } from '../helpers/server'
-import { expect, phone, test } from '../test'
+import { expect, patchAppConfig, phone, test } from '../test'
 
 const GiB = 1024 * 1024 * 1024
 const archive = join(FIXTURES, 'big-test.zip')
@@ -31,6 +31,10 @@ test.beforeAll(async () => {
   }
   await upload(archive)
 })
+
+// these tests are about the browser's range mode: since 0.4.0 a ZIP over maxArchiveSize would go
+// to the server helper when it is installed
+test.beforeEach(({ page }) => patchAppConfig(page, { archiveHelperUrl: '' }))
 
 test.afterAll(async () => {
   test.setTimeout(5 * 60_000)

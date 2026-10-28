@@ -134,6 +134,82 @@ test.describe('archives opened by the server helper', () => {
   })
 })
 
+// 0.4.0: sample.7z and sample-deflate64.zip (make-fixtures.sh, made by 7-Zip) hold sample.tar's
+// tree; Python can't read them, so downloads are compared with sample.tar's files.
+test.describe('ZIP and 7z on the server', () => {
+  test.beforeEach(() => {
+    before = new Set(tempFiles())
+  })
+
+  test.afterEach(async ({ page }) => {
+    await page.goto('/files/spaces/personal')
+    await waitForNoOwnTempFiles()
+  })
+
+  const opensOnServer = (page: Page) =>
+    page.waitForRequest((r) => r.url().endsWith('/archive-api/sessions') && r.method() === 'POST')
+
+  test('a 7z opens on the server at any size and downloads byte-identical', async ({
+    page,
+    viewer
+  }) => {
+    await viewer.open('sample.tar')
+    const rootInBrowser = await viewer.names()
+    await viewer.openFolder('docs')
+    const docsInBrowser = await viewer.names()
+
+    const opened = opensOnServer(page)
+    await viewer.open('sample.7z')
+    await opened
+    expect(ownTempFiles()).toHaveLength(1)
+    expect(await viewer.names()).toEqual(rootInBrowser)
+    await viewer.openFolder('docs')
+    await listed(page)
+    expect(await viewer.names()).toEqual(docsInBrowser)
+
+    await viewer.row('notes.md').locator('.archive-preview').click()
+    await expect(page.locator('.archive-preview-text')).toContainText('Nested folder test.')
+    await page.keyboard.press('Escape')
+
+    const expected = archiveHashes(join(FIXTURES, 'sample.tar'), 'docs/')
+    await viewer.select('notes.md', 'deep')
+    const zip = await viewer.downloadSelected()
+    expect(zip.suggestedFilename()).toBe('sample-selection.zip')
+    expect(archiveHashes(await zip.path())).toEqual(expected)
+  })
+
+  test('a ZIP over the browser limit opens on the server like in range mode', async ({
+    page,
+    viewer
+  }) => {
+    await viewer.open('sample.zip')
+    const rootByRange = await viewer.names()
+
+    await serverMode(page)
+    const opened = opensOnServer(page)
+    await viewer.open('sample.zip')
+    await opened
+    expect(ownTempFiles()).toHaveLength(1)
+    expect(await viewer.names()).toEqual(rootByRange)
+
+    const expected = archiveHashes(join(FIXTURES, 'sample.zip'), 'images/')
+    await viewer.select('images')
+    const zip = await viewer.downloadSelected()
+    expect(archiveHashes(await zip.path())).toEqual(expected)
+  })
+
+  test('a ZIP with Deflate64 entries moves to the server', async ({ page, viewer }) => {
+    const opened = opensOnServer(page)
+    await viewer.open('sample-deflate64.zip')
+    await opened
+    await expect(page.locator('.archive-viewer-notice')).toHaveCount(0)
+    const expected = archiveHashes(join(FIXTURES, 'sample.tar'))
+    // binary.bin is one of the Deflate64 entries
+    const file = await viewer.downloadFile('binary.bin')
+    expect(await sha256(await file.path())).toBe(expected['binary.bin'])
+  })
+})
+
 test.describe('without a working helper', () => {
   // the simulated outage itself shows up in the console
   test.use({ allowedConsole: [/status of 502 \(Bad Gateway\)/] })
@@ -148,5 +224,24 @@ test.describe('without a working helper', () => {
     await expect(page.locator('.archive-viewer-message')).toContainText(
       'This archive is larger than'
     )
+  })
+})
+
+test.describe('a helper that refuses a big ZIP', () => {
+  // the simulated refusal itself shows up in the console
+  test.use({ allowedConsole: [/status of 507/] })
+
+  test('the ZIP is still read by range, with a notice', async ({ page, viewer }) => {
+    await serverMode(page)
+    await page.route('**/archive-api/sessions', (route) =>
+      route.request().method() === 'POST'
+        ? route.fulfill({ status: 507, json: { code: 'server-busy', message: 'busy' } })
+        : route.fallback()
+    )
+    await viewer.open('sample.zip')
+    await expect(page.locator('.archive-viewer-notice')).toContainText(
+      'read in the browser, where some files may not open'
+    )
+    await expect(viewer.row('README.txt')).toBeVisible()
   })
 })

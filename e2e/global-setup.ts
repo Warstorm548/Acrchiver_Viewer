@@ -13,7 +13,7 @@ import { writeZeroTar } from './helpers/generate'
 import { getJson, upload } from './helpers/server'
 
 const MiB = 1024 * 1024
-const FIXTURE = /\.(zip|tar|gz|tgz|bz2|tbz2|xz|txz|lzma)$/
+const FIXTURE = /\.(zip|7z|tar|gz|tgz|bz2|tbz2|xz|txz|lzma)$/
 
 export default async () => {
   const status = await getJson<{ productversion: string }>('/status.php')
