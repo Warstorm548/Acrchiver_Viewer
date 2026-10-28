@@ -1,12 +1,13 @@
 # Archive Viewer helper: lists and extracts large archives on the server.
 # Install: see docs/deployment/archive-helper.md in the Archive Viewer repository. In short, copy
-# this file and proxy.yaml into opencloud-compose/custom/, add the settings from env.example to
-# .env, and add `:custom/archive-helper.yml` to COMPOSE_FILE. Relative paths are resolved from
-# the opencloud-compose directory (the first compose file's folder).
+# this file and proxy.yaml into opencloud-compose/custom/ (both are attached to every GitHub
+# release), add the settings from env.example to .env, and add `:custom/archive-helper.yml` to
+# COMPOSE_FILE. Relative paths are resolved from the opencloud-compose directory (the first compose
+# file's folder). The image is published by the repository's release workflow (linux/amd64 and
+# linux/arm64); to build it from source instead, add archive-helper-build.yml as well.
 services:
   archive-helper:
-    build: ${ARCHIVE_HELPER_BUILD_DIR:-../Acrchiver_Viewer/server}
-    image: archive-helper:${ARCHIVE_HELPER_TAG:-0.4.0}
+    image: ghcr.io/warstorm548/archive-helper:${ARCHIVE_HELPER_TAG:-0.4.0}
     # its own user ID, shared with no other container (it reaches OpenCloud only over HTTP);
     # must own the temp folder: sudo chown -R 1500:1500 ./archive-temp
     user: ${ARCHIVE_HELPER_UID_GID:-1500:1500}

@@ -1,0 +1,9 @@
+# Optional, for development: builds the archive helper from a clone of the Archive Viewer
+# repository instead of pulling the published image. Add it after archive-helper.yml in
+# COMPOSE_FILE (`…:custom/archive-helper.yml:custom/archive-helper-build.yml`), then
+# `sudo docker compose build archive-helper && sudo docker compose up -d archive-helper`.
+services:
+  archive-helper:
+    build: ${ARCHIVE_HELPER_BUILD_DIR:-../Acrchiver_Viewer/server}
+    image: archive-helper:local
+    pull_policy: build

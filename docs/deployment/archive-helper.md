@@ -8,17 +8,24 @@ updates don't touch it. Docker commands need sudo; run them in your own terminal
 
 ## Files
 
-| Repo file                           | Goes to (opencloud-compose)                   | Purpose                                                                |
-| ----------------------------------- | --------------------------------------------- | ---------------------------------------------------------------------- |
-| `deploy/compose/archive-helper.yml` | `custom/archive-helper.yml`                   | The `archive-helper` service + proxy mount                             |
-| `deploy/compose/proxy.yaml`         | `custom/proxy.yaml`                           | Upstream `config/opencloud/proxy.yaml` + the two `/archive-api` routes |
-| `deploy/env.example`                | lines in `.env` (only what you change)        | Settings with defaults                                                 |
-| `server/`                           | built by compose (`ARCHIVE_HELPER_BUILD_DIR`) | The helper's source                                                    |
+| Repo file                                                        | Goes to (opencloud-compose)            | Purpose                                                                 |
+| ---------------------------------------------------------------- | -------------------------------------- | ----------------------------------------------------------------------- |
+| Release file / repo file                                         | Goes to (opencloud-compose)            | Purpose                                                                 |
+| ---------------------------------------------------------------- | -------------------------------------- | ----------------------------------------------------------------------- |
+| `archive-helper.yml` (`deploy/compose/`)                         | `custom/archive-helper.yml`            | The `archive-helper` service (published image) + proxy mount            |
+| `proxy.yaml` (`deploy/compose/`)                                 | `custom/proxy.yaml`                    | Upstream `config/opencloud/proxy.yaml` + the two `/archive-api` routes  |
+| `archive-helper.env.example` (`deploy/env.example`)              | lines in `.env` (only what you change) | Settings with defaults                                                  |
+| image `ghcr.io/warstorm548/archive-helper:<version>`             | pulled by compose                      | The helper, linux/amd64 and linux/arm64, built by the release workflow  |
+| `deploy/compose/archive-helper-build.yml` (repo only, optional)  | `custom/archive-helper-build.yml`      | Builds from a clone instead (development)                               |
 
 ## Install
 
-1. Have the Archive Viewer repo next to opencloud-compose (default build path
-   `../Acrchiver_Viewer/server`), or set `ARCHIVE_HELPER_BUILD_DIR` in `.env`.
+1. Download the compose files of the release you install (no clone of this repository needed),
+   in the opencloud-compose folder:
+   ```
+   v=0.4.0; base=https://github.com/Warstorm548/Acrchiver_Viewer/releases/download/v$v
+   curl -fsSLO $base/archive-helper.yml -O $base/proxy.yaml -O $base/archive-helper.env.example
+   ```
 2. **Check for an existing proxy config first.** `deploy/compose/proxy.yaml` is upstream's
    `config/opencloud/proxy.yaml` plus our two routes, and it is mounted over
    `/etc/opencloud/proxy.yaml`. If the server already customizes the proxy (its own
@@ -28,7 +35,7 @@ updates don't touch it. Docker commands need sudo; run them in your own terminal
    is mounted at that path.
 3. In the opencloud-compose folder (leave out `proxy.yaml` if you merged it in step 2):
    ```
-   cp ../Acrchiver_Viewer/deploy/compose/archive-helper.yml ../Acrchiver_Viewer/deploy/compose/proxy.yaml custom/
+   mv archive-helper.yml proxy.yaml custom/
    mkdir ./archive-temp
    sudo chown 1500:1500 ./archive-temp
    printf '\n/archive-temp/\n' >> .git/info/exclude    # keep it out of git, locally
@@ -36,10 +43,11 @@ updates don't touch it. Docker commands need sudo; run them in your own terminal
 4. In `.env`, append `:custom/archive-helper.yml` to `COMPOSE_FILE`, e.g.
    `COMPOSE_FILE=docker-compose.yml:traefik/opencloud.yml:custom/archive-viewer.yml:custom/archive-helper.yml`
    (on the main server: whatever it has now, plus `:custom/archive-helper.yml`). Copy any setting
-   you want to change from `deploy/env.example`.
-5. Build and start (OpenCloud restarts once to load the new `proxy.yaml`):
+   you want to change from `archive-helper.env.example`; set `ARCHIVE_HELPER_TAG` to the same
+   version as the installed viewer.
+5. Pull and start (OpenCloud restarts once to load the new `proxy.yaml`):
    ```
-   sudo docker compose build archive-helper
+   sudo docker compose pull archive-helper
    sudo docker compose up -d
    sudo docker compose logs archive-helper
    ```
@@ -82,9 +90,40 @@ than `ARCHIVE_HELPER_MAX_STORAGE`.
 
 ## Updating the helper
 
-`git pull` the Archive Viewer repo, then `sudo docker compose build archive-helper && sudo docker compose up -d archive-helper`.
-0.4.0 (7z and large ZIPs) needs no new settings; rebuild the helper together with the new viewer
-build, since the viewer only sends ZIPs and 7z to a helper that reads them.
+Update it together with the viewer, to the same version (the viewer only sends ZIPs and 7z to a
+helper that reads them, 0.4.0+):
+
+```
+sed -i 's/^ARCHIVE_HELPER_TAG=.*/ARCHIVE_HELPER_TAG=0.4.0/' .env   # or edit .env by hand
+sudo docker compose pull archive-helper && sudo docker compose up -d archive-helper
+```
+
+Compare the release's `archive-helper.yml` and `archive-helper.env.example` with your copies for
+new settings (0.4.0 has none). **From 0.3.x** (built from a clone): replace
+`custom/archive-helper.yml` with the 0.4.0 file, which pulls the image instead; the clone is then
+no longer needed. To keep building from source (development), also copy
+`deploy/compose/archive-helper-build.yml` to `custom/`, add `:custom/archive-helper-build.yml`
+after `:custom/archive-helper.yml` in `COMPOSE_FILE`, and use
+`sudo docker compose build archive-helper && sudo docker compose up -d archive-helper`.
+
+## Existing setups and your own domain
+
+The domain doesn't matter: the viewer calls the helper at `/archive-api` on the **same domain**
+OpenCloud is served from (a relative path), and OpenCloud's own proxy forwards it to the helper
+inside the compose network. Nothing needs a DNS name, certificate or published port of its own.
+Check these on an existing server:
+
+- **Own `proxy.yaml`** (OIDC role mappings, extra routes): merge our route block into it instead
+  of copying ours (install step 2).
+- **External reverse proxy** (`external-proxy/…` instead of Traefik, e.g. your own nginx): it
+  must forward `/archive-api/` to OpenCloud like every other path. Large downloads are streamed,
+  so a proxy that limits response size or buffers to a small disk needs room for
+  `/archive-api/download/`.
+- **Network name:** the compose file joins `opencloud-net`, the network opencloud-compose
+  creates; a renamed network must be changed in `custom/archive-helper.yml`.
+- **Not opencloud-compose** (plain binary, Kubernetes): run the same image, set
+  `ARCHIVE_HELPER_OPENCLOUD_URL` to OpenCloud's internal address, and add the two `/archive-api`
+  routes from `proxy.yaml` to OpenCloud's proxy config; these docs only cover opencloud-compose.
 
 ## Troubleshooting
 

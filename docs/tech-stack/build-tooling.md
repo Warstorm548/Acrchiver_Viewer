@@ -95,6 +95,18 @@ or system `zip`. Stops if `dist/` is missing or its manifest version differs fro
 Verified in step 6: checksum OK, unzipped folder identical to `dist/` plus the two notices.
 The root path uses `fileURLToPath`, so checkouts in folders with spaces work.
 
+## Release workflow — `.github/workflows/release.yml`
+
+The only CI: runs on a pushed `v*.*.*` tag (Ubuntu runner, Go from `server/go.mod`, Node from
+`.nvmrc`, pnpm from `packageManager`). Job `check` compares the tag with `package.json` and
+`api.Version`, runs `go vet` / `go test -race` and all viewer checks and unit tests (not e2e), then
+`pnpm build && pnpm package`. Job `image` builds `server/Dockerfile` with Buildx for linux/amd64
+and linux/arm64 (Go cross-compiles, no emulation) and pushes
+`ghcr.io/warstorm548/archive-helper:<version>` and `:latest` with the workflow's token. Job
+`release` creates the GitHub release: notes from the version's `CHANGELOG.md` entry plus install
+lines, assets the zip, `.sha256`, `archive-helper.yml`, `proxy.yaml` and
+`archive-helper.env.example`. Steps: [releasing](../deployment/deploying-to-opencloud.md#releasing).
+
 ## Translations — `gettext.config.cjs`
 
 See [styles-and-i18n](../source/styles-and-i18n.md). Extraction needs GNU gettext

@@ -37,7 +37,7 @@ tags; since its 8.0.1 commit (`2d992b77`, 2026-09-16) only image bumps landed, s
 `.env` (copied from `.env.example`, changed values only):
 
 ```
-COMPOSE_FILE=docker-compose.yml:traefik/opencloud.yml:custom/archive-viewer.yml:custom/archive-helper.yml
+COMPOSE_FILE=docker-compose.yml:traefik/opencloud.yml:custom/archive-viewer.yml:custom/archive-helper.yml:custom/archive-helper-build.yml
 INSECURE=true
 TRAEFIK_SERVICES_TLS_CONFIG="tls=true"
 OC_DOCKER_IMAGE=opencloudeu/opencloud-rolling
@@ -68,8 +68,9 @@ archive-viewer:
 Changing the overlay's volumes needs `sudo docker compose up -d` (recreate); config/app changes
 need `sudo docker compose restart opencloud`.
 
-Archive helper (0.3.0): `custom/archive-helper.yml` and `custom/proxy.yaml` are copies of
-`deploy/compose/` in the repo; `./archive-temp` (owned 1500:1500, in `.git/info/exclude`) is its
+Archive helper (0.3.0): `custom/archive-helper.yml`, `custom/archive-helper-build.yml` (0.4.0:
+builds from this repo instead of pulling the published image, tagged `archive-helper:local`) and
+`custom/proxy.yaml` are copies of `deploy/compose/` in the repo; `./archive-temp` (owned 1500:1500, in `.git/info/exclude`) is its
 temp folder; `custom/.env.bak-before-archive-helper` is the `.env` from before. After changing
 `server/`: `sudo docker compose build archive-helper && sudo docker compose up -d archive-helper`.
 Details: [archive-helper](archive-helper.md).

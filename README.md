@@ -90,7 +90,9 @@ The `@opencloud-eu/*` packages are pinned to the server's 8.0 line.
 
 ## Archive helper (optional)
 
-A small Go service (`server/`) added to an opencloud-compose stack as an extra container. When
+A small Go service (`server/`) added to an opencloud-compose stack as an extra container, pulled
+as a ready-made image (`ghcr.io/warstorm548/archive-helper`, amd64 and arm64). It works with any
+domain: the viewer reaches it at `/archive-api` through OpenCloud's own proxy. When
 installed, archives over the browser limit, 7z archives, and ZIPs with entries the browser can't
 decompress open on the server for logged-in users (if the helper fails, a ZIP is still read in the
 browser):
@@ -111,7 +113,9 @@ Without it, the viewer works as described above.
 
 ## Installation
 
-1. Get `archive-viewer-<version>.zip` (from a release, or build it yourself as below).
+1. Get `archive-viewer-<version>.zip` from the
+   [releases](https://github.com/Warstorm548/Acrchiver_Viewer/releases) (or build it yourself as
+   below); the release page also has the helper's compose files.
 2. Unzip it into OpenCloud's web apps folder so you get
    `<apps folder>/archive-viewer/manifest.json`. With
    [opencloud-compose](https://github.com/opencloud-eu/opencloud-compose) that is

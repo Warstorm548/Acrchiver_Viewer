@@ -73,7 +73,7 @@ for a quick run), `pnpm package` (release zip), `pnpm l10n:extract` / `pnpm l10n
   and devDependencies with versions, the helper's Go modules (ulikunitz/xz, patched sevenzip, zstd, ppmd), 8.0 alignment rule, install warnings, step 4 candidates.
 - [docs/tech-stack/build-tooling.md](docs/tech-stack/build-tooling.md) — Node/pnpm, Go toolchain, scripts, what
   the extension-sdk `defineConfig` provides, TypeScript, ESLint, Prettier, `.gitignore`, release
-  zip script, gettext config.
+  zip script, release workflow (GHCR image + GitHub release), gettext config.
 
 ### Architecture
 
@@ -120,10 +120,11 @@ for a quick run), `pnpm package` (release zip), `pnpm l10n:extract` / `pnpm l10n
 ### Deployment
 
 - [docs/deployment/deploying-to-opencloud.md](docs/deployment/deploying-to-opencloud.md) — build
-  output, installing on a server (opencloud-compose), install checks, supported OpenCloud versions, release zip install, `apps.yaml` keys, releasing steps, production CSP.
+  output, installing on a server (opencloud-compose), install checks, supported OpenCloud versions, release zip install, `apps.yaml` keys, releasing (tag → release workflow), production CSP.
 - [docs/deployment/archive-helper.md](docs/deployment/archive-helper.md) — installing the helper
-  (files, `./archive-temp`, UID), changing settings, optional fixed-size partition, upgrade diff
-  checklist and yjs note, troubleshooting, removal.
+  from the release files and the published image (files, `./archive-temp`, UID), changing settings,
+  optional fixed-size partition, upgrade diff checklist and yjs note, updating (pull a version, from
+  0.3.x, building from source), existing setups and own domains, troubleshooting, removal.
 - [docs/deployment/local-dev-environment.md](docs/deployment/local-dev-environment.md) — the local
   opencloud-compose stack (rolling 8.0.1) outside the repo: setup to recreate it, sudo commands,
   dev loop, fixtures, browser checklist, large-ZIP test + cleanup, step results, troubleshooting.

@@ -13,11 +13,21 @@ Every change gets an entry and a version bump in `package.json`, which is the si
 the version: the build copies it into `dist/manifest.json` and stamps it on every compiled JS file
 (`/*! archive-viewer vX.Y.Z */`).
 
-## [0.4.0] - Unreleased
+## [0.4.0] - 2026-10-28
 
-Supported OpenCloud versions: **8.0.1**. On `feature/helper-7z-zip`.
+Supported OpenCloud versions: **8.0.1**. The first tagged release: it also contains 0.2.2 and
+0.3.0, which were never released on their own.
 
 ### Added
+
+- **Release workflow** (`.github/workflows/release.yml`): a `v*.*.*` tag checks that the tag,
+  `package.json` and the helper's `api.Version` agree, runs the Go and viewer checks, publishes
+  the helper image `ghcr.io/warstorm548/archive-helper` (linux/amd64 and linux/arm64, tags
+  `<version>` and `latest`) and creates the GitHub release with the extension zip, its SHA-256
+  and the helper's compose files.
+- The helper's compose file now **pulls the published image** instead of building it, so a server
+  no longer needs a clone of this repository. Building from source moved to the optional overlay
+  `deploy/compose/archive-helper-build.yml`. The Dockerfile cross-compiles for each platform.
 
 - **7z** through the archive helper, at any size (LZMA, LZMA2, PPMd, bzip2, Deflate,
   Deflate64, zstd, BCJ/ARM/ARM64/PPC/SPARC filters). Without the helper, 7z shows "can only be
@@ -41,7 +51,7 @@ Supported OpenCloud versions: **8.0.1**. On `feature/helper-7z-zip`.
 - 3 new strings in de/es/fr (AI draft); Go tests with 7-Zip/Python-made test files
   (`make-7z-zip.sh`); unit tests for the new routing.
 
-## [0.3.0] - Unreleased
+## [0.3.0] - Not released on its own (included in 0.4.0)
 
 Supported OpenCloud versions: **8.0.1**. On `feature/archive-helper`.
 
@@ -78,7 +88,7 @@ Supported OpenCloud versions: **8.0.1**. On `feature/archive-helper`.
 - 23 new strings in de/es/fr (AI draft); unit tests for the helper client and server mode; Go
   tests for every helper package; e2e spec `helper.spec.ts`.
 
-## [0.2.2] - Unreleased
+## [0.2.2] - Not released on its own (included in 0.4.0)
 
 Supported OpenCloud versions: **8.0.1**. No change to the extension itself.
 
@@ -88,7 +98,7 @@ Supported OpenCloud versions: **8.0.1**. No change to the extension itself.
   every format, browsing, previews, byte-checked downloads, limits, the built-in-CSP fallback, the
   version check, translations and the 3 GiB ZIP; see [e2e](docs/testing/e2e.md).
 
-## [0.2.1] - Unreleased
+## [0.2.1] - Not released on its own (included in 0.4.0)
 
 Supported OpenCloud versions: **8.0.1**. Memory fixes from browser testing with large archives
 (PR #3); details in [bugs](docs/known-issues/bugs.md) (M-1–M-6).
@@ -116,7 +126,7 @@ Supported OpenCloud versions: **8.0.1**. Memory fixes from browser testing with 
 
 - R-1–R-3 from the PR #3 review are open; see [bugs](docs/known-issues/bugs.md).
 
-## [0.2.0] - Unreleased
+## [0.2.0] - Not released on its own (included in 0.4.0)
 
 Supported OpenCloud versions: **8.0.1**.
 
@@ -129,14 +139,14 @@ Supported OpenCloud versions: **8.0.1**.
 - `apps.yaml` option `allowUnsupportedOpenCloud` (default `false`): lets an admin run the viewer on
   an unsupported version anyway, with a console warning.
 
-## [0.1.1] - Unreleased
+## [0.1.1] - Not released on its own (included in 0.4.0)
 
 ### Added
 
 - This changelog and the SemVer rule: every change bumps the version and gets an entry here.
 - Version banner (`/*! archive-viewer vX.Y.Z */`) on every compiled JS file.
 
-## [0.1.0] - Unreleased
+## [0.1.0] - Not released on its own (included in 0.4.0)
 
 First version of the rebuilt viewer as an OpenCloud Web 8 extension (no tag or release yet).
 

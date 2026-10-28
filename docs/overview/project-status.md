@@ -5,8 +5,8 @@ Where the Archive Viewer stands. Merged to `main` (PR #1), rework **all 6 steps 
 bzip2, XZ/LZMA and single compressed files; large ZIPs by HTTP Range; translations, README, release zip). Version 0.2.2 (OpenCloud version check, runs only on 8.0.1; memory fixes from PR #3; Chromium e2e suite) is ready to release;
 no tag or GitHub release yet. **0.3.0** (merged to `main` via PR #4, untagged) adds the optional
 server helper for archives too large for the browser
-([archive-helper overview](../source/archive-helper/overview.md)); **0.4.0** (in progress on
-`feature/helper-7z-zip`) lets it open 7z and large ZIPs ([zip-and-7z](../source/archive-helper/zip-and-7z.md)).
+([archive-helper overview](../source/archive-helper/overview.md)); **0.4.0** (merged via PR #5,
+the first tagged release) lets it open 7z and large ZIPs ([zip-and-7z](../source/archive-helper/zip-and-7z.md)).
 
 ## Summary
 
@@ -83,5 +83,7 @@ Details:
   `dist/manifest.json`).
 - Author **Warstorm548**; repo/bugs → `Warstorm548/Acrchiver_Viewer`. README states the project is
   independent and not affiliated with OpenCloud GmbH.
-- Version `0.4.0` (in progress; 0.2.2 and 0.3.0 never released; the old "1.0.0 Production Ready" changelog in
+- Version `0.4.0`, the first tagged release (`v0.4.0`, published by the release workflow with
+  the helper image `ghcr.io/warstorm548/archive-helper`; 0.2.2 and 0.3.0 were never released on
+  their own; the old "1.0.0 Production Ready" changelog in
   `docs/original-docs/` is historical and inaccurate).

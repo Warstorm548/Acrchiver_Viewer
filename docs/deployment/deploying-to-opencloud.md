@@ -87,15 +87,32 @@ Archives over `maxArchiveSize` (other than ZIPs) open through the optional serve
 is installed; it has its own settings in `.env` (storage and download caps). Install, settings
 and upgrades: [archive-helper deployment](archive-helper.md).
 
-## Releasing (not done yet)
+## Releasing
 
-1. Bump `version` in `package.json` (semver; the manifest and JS banner copy it) and date the
-   version's entry in `CHANGELOG.md`.
-2. `pnpm install --frozen-lockfile`, all checks, `pnpm build`, `pnpm package`.
-3. Test the zip on a server (unzip, restart, `/config.json` check).
-4. Merge to `main`, tag `v<version>`, create a GitHub release and attach the zip and `.sha256`.
+`.github/workflows/release.yml` does the publishing; 0.4.0 is the first tagged release.
 
-Version 0.2.2 is prepared but no tag or release exists yet.
+1. Bump `version` in `package.json` (semver; the manifest and JS banner copy it) and
+   `api.Version` in `server/internal/api/api.go` to the same value, and date the version's entry
+   in `CHANGELOG.md` (its text becomes the release notes).
+2. Locally: all checks and `pnpm test:e2e` against the local stack (the workflow can't run e2e).
+3. On `main`: `git tag v<version> && git push origin v<version>`.
+4. The workflow checks that the three versions agree, runs the Go and viewer checks, pushes
+   `ghcr.io/warstorm548/archive-helper:<version>` and `:latest` (linux/amd64 + linux/arm64), and
+   creates the GitHub release with `archive-viewer-<version>.zip` + `.sha256` and the helper's
+   `archive-helper.yml`, `proxy.yaml` and `archive-helper.env.example`. Watch it with
+   `gh run watch`.
+
+Installing a release on a server (opencloud-compose, apps folder `config/opencloud/apps`):
+
+```
+v=0.4.0; base=https://github.com/Warstorm548/Acrchiver_Viewer/releases/download/v$v
+curl -fsSLO $base/archive-viewer-$v.zip -O $base/archive-viewer-$v.zip.sha256
+sha256sum -c archive-viewer-$v.zip.sha256
+rm -rf config/opencloud/apps/archive-viewer && unzip -q archive-viewer-$v.zip -d config/opencloud/apps
+sudo docker compose restart opencloud
+```
+
+Then update the helper to the same version ([archive-helper](archive-helper.md#updating-the-helper)).
 
 ## Production security policy (CSP)
 

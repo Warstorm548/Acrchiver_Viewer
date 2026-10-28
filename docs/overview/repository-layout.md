@@ -4,26 +4,27 @@ Every tracked file (0.4.0), what it is, and its line count. Generated/ignored: `
 
 ## Root
 
-| Path                     | Lines | Purpose                                                                                                            |
-| ------------------------ | ----: | ------------------------------------------------------------------------------------------------------------------ |
-| `README.md`              |   175 | User-facing readme (rewritten in step 6)                                                                           |
-| `CLAUDE.md`              |   153 | Index into `docs/`                                                                                                 |
-| `LICENSE`                |   661 | GNU AGPL-3.0 (canonical gnu.org text); copyright notice is in `README.md`                                          |
-| `THIRD-PARTY-NOTICES.md` |   201 | Licenses of ported (seek-bzip) and bundled (zip.js) code; the helper's Go modules                                  |
-| `package.json`           |    67 | Package metadata, scripts, `@zip.js/zip.js` dependency, devDependencies, `packageManager`                          |
-| `pnpm-lock.yaml`         |  5384 | Locked dependency tree                                                                                             |
-| `.nvmrc`                 |     1 | Node version for nvm (`24`)                                                                                        |
-| `CHANGELOG.md`           |   149 | SemVer rules and per-version changes                                                                               |
-| `playwright.config.ts`   |    30 | E2E config: Chromium, one worker, login project, global setup/teardown                                             |
-| `vite.config.ts`         |    17 | extension-sdk `defineConfig`, plus the version banner on compiled JS                                               |
-| `gettext.config.cjs`     |    17 | vue3-gettext extract/compile config (de/es/fr)                                                                     |
-| `scripts/package.mjs`    |    64 | `pnpm package`: release zip + SHA-256 from `dist/`                                                                 |
-| `tsconfig.json`          |     4 | Extends `@opencloud-eu/tsconfig`                                                                                   |
-| `extension.d.ts`         |     1 | Vite client types                                                                                                  |
-| `eslint.config.js`       |     8 | OpenCloud ESLint config + ignores                                                                                  |
-| `.prettierrc.json`       |     1 | OpenCloud Prettier config                                                                                          |
-| `.prettierignore`        |    16 | dist, coverage, lockfile, LICENSE, original docs, `.__mf__temp`, Playwright output, vendored `server/third_party/` |
-| `.gitignore`             |    21 | node_modules, dist, coverage, editor/env files, `.__mf__temp/`, Playwright output + login                          |
+| Path                            | Lines | Purpose                                                                                                            |
+| ------------------------------- | ----: | ------------------------------------------------------------------------------------------------------------------ |
+| `README.md`                     |   179 | User-facing readme (rewritten in step 6)                                                                           |
+| `CLAUDE.md`                     |   159 | Index into `docs/`                                                                                                 |
+| `LICENSE`                       |   661 | GNU AGPL-3.0 (canonical gnu.org text); copyright notice is in `README.md`                                          |
+| `THIRD-PARTY-NOTICES.md`        |   201 | Licenses of ported (seek-bzip) and bundled (zip.js) code; the helper's Go modules                                  |
+| `package.json`                  |    67 | Package metadata, scripts, `@zip.js/zip.js` dependency, devDependencies, `packageManager`                          |
+| `pnpm-lock.yaml`                |  5384 | Locked dependency tree                                                                                             |
+| `.nvmrc`                        |     1 | Node version for nvm (`24`)                                                                                        |
+| `CHANGELOG.md`                  |   161 | SemVer rules and per-version changes                                                                               |
+| `playwright.config.ts`          |    30 | E2E config: Chromium, one worker, login project, global setup/teardown                                             |
+| `vite.config.ts`                |    17 | extension-sdk `defineConfig`, plus the version banner on compiled JS                                               |
+| `gettext.config.cjs`            |    17 | vue3-gettext extract/compile config (de/es/fr)                                                                     |
+| `scripts/package.mjs`           |    64 | `pnpm package`: release zip + SHA-256 from `dist/`                                                                 |
+| `tsconfig.json`                 |     4 | Extends `@opencloud-eu/tsconfig`                                                                                   |
+| `extension.d.ts`                |     1 | Vite client types                                                                                                  |
+| `eslint.config.js`              |     8 | OpenCloud ESLint config + ignores                                                                                  |
+| `.prettierrc.json`              |     1 | OpenCloud Prettier config                                                                                          |
+| `.prettierignore`               |    16 | dist, coverage, lockfile, LICENSE, original docs, `.__mf__temp`, Playwright output, vendored `server/third_party/` |
+| `.gitignore`                    |    21 | node_modules, dist, coverage, editor/env files, `.__mf__temp/`, Playwright output + login                          |
+| `.github/workflows/release.yml` |   120 | On a `v*` tag: version check, Go + viewer checks, helper image to GHCR (amd64/arm64), GitHub release               |
 
 ## `src/`
 
@@ -140,39 +141,40 @@ Playwright suite, see [e2e](../testing/e2e.md).
 See [archive-helper overview](../source/archive-helper/overview.md). Tests run with
 `go test ./...` in `server/`.
 
-| Path                                     | Lines | Purpose                                                                                                  |
-| ---------------------------------------- | ----: | -------------------------------------------------------------------------------------------------------- |
-| `server/go.mod` / `server/go.sum`        |    24 | Module, Go 1.27, xz, sevenzip (`replace` → `third_party/`), klauspost zstd, ppmd                         |
-| `server/Dockerfile`                      |    14 | Static build on `golang:1.27-alpine` (copies `third_party/` first), runs on distroless `static-debian12` |
-| `server/.dockerignore`                   |     5 | Keeps tests and test data out of the image                                                               |
-| `server/cmd/archive-helper/main.go`      |   103 | Startup checks (settings, temp folder writable, leftover cleanup), sweeper, shutdown                     |
-| `server/internal/config/config.go`       |   129 | Environment settings, sizes and durations                                                                |
-| `server/internal/storage/ledger.go`      |   122 | Storage reservations: total/per-user caps, free space, hard stop                                         |
-| `server/internal/opencloud/client.go`    |   161 | WebDAV PROPFIND/GET as the user, path checks                                                             |
-| `server/internal/archive/format.go`      |   171 | Formats, detection, single-file names (ports of `detect.ts` / `single.ts`)                               |
-| `server/internal/archive/index.go`       |   239 | Index: normalized paths, synthesized folders, duplicates, sort, search                                   |
-| `server/internal/archive/scan.go`        |   306 | Scan: decompressors, tar walk with data offsets, limits                                                  |
-| `server/internal/archive/read.go`        |   102 | Extract entries in archive order (one pass for a selection)                                              |
-| `server/internal/archive/zip.go`         |   474 | ZIP: own central-directory parser (zip.js rules), method decoders, CRC check                             |
-| `server/internal/archive/sevenzip.go`    |   307 | 7z: checked/lazy decoders registered with sevenzip, listing, extraction                                  |
-| `server/internal/archive/xz.go`          |   451 | Streaming xz container with checks; dictionary limit before allocating                                   |
-| `server/internal/archive/filters.go`     |   257 | Streaming BCJ and delta filters (liblzma logic)                                                          |
-| `server/internal/archive/testdata/`      |     – | Reference `xz` output (`make-xz.sh`); 7z/ZIP made by 7-Zip and Python (`make-7z-zip.sh`)                 |
-| `server/internal/deflate64/`             |   954 | Deflate64 decoder (Go's `compress/flate` ported) + Go's `LICENSE`                                        |
-| `server/third_party/sevenzip/`           |  4267 | Patched copy of `bodgit/sevenzip` v1.6.5 (header caps; `PATCHES.md`, `LICENSE`)                          |
-| `server/internal/session/session.go`     |   447 | Sessions: copy + scan job, owner checks, timeout, cleanup                                                |
-| `server/internal/session/tickets.go`     |   168 | Download preparation (caps, ZIP names) and single-use tickets                                            |
-| `server/internal/zipstream/zipstream.go` |   336 | Store-only ZIP/ZIP64 writer with exact size; `Names`, `SanitizeFileName`                                 |
-| `server/internal/api/api.go`             |   391 | HTTP routes, error codes, downloads                                                                      |
-| `server/internal/*/*_test.go`            |     – | Unit and HTTP tests for each package                                                                     |
+| Path                                     | Lines | Purpose                                                                                                                           |
+| ---------------------------------------- | ----: | --------------------------------------------------------------------------------------------------------------------------------- |
+| `server/go.mod` / `server/go.sum`        |    24 | Module, Go 1.27, xz, sevenzip (`replace` → `third_party/`), klauspost zstd, ppmd                                                  |
+| `server/Dockerfile`                      |    21 | Static build on `golang:1.27-alpine`, cross-compiled per platform (amd64/arm64), runs on distroless `static-debian12`; OCI labels |
+| `server/.dockerignore`                   |     5 | Keeps tests and test data out of the image                                                                                        |
+| `server/cmd/archive-helper/main.go`      |   103 | Startup checks (settings, temp folder writable, leftover cleanup), sweeper, shutdown                                              |
+| `server/internal/config/config.go`       |   129 | Environment settings, sizes and durations                                                                                         |
+| `server/internal/storage/ledger.go`      |   122 | Storage reservations: total/per-user caps, free space, hard stop                                                                  |
+| `server/internal/opencloud/client.go`    |   161 | WebDAV PROPFIND/GET as the user, path checks                                                                                      |
+| `server/internal/archive/format.go`      |   171 | Formats, detection, single-file names (ports of `detect.ts` / `single.ts`)                                                        |
+| `server/internal/archive/index.go`       |   239 | Index: normalized paths, synthesized folders, duplicates, sort, search                                                            |
+| `server/internal/archive/scan.go`        |   306 | Scan: decompressors, tar walk with data offsets, limits                                                                           |
+| `server/internal/archive/read.go`        |   102 | Extract entries in archive order (one pass for a selection)                                                                       |
+| `server/internal/archive/zip.go`         |   474 | ZIP: own central-directory parser (zip.js rules), method decoders, CRC check                                                      |
+| `server/internal/archive/sevenzip.go`    |   307 | 7z: checked/lazy decoders registered with sevenzip, listing, extraction                                                           |
+| `server/internal/archive/xz.go`          |   451 | Streaming xz container with checks; dictionary limit before allocating                                                            |
+| `server/internal/archive/filters.go`     |   257 | Streaming BCJ and delta filters (liblzma logic)                                                                                   |
+| `server/internal/archive/testdata/`      |     – | Reference `xz` output (`make-xz.sh`); 7z/ZIP made by 7-Zip and Python (`make-7z-zip.sh`)                                          |
+| `server/internal/deflate64/`             |   954 | Deflate64 decoder (Go's `compress/flate` ported) + Go's `LICENSE`                                                                 |
+| `server/third_party/sevenzip/`           |  4267 | Patched copy of `bodgit/sevenzip` v1.6.5 (header caps; `PATCHES.md`, `LICENSE`)                                                   |
+| `server/internal/session/session.go`     |   447 | Sessions: copy + scan job, owner checks, timeout, cleanup                                                                         |
+| `server/internal/session/tickets.go`     |   168 | Download preparation (caps, ZIP names) and single-use tickets                                                                     |
+| `server/internal/zipstream/zipstream.go` |   336 | Store-only ZIP/ZIP64 writer with exact size; `Names`, `SanitizeFileName`                                                          |
+| `server/internal/api/api.go`             |   391 | HTTP routes, error codes, downloads                                                                                               |
+| `server/internal/*/*_test.go`            |     – | Unit and HTTP tests for each package                                                                                              |
 
 ## `deploy/`
 
-| Path                                | Lines | Purpose                                                                                      |
-| ----------------------------------- | ----: | -------------------------------------------------------------------------------------------- |
-| `deploy/compose/archive-helper.yml` |    46 | Compose overlay: helper service (own UID, read-only, limits, `./archive-temp`) + proxy mount |
-| `deploy/compose/proxy.yaml`         |    62 | Upstream `proxy.yaml` + the `/archive-api` routes                                            |
-| `deploy/env.example`                |    45 | All helper settings with defaults                                                            |
+| Path                                      | Lines | Purpose                                                                                                                                |
+| ----------------------------------------- | ----: | -------------------------------------------------------------------------------------------------------------------------------------- |
+| `deploy/compose/archive-helper.yml`       |    47 | Compose overlay: helper service from `ghcr.io/warstorm548/archive-helper` (own UID, read-only, limits, `./archive-temp`) + proxy mount |
+| `deploy/compose/archive-helper-build.yml` |     9 | Optional overlay: build the helper from a clone (`archive-helper:local`)                                                               |
+| `deploy/compose/proxy.yaml`               |    62 | Upstream `proxy.yaml` + the `/archive-api` routes                                                                                      |
+| `deploy/env.example`                      |    48 | All helper settings with defaults                                                                                                      |
 
 ## `docs/`
 
