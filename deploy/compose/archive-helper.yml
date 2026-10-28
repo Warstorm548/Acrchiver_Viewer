@@ -6,7 +6,7 @@
 services:
   archive-helper:
     build: ${ARCHIVE_HELPER_BUILD_DIR:-../Acrchiver_Viewer/server}
-    image: archive-helper:${ARCHIVE_HELPER_TAG:-0.3.0}
+    image: archive-helper:${ARCHIVE_HELPER_TAG:-0.4.0}
     # its own user ID, shared with no other container (it reaches OpenCloud only over HTTP);
     # must own the temp folder: sudo chown -R 1500:1500 ./archive-temp
     user: ${ARCHIVE_HELPER_UID_GID:-1500:1500}

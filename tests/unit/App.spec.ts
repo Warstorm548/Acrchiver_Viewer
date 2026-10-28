@@ -158,9 +158,16 @@ describe('App', () => {
   })
 
   it('explains unsupported formats', async () => {
-    serveFile(new Blob(['7z content']))
-    const wrapper = createWrapper({ name: 'archive.7z' })
+    serveFile(new Blob(['Rar!\u001a\u0007\u0001\u0000 content']))
+    const wrapper = createWrapper({ name: 'archive.rar' })
     await waitForMessage(wrapper, 'not supported yet')
+  })
+
+  it('explains that 7z needs the server helper, without downloading the archive', async () => {
+    const { requests } = serveFile(new Blob(['7z content']))
+    const wrapper = createWrapper({ name: 'archive.7z' })
+    await waitForMessage(wrapper, 'only be opened when the server helper is installed')
+    expect(requests.map((r) => r.url)).toEqual([])
   })
 
   it('reports failed downloads', async () => {

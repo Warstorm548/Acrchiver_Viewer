@@ -3,13 +3,15 @@ import { AppConfigObject } from '@opencloud-eu/web-pkg'
 import { defaultPlugins, mount } from '@opencloud-eu/web-test-helpers'
 import { flushPromises } from '@vue/test-utils'
 import { mock } from 'vitest-mock-extended'
+import { BlobWriter, TextReader, ZipWriter } from '@zip.js/zip.js/lib/zip-native.js'
 import App from '../../src/App.vue'
+import { configureZip } from '../../src/engine/zip'
 
 const json = (body: unknown, status = 200) =>
   new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } })
 
 const health = {
-  version: '0.3.0',
+  version: '0.4.0',
   heartbeatSeconds: 30,
   confirmDownloadSize: 1e9,
   maxDownloadsPerUser: 3
@@ -24,6 +26,8 @@ interface FakeHelper {
   holdOpen?: Promise<void>
   /** Status calls fail with HTTP 500. */
   statusFails?: boolean
+  /** The archive, served with Range support (default: 5000 zero bytes, no ranges). */
+  archive?: Blob
 }
 
 /** Routes the viewer's fetch calls: the helper API, else the signed file URL. */
@@ -32,7 +36,8 @@ const fakeServer = ({
   openError,
   statuses,
   holdOpen,
-  statusFails
+  statusFails,
+  archive
 }: FakeHelper = {}) => {
   const calls: { method: string; url: string; auth: string | null }[] = []
   const answers = [...(statuses ?? [{ state: 'ready', size: 5000, copied: 5000, scanned: 5000 }])]
@@ -41,7 +46,16 @@ const fakeServer = ({
     const method = init.method ?? 'GET'
     calls.push({ method, url, auth: new Headers(init.headers).get('Authorization') })
     if (!url.startsWith('/archive-api')) {
-      return new Response(new Uint8Array(5000)) // the archive itself
+      // the archive itself
+      const range = /^bytes=(\d+)-(\d+)$/.exec(new Headers(init.headers).get('Range') ?? '')
+      if (!archive || !range) {
+        return new Response(archive ?? new Uint8Array(5000))
+      }
+      const end = Math.min(Number(range[2]), archive.size - 1)
+      return new Response(archive.slice(Number(range[1]), end + 1), {
+        status: 206,
+        headers: { 'Content-Range': `bytes ${range[1]}-${end}/${archive.size}` }
+      })
     }
     if (!installed) {
       return new Response('<html>OpenCloud</html>') // the web UI answers the unrouted path
@@ -275,5 +289,118 @@ describe('App with the server helper', () => {
       )
     )
     expect(calls.at(-1)).toMatchObject({ method: 'DELETE', url: '/archive-api/sessions/s1' })
+  })
+
+  it('opens a 7z on the server whatever its size, never in the browser', async () => {
+    const calls = fakeServer()
+    const wrapper = createWrapper({ name: 'small.7z', size: 100, config: { maxArchiveSize: 1e9 } })
+    await waitFor(() =>
+      expect(wrapper.findAll('.archive-name').map((n) => n.text())).toEqual(['docs', 'a.txt'])
+    )
+    expect(calls.some((c) => c.url === 'https://cloud.test/signed')).toBe(false)
+  })
+
+  it('explains that a 7z needs the helper when it isn’t installed', async () => {
+    const calls = fakeServer({ installed: false })
+    const wrapper = createWrapper({ name: 'small.7z', size: 100 })
+    await waitFor(() =>
+      expect(wrapper.find('.archive-viewer-message').text()).toContain(
+        'only be opened when the server helper is installed'
+      )
+    )
+    expect(calls.map((c) => c.url)).toEqual(['/archive-api/health'])
+  })
+
+  it('explains a password-protected archive', async () => {
+    fakeServer({ statuses: [{ state: 'error', error: 'encrypted' }] })
+    vi.spyOn(console, 'error').mockImplementation(() => {})
+    const wrapper = createWrapper({ name: 'locked.7z' })
+    await waitFor(() =>
+      expect(wrapper.find('.archive-viewer-message').text()).toContain('password-protected')
+    )
+  })
+})
+
+describe('App with the server helper and ZIPs', () => {
+  beforeAll(() => configureZip({ useWebWorkers: false }))
+  afterEach(() => vi.restoreAllMocks())
+
+  /** A small ZIP; `method` rewrites every entry's compression method (headers only). */
+  const makeZip = async (method?: number): Promise<Blob> => {
+    const writer = new ZipWriter(new BlobWriter('application/zip'), { level: 0 })
+    await writer.add('docs/readme.txt', new TextReader('hello'))
+    await writer.add('root.txt', new TextReader('root'))
+    const bytes = new Uint8Array(await (await writer.close()).arrayBuffer())
+    if (method !== undefined) {
+      const view = new DataView(bytes.buffer)
+      for (let i = 0; i + 4 <= bytes.length; i++) {
+        const signature = view.getUint32(i, true)
+        if (signature === 0x04034b50) {
+          view.setUint16(i + 8, method, true) // local header
+        } else if (signature === 0x02014b50) {
+          view.setUint16(i + 10, method, true) // central directory
+        }
+      }
+    }
+    return new Blob([bytes])
+  }
+
+  const zipWrapper = (zip: Blob, maxArchiveSize: number) =>
+    createWrapper({ name: 'big.zip', size: zip.size, config: { maxArchiveSize } })
+
+  it('opens a ZIP over the browser limit on the server instead of by range', async () => {
+    const zip = await makeZip()
+    const calls = fakeServer({ archive: zip })
+    const wrapper = zipWrapper(zip, 10)
+    await waitFor(() =>
+      expect(wrapper.findAll('.archive-name').map((n) => n.text())).toEqual(['docs', 'a.txt'])
+    )
+    expect(calls.some((c) => c.url === 'https://cloud.test/signed')).toBe(false)
+  })
+
+  it('reads a big ZIP by range with a notice when the helper fails', async () => {
+    const zip = await makeZip()
+    const calls = fakeServer({ archive: zip, openError: { code: 'server-busy', status: 507 } })
+    vi.spyOn(console, 'warn').mockImplementation(() => {})
+    const wrapper = zipWrapper(zip, 10)
+    await waitFor(() =>
+      expect(wrapper.findAll('.archive-name').map((n) => n.text())).toEqual(['docs', 'root.txt'])
+    )
+    expect(wrapper.find('.archive-viewer-notice').text()).toContain(
+      'read in the browser, where some files may not open'
+    )
+    // one attempt on the server only
+    expect(calls.filter((c) => c.url === '/archive-api/sessions')).toHaveLength(1)
+  })
+
+  it('leaves a small ZIP the browser can read to range mode', async () => {
+    const zip = await makeZip()
+    const calls = fakeServer({ archive: zip })
+    const wrapper = zipWrapper(zip, 1e9)
+    await waitFor(() =>
+      expect(wrapper.findAll('.archive-name').map((n) => n.text())).toEqual(['docs', 'root.txt'])
+    )
+    expect(calls.some((c) => c.url.startsWith('/archive-api'))).toBe(false)
+  })
+
+  it('moves a small ZIP to the server when it holds entries only the helper decodes', async () => {
+    const zip = await makeZip(12) // bzip2
+    const calls = fakeServer({ archive: zip })
+    const wrapper = zipWrapper(zip, 1e9)
+    await waitFor(() =>
+      expect(wrapper.findAll('.archive-name').map((n) => n.text())).toEqual(['docs', 'a.txt'])
+    )
+    expect(calls.some((c) => c.url === '/archive-api/sessions' && c.method === 'POST')).toBe(true)
+    expect(wrapper.find('.archive-viewer-notice').exists()).toBe(false)
+  })
+
+  it('keeps the range listing when the helper isn’t installed', async () => {
+    const zip = await makeZip(12)
+    fakeServer({ archive: zip, installed: false })
+    const wrapper = zipWrapper(zip, 1e9)
+    await waitFor(() =>
+      expect(wrapper.findAll('.archive-name').map((n) => n.text())).toEqual(['docs', 'root.txt'])
+    )
+    expect(wrapper.find('.archive-viewer-notice').exists()).toBe(false)
   })
 })

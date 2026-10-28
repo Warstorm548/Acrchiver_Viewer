@@ -12,3 +12,5 @@ l10n/locale
 playwright-report/
 test-results/
 e2e/.auth/
+# vendored upstream code (kept as released, see server/third_party/sevenzip/PATCHES.md)
+server/third_party/

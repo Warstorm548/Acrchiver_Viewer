@@ -1,5 +1,11 @@
 <template>
   <div class="archive-viewer ext:h-full ext:overflow-auto ext:p-4">
+    <p
+      v-if="state === 'ready' && notice"
+      class="archive-viewer-notice ext:mb-2 ext:text-sm"
+      role="status"
+      v-text="notice"
+    />
     <archive-browser
       v-if="state === 'ready'"
       :handle="handle"
@@ -89,8 +95,13 @@ type State = 'loading' | 'ready' | 'too-large' | 'error' | 'cancelled'
 type Phase = 'download' | 'index' | 'decompress' | 'server-copy' | 'server-scan'
 type GetUrlForResource = (space: SpaceResource, resource: Resource) => Promise<string>
 
-/** Formats the server helper reads (ZIPs are read by range in the browser instead). */
+/**
+ * Formats the server helper reads. ZIPs go to it only when over the browser's archive limit or
+ * when they hold entries the browser can't decompress; otherwise they are read by range.
+ */
 const HELPER_EXTENSIONS = new Set([
+  'zip',
+  '7z',
   'tar',
   'tar.gz',
   'tgz',
@@ -105,6 +116,9 @@ const HELPER_EXTENSIONS = new Set([
   'xz',
   'lzma'
 ])
+
+/** Formats only the helper can open (their codecs need WebAssembly in the browser). */
+const HELPER_ONLY = new Set(['7z'])
 
 /** How often the status of an archive being prepared on the server is checked. */
 const STATUS_INTERVAL = 1000
@@ -150,6 +164,8 @@ export default defineComponent({
     const state = ref<State>('loading')
     const phase = ref<Phase>('download')
     const message = ref('')
+    /** Shown above an open archive, e.g. why a big ZIP is read in the browser after all. */
+    const notice = ref('')
     const loaded = ref(0)
     /** Bytes fetched by range requests since the archive was opened (drives read progress). */
     const bytesRead = ref(0)
@@ -216,6 +232,10 @@ export default defineComponent({
         case 'too-complex':
           return $gettext(
             'This archive is too large or complex to list on the server. You can download it instead.'
+          )
+        case 'encrypted':
+          return $gettext(
+            'This archive is password-protected, which is not supported. You can download it instead.'
           )
         case 'changed':
           return $gettext('The archive changed while it was being opened. Please try again.')
@@ -289,6 +309,7 @@ export default defineComponent({
       remote.value?.close()
       remote.value = null
       serverStatus.value = null
+      notice.value = ''
     }
 
     /** ZIPs are read by HTTP range requests: only the index and the files the user opens. */
@@ -471,9 +492,54 @@ export default defineComponent({
         return true
       }
 
+      /**
+       * For ZIPs, which the browser can still read by range: a helper failure leaves a notice and
+       * returns false instead of failing.
+       */
+      let serverFailed = false
+      const tryServerOrRange = async (): Promise<boolean> => {
+        try {
+          return await tryServer()
+        } catch (error) {
+          if (signal.aborted) {
+            throw error
+          }
+          serverFailed = true
+          console.warn(
+            'The archive helper could not open this ZIP; reading it in the browser.',
+            error
+          )
+          notice.value = $gettext(
+            'The server could not prepare this archive, so it is read in the browser, where some files may not open.'
+          )
+          phase.value = 'index'
+          return false
+        }
+      }
+
       try {
+        if (HELPER_ONLY.has(archiveExtension(props.resource.name))) {
+          if (!(await tryServer()) && !signal.aborted) {
+            state.value = 'error'
+            message.value = $gettext(
+              'This archive format can only be opened when the server helper is installed. You can download it instead.'
+            )
+          }
+          return
+        }
+        const overBrowserLimit = Number(props.resource.size) > limits.value.archive
+        // big ZIPs go to the helper, which reads files and selections of any size
+        if (canUseRanges() && overBrowserLimit && (await tryServerOrRange())) {
+          return
+        }
         let opened = canUseRanges() ? await openByRange(signal) : null
-        if (!opened && Number(props.resource.size) > limits.value.archive && (await tryServer())) {
+        // entries only the helper can decompress (Deflate64, bzip2, …): keep the range listing
+        // until the helper has the archive ready
+        if (opened?.entries.some((entry) => entry.needsServer) && (await tryServerOrRange())) {
+          await opened.close()
+          return
+        }
+        if (!opened && overBrowserLimit && !serverFailed && (await tryServer())) {
           return
         }
         if (!opened) {
@@ -482,7 +548,9 @@ export default defineComponent({
         if (!opened) {
           // only when too large for the browser (the metadata's size was wrong): the "too large"
           // message stays unless the helper can open it
-          await tryServer()
+          if (!serverFailed) {
+            await tryServer()
+          }
           return
         }
         if (signal.aborted) {
@@ -498,7 +566,7 @@ export default defineComponent({
         const tooBigForBrowser =
           isOutOfMemory(error) ||
           (error instanceof ArchiveError && ['too-large', 'out-of-memory'].includes(error.code))
-        if (tooBigForBrowser) {
+        if (tooBigForBrowser && !serverFailed) {
           try {
             if (await tryServer()) {
               return
@@ -523,6 +591,7 @@ export default defineComponent({
       state,
       phase,
       message,
+      notice,
       handle,
       remote,
       fileSize,

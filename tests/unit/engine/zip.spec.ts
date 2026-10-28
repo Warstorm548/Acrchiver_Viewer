@@ -38,10 +38,32 @@ describe('openZip', () => {
     expect(blob.type).toBe('text/markdown')
   })
 
+  it('flags entries only the server helper can decompress', async () => {
+    // rewrite the compression method in the headers: 12 (bzip2) and 98 (PPMd)
+    const bytes = new Uint8Array(
+      await (await makeZip({ 'a.txt': 'a', 'b.txt': 'b' })).arrayBuffer()
+    )
+    const view = new DataView(bytes.buffer)
+    const methods = [12, 98]
+    let central = 0
+    for (let i = 0; i + 4 <= bytes.length; i++) {
+      if (view.getUint32(i, true) === 0x02014b50) {
+        view.setUint16(i + 10, methods[central++], true)
+      }
+    }
+    const handle = await openZip(new Blob([bytes]))
+    expect(handle.entries.map((e) => [e.path, e.supported, e.needsServer])).toEqual([
+      ['a.txt', false, true],
+      ['b.txt', false, false]
+    ])
+    await handle.close()
+  })
+
   it('marks encrypted entries as unsupported', async () => {
     const handle = await openZip(await makeZip({ 'secret.txt': 'x' }, 'pw'))
     expect(handle.entries[0].encrypted).toBe(true)
     expect(handle.entries[0].supported).toBe(false)
+    expect(handle.entries[0].needsServer).toBe(false)
     await expect(handle.read(handle.entries[0])).rejects.toBeInstanceOf(ArchiveError)
   })
 

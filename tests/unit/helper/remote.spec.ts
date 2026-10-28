@@ -34,6 +34,19 @@ describe('RemoteArchive', () => {
     ).toBeUndefined()
   })
 
+  it('shows a ZIP’s zoneless DOS date in the user’s own time zone, like zip.js', () => {
+    const entry = toArchiveEntry({
+      path: 'a.txt',
+      name: 'a.txt',
+      isDirectory: false,
+      size: 1,
+      modified: Date.UTC(2023, 10, 14, 22, 13, 20),
+      localTime: true,
+      supported: true
+    })
+    expect(entry.modified).toEqual(new Date(2023, 10, 14, 22, 13, 20))
+  })
+
   it('sends heartbeats and reports a session the helper no longer knows', async () => {
     const client = mock<HelperClient>()
     client.heartbeat.mockResolvedValueOnce().mockRejectedValueOnce(new TypeError('offline'))

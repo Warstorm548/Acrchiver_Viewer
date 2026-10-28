@@ -49,7 +49,7 @@ export interface SessionStatus {
   copied: number
   scanned: number
   entries: number
-  /** Set when state is 'error': unsupported-format, corrupt, too-complex, changed, … */
+  /** Set when state is 'error': unsupported-format, corrupt, too-complex, encrypted, changed, … */
   error?: string
 }
 
@@ -60,6 +60,8 @@ export interface RemoteEntry {
   isDirectory: boolean
   size: number
   modified?: number
+  /** `modified` is a wall-clock time with no zone (a ZIP's DOS date), sent as if it were UTC. */
+  localTime?: boolean
   supported: boolean
 }
 
