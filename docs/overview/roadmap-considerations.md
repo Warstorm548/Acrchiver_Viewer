@@ -38,6 +38,35 @@ builds. Risk is low (`'unsafe-inline'` is already present) but it is server-wide
 on every server that installs the app, and must be kept out of upstream-tracked files (use the
 `custom/` overlay). Decided against so the app works on a default OpenCloud.
 
+## More formats through the helper (proposed, not scheduled)
+
+Formats the archive helper could open, reusing its temp copy, storage caps, sessions, download
+caps and tickets, and the viewer's server mode; mostly a new reader in `server/internal/archive/`
+plus registering extensions. Each would be its own MINOR release with tests. Order suggested
+2026-10-28:
+
+| Priority | Format                                                      | Today                                                | What the helper would add                                                                                 |
+| -------- | ----------------------------------------------------------- | ---------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
+| 1        | **7z** (`.7z`)                                              | Registered in "Open with", shows "not supported yet" | Open at any size (LZMA/LZMA2 and other codecs need WebAssembly in the browser, none needed on the server) |
+| 1        | **RAR** (`.rar`)                                            | Same as 7z                                           | Reading/extracting with an open-source decoder; creating RAR stays impossible (proprietary)               |
+| 2        | **Zstandard** (`.tar.zst`, `.tzst`, `.zst`)                 | Not registered                                       | Common in modern backups and Linux packages; browsers can't decode it without WebAssembly                 |
+| 3        | **ZIP entries the browser can't read**                      | ZIP opens, those entries show as unreadable          | Deflate64 (Windows Explorer ZIPs over ~2 GB), bzip2, LZMA, zstd inside a ZIP; password-protected entries  |
+| 4        | **Disk images** (`.iso`)                                    | Not registered                                       | Browse and extract without downloading 4–8 GB                                                             |
+| 5        | `.tar.lz4`, `.tar.lz` (lzip), `.Z`, `.cpio`, `.deb`, `.rpm` | Not registered                                       | Possible, rarely stored in a cloud                                                                        |
+
+Before building:
+
+- **Libraries:** pick plain-Go decoders and check license and codec coverage first (not verified
+  yet); add them to [dependencies](../tech-stack/dependencies.md) and `THIRD-PARTY-NOTICES.md`.
+- **Solid archives** (7z, RAR): many files share one compressed stream, so reading a late file
+  decompresses everything before it, as with `.tar.gz` today.
+- **Memory:** 7z/RAR can declare large dictionaries or memory-heavy codecs (PPMd), zstd large
+  windows. Each needs a check before allocating, like `MaxDictionarySize` for xz.
+- **Passwords** (7z, RAR, ZIP): need a password dialog, and the password would be sent to the
+  helper. That is a decision for the owner before any encrypted format is supported.
+- **ZIP routing:** ZIPs stay in browser range mode; only the unreadable entries (or the whole ZIP
+  when the user asks) would go through the helper, which needs its own design.
+
 ## Compress on the server (decided, not built)
 
 A "Compress…" entry in the file context menu (`global.files.context-actions`) that builds an

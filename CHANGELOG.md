@@ -36,6 +36,8 @@ Supported OpenCloud versions: **8.0.1**. On `feature/archive-helper`.
 - Hardening: own UID 1500:1500, read-only container, no capabilities, memory/CPU limits; parser
   limits (entries, decompressed size, time, names); xz/lzma dictionaries over 256 MiB refused
   before allocating.
+- Roadmap: formats the helper could open next (7z, RAR, Zstandard, ZIP codecs the browser can't
+  read, ISO), with priorities and open questions (libraries, solid archives, memory, passwords).
 - ESLint ignores Playwright's `playwright-report/` and `test-results/` (a failed e2e run made
   `pnpm lint` fail).
 - `limits.spec.ts` turns the helper off (`archiveHelperUrl: ""`), since it tests the browser's

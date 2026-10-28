@@ -7,13 +7,13 @@ Every tracked file (0.3.0), what it is, and its line count. Generated/ignored: `
 | Path                     | Lines | Purpose                                                                                   |
 | ------------------------ | ----: | ----------------------------------------------------------------------------------------- |
 | `README.md`              |   168 | User-facing readme (rewritten in step 6)                                                  |
-| `CLAUDE.md`              |   152 | Index into `docs/`                                                                        |
+| `CLAUDE.md`              |   153 | Index into `docs/`                                                                        |
 | `LICENSE`                |   661 | GNU AGPL-3.0 (canonical gnu.org text); copyright notice is in `README.md`                 |
 | `THIRD-PARTY-NOTICES.md` |   168 | Licenses of ported (seek-bzip) and bundled (zip.js) code                                  |
 | `package.json`           |    67 | Package metadata, scripts, `@zip.js/zip.js` dependency, devDependencies, `packageManager` |
 | `pnpm-lock.yaml`         |  5384 | Locked dependency tree                                                                    |
 | `.nvmrc`                 |     1 | Node version for nvm (`24`)                                                               |
-| `CHANGELOG.md`           |   116 | SemVer rules and per-version changes                                                      |
+| `CHANGELOG.md`           |   118 | SemVer rules and per-version changes                                                      |
 | `playwright.config.ts`   |    30 | E2E config: Chromium, one worker, login project, global setup/teardown                    |
 | `vite.config.ts`         |    17 | extension-sdk `defineConfig`, plus the version banner on compiled JS                      |
 | `gettext.config.cjs`     |    17 | vue3-gettext extract/compile config (de/es/fr)                                            |

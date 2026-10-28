@@ -61,8 +61,9 @@ for a quick run), `pnpm package` (release zip), `pnpm l10n:extract` / `pnpm l10n
 - [docs/overview/repository-layout.md](docs/overview/repository-layout.md) — every tracked file
   with line count and purpose; what steps 1 and 3 removed.
 - [docs/overview/roadmap-considerations.md](docs/overview/roadmap-considerations.md) — parked
-  options: server helper (done in 0.3.0), libarchive as plain JS, WebAssembly + CSP, compress on
-  the server and extract to folder (decided, not built), plain TAR header hopping (deferred).
+  options: server helper (done in 0.3.0), more helper formats (7z, RAR, zstd, ZIP codecs, ISO;
+  proposed), libarchive as plain JS, WebAssembly + CSP, compress on the server and extract to
+  folder (decided, not built), plain TAR header hopping (deferred).
 
 ### Tech stack
 
