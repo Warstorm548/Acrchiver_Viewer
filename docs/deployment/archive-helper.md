@@ -19,25 +19,32 @@ updates don't touch it. Docker commands need sudo; run them in your own terminal
 
 1. Have the Archive Viewer repo next to opencloud-compose (default build path
    `../Acrchiver_Viewer/server`), or set `ARCHIVE_HELPER_BUILD_DIR` in `.env`.
-2. In the opencloud-compose folder:
+2. **Check for an existing proxy config first.** `deploy/compose/proxy.yaml` is upstream's
+   `config/opencloud/proxy.yaml` plus our two routes, and it is mounted over
+   `/etc/opencloud/proxy.yaml`. If the server already customizes the proxy (its own
+   `proxy.yaml`, e.g. OIDC role mappings or extra routes; check `COMPOSE_FILE` overlays and
+   `custom/` for another mount of that path), do **not** copy ours: add the marked
+   "Archive Viewer helper" route block to the existing file instead, and make sure only one file
+   is mounted at that path.
+3. In the opencloud-compose folder (leave out `proxy.yaml` if you merged it in step 2):
    ```
    cp ../Acrchiver_Viewer/deploy/compose/archive-helper.yml ../Acrchiver_Viewer/deploy/compose/proxy.yaml custom/
    mkdir ./archive-temp
    sudo chown 1500:1500 ./archive-temp
    printf '\n/archive-temp/\n' >> .git/info/exclude    # keep it out of git, locally
    ```
-3. In `.env`, append `:custom/archive-helper.yml` to `COMPOSE_FILE`, e.g.
+4. In `.env`, append `:custom/archive-helper.yml` to `COMPOSE_FILE`, e.g.
    `COMPOSE_FILE=docker-compose.yml:traefik/opencloud.yml:custom/archive-viewer.yml:custom/archive-helper.yml`
    (on the main server: whatever it has now, plus `:custom/archive-helper.yml`). Copy any setting
    you want to change from `deploy/env.example`.
-4. Build and start (OpenCloud restarts once to load the new `proxy.yaml`):
+5. Build and start (OpenCloud restarts once to load the new `proxy.yaml`):
    ```
    sudo docker compose build archive-helper
    sudo docker compose up -d
    sudo docker compose logs archive-helper
    ```
    The log ends with `archive-helper started version=… maxStorage=…`.
-5. Check: open an archive over the browser limit in the viewer; it shows "Preparing the archive
+6. Check: open an archive over the browser limit in the viewer; it shows "Preparing the archive
    on the server…", and a file `ah-….archive` appears in `./archive-temp` while it is open.
 
 The temp folder **must start with `./`** (inside the opencloud-compose folder, never the root of

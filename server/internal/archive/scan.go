@@ -117,6 +117,8 @@ func openStream(format Format, source io.Reader) (*stream, error) {
 		if binary.LittleEndian.Uint32(header[1:5]) > MaxDictionarySize {
 			return nil, fmt.Errorf("%w: lzma dictionary too large", ErrTooComplex)
 		}
+		// DictCap only refuses larger headers: since ulikunitz/xz v0.5.14 the reader allocates the
+		// header's own dictionary size, not DictCap (the "use the larger" line is disabled there)
 		l, err := lzma.ReaderConfig{DictCap: MaxDictionarySize}.NewReader(buffered)
 		if err != nil {
 			return nil, corrupt(err)

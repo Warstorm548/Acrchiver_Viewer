@@ -330,8 +330,9 @@ func TestProgressCountsArchiveBytes(t *testing.T) {
 	}
 }
 
-// The repo's shared fixtures (made by test-fixtures/make-fixtures.sh with Python's reference
-// encoders) are opened the same way as in the browser, when they are present.
+// The shared fixtures next to the repository (../test-fixtures, made by make-fixtures.sh with
+// Python's reference encoders; also used by the e2e suite) are opened the same way as in the
+// browser, when they are present.
 func TestSharedFixtures(t *testing.T) {
 	dir := filepath.Join("..", "..", "..", "..", "test-fixtures")
 	if _, err := os.Stat(dir); err != nil {

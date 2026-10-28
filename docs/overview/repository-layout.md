@@ -6,14 +6,14 @@ Every tracked file (0.3.0), what it is, and its line count. Generated/ignored: `
 
 | Path                     | Lines | Purpose                                                                                   |
 | ------------------------ | ----: | ----------------------------------------------------------------------------------------- |
-| `README.md`              |   168 | User-facing readme (rewritten in step 6)                                                  |
+| `README.md`              |   169 | User-facing readme (rewritten in step 6)                                                  |
 | `CLAUDE.md`              |   153 | Index into `docs/`                                                                        |
 | `LICENSE`                |   661 | GNU AGPL-3.0 (canonical gnu.org text); copyright notice is in `README.md`                 |
 | `THIRD-PARTY-NOTICES.md` |   168 | Licenses of ported (seek-bzip) and bundled (zip.js) code                                  |
 | `package.json`           |    67 | Package metadata, scripts, `@zip.js/zip.js` dependency, devDependencies, `packageManager` |
 | `pnpm-lock.yaml`         |  5384 | Locked dependency tree                                                                    |
 | `.nvmrc`                 |     1 | Node version for nvm (`24`)                                                               |
-| `CHANGELOG.md`           |   118 | SemVer rules and per-version changes                                                      |
+| `CHANGELOG.md`           |   123 | SemVer rules and per-version changes                                                      |
 | `playwright.config.ts`   |    30 | E2E config: Chromium, one worker, login project, global setup/teardown                    |
 | `vite.config.ts`         |    17 | extension-sdk `defineConfig`, plus the version banner on compiled JS                      |
 | `gettext.config.cjs`     |    17 | vue3-gettext extract/compile config (de/es/fr)                                            |
@@ -33,11 +33,11 @@ Every tracked file (0.3.0), what it is, and its line count. Generated/ignored: `
 | `src/compatibility.ts`              |    91 | OpenCloud version check: supported versions, `waitForProductVersion`, `checkCompatibility`                                      |
 | `src/manifest.json`                 |    12 | Default `config` (6 size limits, `allowUnsupportedOpenCloud`, `archiveHelperUrl`) merged into `dist/manifest.json`              |
 | `src/limits.ts`                     |    65 | Desktop/mobile limits: `isMobileDevice`, `resolveLimits`, defaults rationale                                                    |
-| `src/App.vue`                       |   512 | Viewer shell: ZIP range mode, size check, capped streamed download, detect + open, server helper, errors                        |
+| `src/App.vue`                       |   537 | Viewer shell: ZIP range mode, size check, capped streamed download, detect + open, server helper, errors                        |
 | `src/components/ArchiveBrowser.vue` |   714 | File table: folders, breadcrumb, search, sort, selection, downloads, cap, progress; server mode (pages, server search, confirm) |
 | `src/components/PreviewModal.vue`   |   133 | Text/image preview in `oc-modal` (reads via the capped `read` prop)                                                             |
 | `src/download.ts`                   |    94 | `sanitizeFileName`, `triggerDownload`, `triggerUrlDownload`, `zipEntries` (selection → zip)                                     |
-| `src/helper/client.ts`              |   191 | Archive helper HTTP client, `HelperError`, `resolveHelperUrl` (same-origin only)                                                |
+| `src/helper/client.ts`              |   201 | Archive helper HTTP client, `HelperError`, `resolveHelperUrl` (same-origin only)                                                |
 | `src/helper/remote.ts`              |    95 | `RemoteArchive`: one helper session (pages, search, preview, downloads, heartbeat, close)                                       |
 | `src/engine/index.ts`               |    72 | `openArchive` + re-exports (incl. range reader)                                                                                 |
 | `src/engine/types.ts`               |    55 | Entry/handle/limit types, `ArchiveError` (incl. `range-unsupported`, `out-of-memory`)                                           |
@@ -82,9 +82,9 @@ Details: [extension-entry](../source/extension-entry.md), [viewer-ui](../source/
 | ----------------------------------------- | ----: | ------------------------------------------------------------------ |
 | `tests/unit/App.spec.ts`                  |   173 | Viewer flow: range mode, renewal, fallbacks, limits, errors        |
 | `tests/unit/ArchiveBrowser.spec.ts`       |   133 | Navigation, search, sort, downloads, entry cap, progress           |
-| `tests/unit/AppHelper.spec.ts`            |   233 | Server helper flow: when used, progress, fallbacks, errors, cancel |
+| `tests/unit/AppHelper.spec.ts`            |   279 | Server helper flow: when used, progress, fallbacks, errors, cancel |
 | `tests/unit/ArchiveBrowserRemote.spec.ts` |   191 | Server mode: pages, sort, search, downloads, confirmation, errors  |
-| `tests/unit/helper/client.spec.ts`        |   106 | Helper client: URL rule, token, errors, URLs, keepalive            |
+| `tests/unit/helper/client.spec.ts`        |   110 | Helper client: URL rule, token, errors, URLs, keepalive            |
 | `tests/unit/helper/remote.spec.ts`        |    65 | `RemoteArchive`: entries, heartbeat, lost session, close           |
 | `tests/unit/limits.spec.ts`               |    52 | Device detection, limit resolution, manifest = defaults            |
 | `tests/unit/compatibility.spec.ts`        |   101 | OpenCloud version check                                            |
@@ -151,7 +151,7 @@ See [archive-helper overview](../source/archive-helper/overview.md). Tests run w
 | `server/internal/opencloud/client.go`    |   161 | WebDAV PROPFIND/GET as the user, path checks                                         |
 | `server/internal/archive/format.go`      |   162 | Formats, detection, single-file names (ports of `detect.ts` / `single.ts`)           |
 | `server/internal/archive/index.go`       |   234 | Index: normalized paths, synthesized folders, duplicates, sort, search               |
-| `server/internal/archive/scan.go`        |   283 | Scan: decompressors, tar walk with data offsets, limits                              |
+| `server/internal/archive/scan.go`        |   285 | Scan: decompressors, tar walk with data offsets, limits                              |
 | `server/internal/archive/read.go`        |    97 | Extract entries in archive order (one pass for a selection)                          |
 | `server/internal/archive/xz.go`          |   451 | Streaming xz container with checks; dictionary limit before allocating               |
 | `server/internal/archive/filters.go`     |   257 | Streaming BCJ and delta filters (liblzma logic)                                      |

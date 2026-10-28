@@ -29,7 +29,7 @@ deployment (removed in step 1); the old pre-v8 viewer was ported and deleted in 
 | `pnpm build`                      | OK → `dist/manifest.json`, `dist/js/*.mjs`, `dist/assets/*.css`; no `.wasm`, no `WebAssembly` |
 | `pnpm check:types`                | OK                                                                                            |
 | `pnpm lint` / `format:check`      | OK                                                                                            |
-| `pnpm test:unit --run`            | OK, 247/247                                                                                   |
+| `pnpm test:unit --run`            | OK, 252/252                                                                                   |
 | `go test -race ./...` (`server/`) | OK (7 packages)                                                                               |
 | Loaded in a running OpenCloud     | OK — local opencloud-compose, rolling 8.0.1 (steps 2–5)                                       |
 

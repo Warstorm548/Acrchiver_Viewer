@@ -13,7 +13,17 @@ export const resolveHelperUrl = (config: Record<string, unknown> | undefined): s
     return DEFAULT_HELPER_URL
   }
   const trimmed = value.trim().replace(/\/+$/, '')
-  return trimmed.startsWith('/') && !trimmed.startsWith('//') ? trimmed : null
+  if (!trimmed.startsWith('/')) {
+    return null
+  }
+  // Let the URL parser decide: browsers read "\" as "/" and drop tabs and newlines, so
+  // "/\evil.example" would otherwise reach another site.
+  const base = 'https://same-origin.invalid'
+  try {
+    return new URL(trimmed, base).origin === base ? trimmed : null
+  } catch {
+    return null
+  }
 }
 
 export interface HelperHealth {

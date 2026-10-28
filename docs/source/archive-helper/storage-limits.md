@@ -1,8 +1,9 @@
 # Archive Helper: Storage and Safety Limits
 
-Every limit is an environment variable in opencloud-compose's `.env` (all listed with defaults
-in `deploy/env.example`). They apply to every user alike, **admins included**: changing `.env`
-and restarting the helper is the only way to change them. Sizes accept `GB`/`TB` (decimal) or
+The configurable limits are environment variables in opencloud-compose's `.env` (all listed with
+defaults in `deploy/env.example`); a few parser limits are code constants (marked below). All
+apply to every user alike, **admins included**: changing `.env` and restarting the helper is the
+only way to change the configurable ones. Sizes accept `GB`/`TB` (decimal) or
 `GiB`/`TiB`. Code: `server/internal/storage`, `session`, `archive`. Overview in
 [overview](overview.md).
 

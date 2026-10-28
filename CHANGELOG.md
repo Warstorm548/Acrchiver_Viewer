@@ -38,6 +38,11 @@ Supported OpenCloud versions: **8.0.1**. On `feature/archive-helper`.
   before allocating.
 - Roadmap: formats the helper could open next (7z, RAR, Zstandard, ZIP codecs the browser can't
   read, ISO), with priorities and open questions (libraries, solid archives, memory, passwords).
+- Review fixes (CodeRabbit deep review): the viewer closes a helper session also when Cancel is
+  clicked while the session is being created and when a status call fails (it held server space
+  until the timeout); status polling no longer piles up abort listeners; `archiveHelperUrl` is
+  checked with the URL parser (`/\evil.example` no longer passes as same-origin); the install
+  guide warns not to overwrite an existing `proxy.yaml`.
 - ESLint ignores Playwright's `playwright-report/` and `test-results/` (a failed e2e run made
   `pnpm lint` fail).
 - `limits.spec.ts` turns the helper off (`archiveHelperUrl: ""`), since it tests the browser's

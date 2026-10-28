@@ -95,9 +95,10 @@ for logged-in users:
 - the browser loads one folder at a time; downloads go straight to disk, one file or several as a
   ZIP;
 - admins set the limits in `.env`: total temp space (default 50 GB), per user (25 GB), largest
-  download (10 GB file / 10 GB selection), confirmation above 1 GB, 3 downloads per user. A user
-  who would exceed them gets "Server busy… try again in a few minutes" instead of filling the
-  disk.
+  download (10 GB file / 10 GB selection), confirmation above 1 GB, 3 downloads per user. Each
+  limit has its own message: a full server gives "Server busy… try again in a few minutes", a
+  user's own cap "close one and try again", an archive or download over a cap says so with the
+  limit, and a fourth download at once "wait for one to finish".
 
 Install, settings and upgrades: [docs/deployment/archive-helper.md](docs/deployment/archive-helper.md).
 Without it, the viewer works as described above.

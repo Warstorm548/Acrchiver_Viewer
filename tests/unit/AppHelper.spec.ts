@@ -20,10 +20,20 @@ interface FakeHelper {
   openError?: { code: string; status: number; limit?: number }
   /** Status answers in order; the last one repeats. */
   statuses?: Record<string, unknown>[]
+  /** Holds the answer to POST /sessions until this resolves. */
+  holdOpen?: Promise<void>
+  /** Status calls fail with HTTP 500. */
+  statusFails?: boolean
 }
 
 /** Routes the viewer's fetch calls: the helper API, else the signed file URL. */
-const fakeServer = ({ installed = true, openError, statuses }: FakeHelper = {}) => {
+const fakeServer = ({
+  installed = true,
+  openError,
+  statuses,
+  holdOpen,
+  statusFails
+}: FakeHelper = {}) => {
   const calls: { method: string; url: string; auth: string | null }[] = []
   const answers = [...(statuses ?? [{ state: 'ready', size: 5000, copied: 5000, scanned: 5000 }])]
   const route = (input: RequestInfo | URL, init: RequestInit = {}): Response => {
@@ -46,6 +56,9 @@ const fakeServer = ({ installed = true, openError, statuses }: FakeHelper = {}) 
       return json({ id: 's1', state: 'copying', size: 5000, copied: 0, scanned: 0 }, 202)
     }
     if (url === '/archive-api/sessions/s1' && method === 'GET') {
+      if (statusFails) {
+        return new Response('Internal Server Error', { status: 500 })
+      }
       return json({
         id: 's1',
         name: 'big.tar.gz',
@@ -67,9 +80,12 @@ const fakeServer = ({ installed = true, openError, statuses }: FakeHelper = {}) 
     }
     return new Response(null, { status: 404 })
   }
-  vi.spyOn(globalThis, 'fetch').mockImplementation((input, init) =>
-    Promise.resolve(route(input, init))
-  )
+  vi.spyOn(globalThis, 'fetch').mockImplementation(async (input, init) => {
+    if (holdOpen && String(input) === '/archive-api/sessions' && init?.method === 'POST') {
+      await holdOpen
+    }
+    return route(input, init)
+  })
   return calls
 }
 
@@ -229,5 +245,35 @@ describe('App with the server helper', () => {
       calls.filter((c) => c.url === '/archive-api/sessions/s1' && c.method === 'GET')
     ).toHaveLength(statusCalls)
     expect(wrapper.find('.archive-viewer-retry').exists()).toBe(true)
+  })
+
+  it('closes the session when Cancel is clicked while it is still being created', async () => {
+    let answerOpen: () => void
+    const calls = fakeServer({ holdOpen: new Promise((resolve) => (answerOpen = resolve)) })
+    const wrapper = createWrapper()
+    await waitFor(() => expect(wrapper.find('.archive-viewer-cancel').exists()).toBe(true))
+    await wrapper.find('.archive-viewer-cancel').trigger('click')
+    answerOpen() // the helper answers after the user cancelled
+    await waitFor(() =>
+      expect(calls.at(-1)).toMatchObject({ method: 'DELETE', url: '/archive-api/sessions/s1' })
+    )
+    expect(calls.filter((c) => c.url === '/archive-api/sessions/s1' && c.method === 'GET')).toEqual(
+      []
+    )
+    expect(wrapper.find('.archive-viewer-message').text()).toBe(
+      'Opening the archive was cancelled.'
+    )
+  })
+
+  it('closes the session when checking its status fails', async () => {
+    const calls = fakeServer({ statusFails: true })
+    vi.spyOn(console, 'error').mockImplementation(() => {})
+    const wrapper = createWrapper()
+    await waitFor(() =>
+      expect(wrapper.find('.archive-viewer-message').text()).toContain(
+        'The server could not open this archive.'
+      )
+    )
+    expect(calls.at(-1)).toMatchObject({ method: 'DELETE', url: '/archive-api/sessions/s1' })
   })
 })

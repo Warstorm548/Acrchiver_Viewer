@@ -109,13 +109,24 @@ const HELPER_EXTENSIONS = new Set([
 /** How often the status of an archive being prepared on the server is checked. */
 const STATUS_INTERVAL = 1000
 
+const abortError = () => new DOMException('Aborted', 'AbortError')
+
+/** Waits `ms`, or rejects at once when `signal` is (or becomes) aborted; leaves no listener behind. */
 const sleep = (ms: number, signal: AbortSignal) =>
   new Promise<void>((resolve, reject) => {
-    const timer = setTimeout(resolve, ms)
-    signal.addEventListener('abort', () => {
+    if (signal.aborted) {
+      reject(abortError())
+      return
+    }
+    const onAbort = () => {
       clearTimeout(timer)
-      reject(new DOMException('Aborted', 'AbortError'))
-    })
+      reject(abortError())
+    }
+    const timer = setTimeout(() => {
+      signal.removeEventListener('abort', onAbort)
+      resolve()
+    }, ms)
+    signal.addEventListener('abort', onAbort, { once: true })
   })
 
 export default defineComponent({
@@ -388,17 +399,31 @@ export default defineComponent({
       const client = helperClient()
       let status = await client.open(webDavPath())
       const opened = new RemoteArchive(client, status.id, health)
-      pendingRemote = opened
-      while (status.state === 'copying' || status.state === 'scanning') {
-        serverStatus.value = status
-        phase.value = status.state === 'copying' ? 'server-copy' : 'server-scan'
-        await sleep(STATUS_INTERVAL, signal)
-        status = await client.status(status.id, signal)
-      }
-      pendingRemote = null
-      if (status.state === 'error') {
+      // From here on the session holds server space: any way out other than success closes it
+      // (Cancel during the open request, a failed status call, a failed listing).
+      try {
+        if (signal.aborted) {
+          throw abortError()
+        }
+        pendingRemote = opened
+        while (status.state === 'copying' || status.state === 'scanning') {
+          serverStatus.value = status
+          phase.value = status.state === 'copying' ? 'server-copy' : 'server-scan'
+          await sleep(STATUS_INTERVAL, signal)
+          status = await client.status(status.id, signal)
+        }
+        if (status.state === 'error') {
+          throw new HelperError(
+            status.error ?? 'helper-error',
+            0,
+            `Opening failed: ${status.error}`
+          )
+        }
+      } catch (error) {
         await opened.close()
-        throw new HelperError(status.error ?? 'helper-error', 0, `Opening failed: ${status.error}`)
+        throw error
+      } finally {
+        pendingRemote = null
       }
       opened.startHeartbeat(() => {
         remote.value = null

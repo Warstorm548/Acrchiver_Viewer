@@ -15,6 +15,10 @@ describe('resolveHelperUrl', () => {
     // the token must never go to another site
     [{ archiveHelperUrl: 'https://evil.example/api' }, null],
     [{ archiveHelperUrl: '//evil.example/api' }, null],
+    // browsers read "\\" as "/" and drop tabs/newlines inside URLs
+    [{ archiveHelperUrl: '/\\evil.example/api' }, null],
+    [{ archiveHelperUrl: '/\t/evil.example/api' }, null],
+    [{ archiveHelperUrl: '/\n/evil.example/api' }, null],
     [{ archiveHelperUrl: 'archive-api' }, null]
   ])('%o → %s', (config, expected) => {
     expect(resolveHelperUrl(config as Record<string, unknown>)).toBe(expected)
