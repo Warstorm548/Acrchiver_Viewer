@@ -68,7 +68,8 @@ xz against reference-`xz` files for every BCJ filter, delta, every check type, m
 concatenated streams, damage, huge dictionaries refused before allocating, unsupported filters;
 natural sort, paging, search, duplicates, detection, single-file names; 0.4.0: 7z for every codec
 and filter, IA-64/AES streams unreadable, encrypted header, solid stream with partial reads,
-entry limit, a 2³²−1-file header and an oversized header refused, patched LZMA2/PPMd properties
+entry limit, a 2³²−1-file header, an oversized header, 65 coders in a folder and the coder
+budget refused, a panicking header reported as `corrupt`, patched LZMA2/PPMd properties
 refused on read, damage, cancel; ZIP for every method incl. Deflate64 matches over 32 KiB and
 Python LZMA with end marker, CP437 and Unicode Path names, zstd/xz/duplicates/symlink/MS-DOS
 folder/DOS-only date built in code, ZIP64 with 70,000 entries, huge declared count, out-of-range

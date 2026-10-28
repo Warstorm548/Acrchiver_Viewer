@@ -26,12 +26,14 @@ Supported OpenCloud versions: **8.0.1**. On `feature/helper-7z-zip`.
   and selections over the browser's entry cap can be read and downloaded. If the helper is
   missing or fails, the ZIP is still read by range in the browser, with a notice.
 - ZIPs whose entries the browser can't decompress (Deflate64 from Windows Explorer, bzip2,
-  LZMA, zstd, xz) move to the helper; the range listing stays until the server is ready.
+  LZMA, zstd, xz) open on the helper; the range listing is used if the helper is missing or fails.
 - New helper error code `encrypted`: password-protected 7z headers are refused with a clear
   message; encrypted 7z/ZIP entries are listed as unreadable, as in the browser.
 - Helper safety: a patched copy of `github.com/bodgit/sevenzip` v1.6.5
   (`server/third_party/sevenzip`) caps header counts at `MaxEntries` and the header at 512 MiB
-  (upstream could be made to allocate billions of entries from a few bytes); LZMA/LZMA2
+  (upstream could be made to allocate billions of entries from a few bytes), folders at 64
+  coders/streams and all coders at 4 × `MaxEntries`, with stream indexes checked; panics from the
+  library are recovered as `corrupt` instead of ending the helper (CodeRabbit review); LZMA/LZMA2
   dictionaries, PPMd memory and zstd windows over 256 MiB are refused before allocating; the
   ZIP central directory is parsed by our own code, which stops at `MaxEntries`.
 - ZIP dates from a DOS timestamp are shown in the user's time zone in server mode too

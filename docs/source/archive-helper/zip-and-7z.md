@@ -9,12 +9,12 @@ what is specific to the two formats. Code: `server/internal/archive/zip.go`, `se
 
 ## When the viewer uses the helper (`App.vue`)
 
-| Archive                                                       | Opened                                                                                     |
-| ------------------------------------------------------------- | ------------------------------------------------------------------------------------------ |
-| `.7z`, any size                                               | On the helper. Without it: "can only be opened when the server helper is installed"        |
-| `.zip` over `maxArchiveSize` (1 GiB desktop / 128 MiB mobile) | On the helper; if missing or failing, by range in the browser (+ a notice if it failed)    |
-| `.zip` within the limit, all entries stored/deflate           | By range in the browser, as before                                                         |
-| `.zip` within the limit, an entry with `needsServer`          | Listed by range, then moved to the helper once it is ready; stays in range mode without it |
+| Archive                                                       | Opened                                                                                                                            |
+| ------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| `.7z`, any size                                               | On the helper. Without it: "can only be opened when the server helper is installed"                                               |
+| `.zip` over `maxArchiveSize` (1 GiB desktop / 128 MiB mobile) | On the helper; if missing or failing, by range in the browser (+ a notice if it failed)                                           |
+| `.zip` within the limit, all entries stored/deflate           | By range in the browser, as before                                                                                                |
+| `.zip` within the limit, an entry with `needsServer`          | Listed by range (not shown), then opened on the helper with its progress and Cancel; range mode if the helper is missing or fails |
 
 `needsServer` is set by `src/engine/zip.ts` for files that aren't encrypted or symlinks and use
 a method only the helper decodes (9, 12, 14, 93, 95). A failed helper attempt is not retried in
@@ -57,7 +57,11 @@ start with `PK` (self-extractors) is refused as `unsupported-format`.
   counts only at 2³², then allocates slices of that length: a header of a few bytes declaring
   4 billion files would crash the helper. The patch caps every count at `MaxEntries` and the
   header (stored, or decoded when compressed) at 512 MiB, returning `sevenzip.ErrLimit`
-  (→ `too-complex`). Details and update steps: `third_party/sevenzip/PATCHES.md`.
+  (→ `too-complex`). A folder may have at most 64 coders/streams (7-Zip's own limit), all folders
+  together 4 × `MaxEntries` coders, and stream counts and indexes are checked (found by the
+  CodeRabbit review). Panics from inconsistencies the library still doesn't check are recovered
+  (`recoverParser`) and reported as `corrupt`, since the scan runs outside any HTTP handler and a
+  panic there would end the helper. Details and update steps: `third_party/sevenzip/PATCHES.md`.
 - **Decoders replaced** at init with ones that check before allocating, like xz:
   LZMA/LZMA2 dictionary and PPMd memory ≤ 256 MiB, zstd window ≤ 256 MiB, Deflate64 from our
   package. They are built lazily on the first read, so opening a file without reading allocates
@@ -79,7 +83,8 @@ start with `PK` (self-extractors) is refused as `unsupported-format`.
 IA-64, AES, encrypted header, stored headers for patching) and as ZIP per method (incl.
 Deflate64 with matches over 32 KiB, PPMd, ZipCrypto, AES, CP437 names, Python LZMA with end
 marker). `sevenzip_test.go` / `zip_test.go` also build hostile cases in code: a 7z header
-declaring 2³²−1 files, an oversized header, patched LZMA2/PPMd/LZMA properties, ZIP end
+declaring 2³²−1 files, an oversized header, 65 coders in a folder, folders over the coder
+budget, a header that made the library panic, patched LZMA2/PPMd/LZMA properties, ZIP end
 records with a huge count, out-of-range offsets, CRC damage, ZIP64 with 70,000 entries, zstd/xz
 methods, duplicates, Unicode Path fields and DOS-only dates.
 

@@ -49,7 +49,8 @@ password-protected, changed, generic). 0.4.0 adds three routes
 ([zip-and-7z](archive-helper/zip-and-7z.md)): **7z** (`HELPER_ONLY`) goes to `tryServer()` first
 at any size, else "can only be opened when the server helper is installed" without downloading;
 a **ZIP over `maxArchiveSize`** tries the helper before range mode, and a **range-listed ZIP with
-`needsServer` entries** moves to the helper once it is ready. For ZIPs, `tryServerOrRange()` turns
+`needsServer` entries** is opened on the helper instead (progress and Cancel as usual; the range
+listing, not shown meanwhile, is used only if the helper is missing or fails, and closed otherwise). For ZIPs, `tryServerOrRange()` turns
 a helper failure into a notice above the listing (`archive-viewer-notice`) and range mode, and
 `serverFailed` stops a second attempt in the same load. Helper entries with `localTime` (a ZIP's
 DOS date) are shown in the user's zone (`toArchiveEntry` in `remote.ts`). A lost session (heartbeat 404) switches to an error asking to reload. `closeArchive`

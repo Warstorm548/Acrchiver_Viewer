@@ -161,8 +161,9 @@ test.describe('ZIP and 7z on the server', () => {
     const opened = opensOnServer(page)
     await viewer.open('sample.7z')
     await opened
-    expect(ownTempFiles()).toHaveLength(1)
     expect(await viewer.names()).toEqual(rootInBrowser)
+    // the session is ready once it is listed, so its temp file exists
+    expect(ownTempFiles()).toHaveLength(1)
     await viewer.openFolder('docs')
     await listed(page)
     expect(await viewer.names()).toEqual(docsInBrowser)
@@ -189,8 +190,8 @@ test.describe('ZIP and 7z on the server', () => {
     const opened = opensOnServer(page)
     await viewer.open('sample.zip')
     await opened
-    expect(ownTempFiles()).toHaveLength(1)
     expect(await viewer.names()).toEqual(rootByRange)
+    expect(ownTempFiles()).toHaveLength(1)
 
     const expected = archiveHashes(join(FIXTURES, 'sample.zip'), 'images/')
     await viewer.select('images')

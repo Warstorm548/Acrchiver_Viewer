@@ -170,6 +170,42 @@ func TestSevenZipHeaderBombs(t *testing.T) {
 	}
 }
 
+func TestSevenZipFolderLimits(t *testing.T) {
+	// kHeader, kMainStreamsInfo, kUnpackInfo, kFolder, then the folders (no external flag)
+	unpackInfo := func(folders int, folder []byte) []byte {
+		header := []byte{0x01, 0x04, 0x07, 0x0b, byte(folders), 0x00}
+		for range folders {
+			header = append(header, folder...)
+		}
+		return header
+	}
+	// one folder of 65 one-byte coders: 7-Zip itself allows 64 streams per folder
+	many := unpackInfo(1, append([]byte{65}, make([]byte, 65)...))
+	if _, err := scanBytes(t, sevenZip(many, uint64(len(many))), "coders.7z", generous); !errors.Is(err, ErrTooComplex) ||
+		!strings.Contains(err.Error(), "65 coders") {
+		t.Errorf("coders per folder: want ErrTooComplex, got %v", err)
+	}
+	// folders of 5 chained coders (4 bind pairs) each: within the folder limit, but 10 of them
+	// exceed the budget of 4 coders per entry with MaxEntries 10
+	chained := []byte{5, 0, 0, 0, 0, 0, 1, 0, 2, 1, 3, 2, 4, 3}
+	budget := unpackInfo(10, chained)
+	limits := Limits{MaxEntries: 10, MaxScanSize: 1 << 30}
+	if _, err := scanBytes(t, sevenZip(budget, uint64(len(budget))), "budget.7z", limits); !errors.Is(err, ErrTooComplex) ||
+		!strings.Contains(err.Error(), "more than 40 coders") {
+		t.Errorf("coder budget: want ErrTooComplex, got %v", err)
+	}
+}
+
+func TestSevenZipParserPanicsBecomeCorrupt(t *testing.T) {
+	// kHeader, kMainStreamsInfo with no unpack info, kEnd; kFilesInfo, 1 file, kEnd; kEnd: the
+	// library dereferences the missing unpack info. The scan runs outside any HTTP handler, so a
+	// panic there would end the helper.
+	header := []byte{0x01, 0x04, 0x00, 0x05, 0x01, 0x00, 0x00}
+	if _, err := scanBytes(t, sevenZip(header, uint64(len(header))), "panic.7z", generous); !errors.Is(err, ErrCorrupt) {
+		t.Errorf("want ErrCorrupt, got %v", err)
+	}
+}
+
 // patchCoder rewrites a coder's properties in a 7z with a stored header and fixes the CRCs.
 func patchCoder(t *testing.T, data, coder, properties []byte) []byte {
 	t.Helper()

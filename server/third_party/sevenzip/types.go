@@ -324,6 +324,11 @@ func readFolder(r util.Reader) (*folder, error) {
 		return nil, err
 	}
 
+	// Archive Viewer patch (see limits.go)
+	if coders > maxFolderStreams {
+		return nil, fmt.Errorf("%w: %d coders in a folder", ErrLimit, coders)
+	}
+
 	f.coder = make([]*coder, 0, min(coders, 16))
 
 	for range coders {
@@ -346,6 +351,11 @@ func readFolder(r util.Reader) (*folder, error) {
 		return nil, err
 	}
 
+	// Archive Viewer patch (see limits.go): bounds bind pairs and packed streams too
+	if f.in > maxFolderStreams || f.out > maxFolderStreams {
+		return nil, fmt.Errorf("%w: %d/%d streams in a folder", ErrLimit, f.in, f.out)
+	}
+
 	if f.in < f.out {
 		return nil, errInvalidBindPair
 	}
@@ -363,6 +373,11 @@ func readFolder(r util.Reader) (*folder, error) {
 		out, err := readUint64Bounded(r, false)
 		if err != nil {
 			return nil, err
+		}
+
+		// Archive Viewer patch: the indexes are used unchecked when the folder is read
+		if in >= f.in || out >= f.out {
+			return nil, errInvalidBindPair
 		}
 
 		f.bindPair = append(f.bindPair, &bindPair{
@@ -385,6 +400,11 @@ func readFolder(r util.Reader) (*folder, error) {
 		for i := range f.packedStreams {
 			if f.packed[i], err = readUint64(r); err != nil {
 				return nil, err
+			}
+
+			// Archive Viewer patch: an index into the folder's input streams
+			if f.packed[i] >= f.in {
+				return nil, errInvalidBindPair
 			}
 		}
 	}
@@ -430,10 +450,18 @@ func readUnpackInfo(r util.Reader) (*unpackInfo, error) {
 
 	u.folder = make([]*folder, 0, min(folders, 1024))
 
+	coders := uint64(0)
+
 	for range folders {
 		folder, err := readFolder(r)
 		if err != nil {
 			return nil, err
+		}
+
+		// Archive Viewer patch (see limits.go)
+		coders += uint64(len(folder.coder))
+		if coders > coderBudget*maxCount.Load() {
+			return nil, fmt.Errorf("%w: more than %d coders", ErrLimit, coderBudget*maxCount.Load())
 		}
 
 		u.folder = append(u.folder, folder)
@@ -518,6 +546,11 @@ func readSubStreamsInfo(r util.Reader, folder []*folder) (*subStreamsInfo, error
 	// Count the files in each stream
 	files := uint64(0)
 	for _, v := range s.streams {
+		// Archive Viewer patch: the sum could wrap around and pass the check below
+		if v > maxCount.Load() || files+v > maxCount.Load() {
+			return nil, fmt.Errorf("%w: more than %d streams", ErrLimit, maxCount.Load())
+		}
+
 		files += v
 	}
 

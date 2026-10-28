@@ -195,8 +195,17 @@ func openSevenZip(ctx context.Context, file *os.File, size int64, limits Limits)
 	return reader, sevenZipError(err)
 }
 
+// recoverParser turns a panic in the 7z library (on a header it doesn't fully validate) into
+// ErrCorrupt: the scan runs in a session's background job, where a panic would end the helper.
+func recoverParser(err *error) {
+	if r := recover(); r != nil {
+		*err = fmt.Errorf("%w: 7z parser failed: %v", ErrCorrupt, r)
+	}
+}
+
 // scan7z lists a 7z from its header; only the header is read, whatever the archive's size.
-func scan7z(ctx context.Context, file *os.File, size int64, limits Limits) (*Index, error) {
+func scan7z(ctx context.Context, file *os.File, size int64, limits Limits) (index *Index, err error) {
+	defer recoverParser(&err)
 	reader, err := openSevenZip(ctx, file, size, limits)
 	if err != nil {
 		return nil, err
@@ -223,7 +232,7 @@ func scan7z(ctx context.Context, file *os.File, size int64, limits Limits) (*Ind
 		readable[f.Stream] = true
 	}
 
-	index := newIndex()
+	index = newIndex()
 	nameBytes := 0
 	for i, f := range reader.File {
 		if len(f.Name) > maxPathLength {
@@ -267,7 +276,8 @@ func scan7z(ctx context.Context, file *os.File, size int64, limits Limits) (*Ind
 // extract7z reads the files in archive order, closing each before opening the next so the
 // library keeps decoding a solid stream where it left off.
 func extract7z(ctx context.Context, file *os.File, size int64, limits Limits, entries []*Entry,
-	fn func(entry *Entry, r io.Reader) error) error {
+	fn func(entry *Entry, r io.Reader) error) (err error) {
+	defer recoverParser(&err)
 	reader, err := openSevenZip(ctx, file, size, limits)
 	if err != nil {
 		return err

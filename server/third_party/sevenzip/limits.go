@@ -9,8 +9,17 @@ import (
 	"sync/atomic"
 )
 
-// ErrLimit is returned when a header exceeds SetMaxCount or SetMaxHeaderSize.
+// ErrLimit is returned when a header exceeds SetMaxCount, SetMaxHeaderSize or the folder limits.
 var ErrLimit = errors.New("sevenzip: header exceeds a configured limit")
+
+const (
+	// maxFolderStreams caps the coders and the in/out streams of one folder (7-Zip's own
+	// k_NumCodersStreams_in_Folder_MAX); real folders have at most 4 coders (BCJ2 + 3 LZMA).
+	maxFolderStreams = 64
+	// coderBudget caps the coders of all folders together, as a multiple of SetMaxCount: each
+	// coder costs a heap object but only one header byte.
+	coderBudget = 4
+)
 
 var (
 	//nolint:gochecknoglobals

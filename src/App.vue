@@ -533,11 +533,21 @@ export default defineComponent({
           return
         }
         let opened = canUseRanges() ? await openByRange(signal) : null
-        // entries only the helper can decompress (Deflate64, bzip2, …): keep the range listing
-        // until the helper has the archive ready
-        if (opened?.entries.some((entry) => entry.needsServer) && (await tryServerOrRange())) {
-          await opened.close()
-          return
+        // entries only the helper can decompress (Deflate64, bzip2, …): open it there instead
+        // (with its progress and Cancel); the range listing is used only if the helper is
+        // missing or fails
+        if (opened?.entries.some((entry) => entry.needsServer)) {
+          let onServer = false
+          try {
+            onServer = await tryServerOrRange()
+          } finally {
+            if (onServer || signal.aborted) {
+              await opened.close()
+            }
+          }
+          if (onServer) {
+            return
+          }
         }
         if (!opened && overBrowserLimit && !serverFailed && (await tryServer())) {
           return
