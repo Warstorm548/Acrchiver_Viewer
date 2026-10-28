@@ -42,6 +42,16 @@ whose npm build depends on Node's `Buffer` and can't run in a browser. License t
 | `tailwindcss`                    | ^4.0.0  | 4.3.3     | Utility CSS (SDK runs `@tailwindcss/vite`)                                                     |
 | `@types/node`                    | ^24.0.0 | 24.19.2   | Node types for config files                                                                    |
 
+## Server helper (`server/go.mod`)
+
+| Module                    | Version | Role                                                                                                                                                                           |
+| ------------------------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Go                        | 1.27    | Toolchain (`golang:1.27-alpine` in the Dockerfile; `~/.local/go` 1.27.3 on the dev machine)                                                                                    |
+| `github.com/ulikunitz/xz` | v0.5.17 | Raw LZMA2 (`lzma.Reader2`) and legacy `.lzma`; BSD-3-Clause ([notices](../../THIRD-PARTY-NOTICES.md)). Its own xz reader is **not** used (no dictionary limit, no BCJ filters) |
+
+gzip, bzip2, tar, zip (reading in tests), CRC/SHA and HTTP come from Go's standard library. The
+runtime image is `gcr.io/distroless/static-debian12` (no shell, no package manager).
+
 ## OpenCloud version alignment
 
 The main server runs OpenCloud rolling **8.0.1**, so the `@opencloud-eu/*` packages are pinned to

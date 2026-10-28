@@ -1,3 +1,8 @@
 import openCloudConfig from '@opencloud-eu/eslint-config'
 
-export default [...openCloudConfig, { ignores: ['dist', 'coverage', '.__mf__temp'] }]
+export default [
+  ...openCloudConfig,
+  {
+    ignores: ['dist', 'coverage', '.__mf__temp', 'playwright-report', 'test-results']
+  }
+]

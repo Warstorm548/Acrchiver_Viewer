@@ -1,0 +1,46 @@
+# Archive Viewer helper: lists and extracts large archives on the server.
+# Install: see docs/deployment/archive-helper.md in the Archive Viewer repository. In short, copy
+# this file and proxy.yaml into opencloud-compose/custom/, add the settings from env.example to
+# .env, and add `:custom/archive-helper.yml` to COMPOSE_FILE. Relative paths are resolved from
+# the opencloud-compose directory (the first compose file's folder).
+services:
+  archive-helper:
+    build: ${ARCHIVE_HELPER_BUILD_DIR:-../Acrchiver_Viewer/server}
+    image: archive-helper:${ARCHIVE_HELPER_TAG:-0.3.0}
+    # its own user ID, shared with no other container (it reaches OpenCloud only over HTTP);
+    # must own the temp folder: sudo chown -R 1500:1500 ./archive-temp
+    user: ${ARCHIVE_HELPER_UID_GID:-1500:1500}
+    read_only: true
+    cap_drop: [ALL]
+    security_opt:
+      - no-new-privileges:true
+    mem_limit: ${ARCHIVE_HELPER_MEMORY_LIMIT:-2g}
+    cpus: ${ARCHIVE_HELPER_CPUS:-2}
+    networks:
+      opencloud-net:
+    # no published ports: only the OpenCloud proxy can reach it
+    volumes:
+      # starts with ./ so it stays inside the opencloud-compose folder, never the system root
+      - ${ARCHIVE_HELPER_TEMP_DIR:-./archive-temp}:/data
+    environment:
+      ARCHIVE_HELPER_OPENCLOUD_URL: ${ARCHIVE_HELPER_OPENCLOUD_URL:-http://opencloud:9200}
+      ARCHIVE_HELPER_MAX_STORAGE: ${ARCHIVE_HELPER_MAX_STORAGE:-50GB}
+      ARCHIVE_HELPER_MAX_STORAGE_PER_USER: ${ARCHIVE_HELPER_MAX_STORAGE_PER_USER:-25GB}
+      ARCHIVE_HELPER_MAX_DOWNLOAD_SIZE: ${ARCHIVE_HELPER_MAX_DOWNLOAD_SIZE:-10GB}
+      ARCHIVE_HELPER_MAX_SELECTION_SIZE: ${ARCHIVE_HELPER_MAX_SELECTION_SIZE:-10GB}
+      ARCHIVE_HELPER_CONFIRM_DOWNLOAD_SIZE: ${ARCHIVE_HELPER_CONFIRM_DOWNLOAD_SIZE:-1GB}
+      ARCHIVE_HELPER_MAX_DOWNLOADS_PER_USER: ${ARCHIVE_HELPER_MAX_DOWNLOADS_PER_USER:-3}
+      ARCHIVE_HELPER_SESSION_TIMEOUT: ${ARCHIVE_HELPER_SESSION_TIMEOUT:-10m}
+      ARCHIVE_HELPER_MAX_ENTRIES: ${ARCHIVE_HELPER_MAX_ENTRIES:-500000}
+      ARCHIVE_HELPER_MAX_SCAN_SIZE: ${ARCHIVE_HELPER_MAX_SCAN_SIZE:-500GB}
+      ARCHIVE_HELPER_SCAN_TIMEOUT: ${ARCHIVE_HELPER_SCAN_TIMEOUT:-60m}
+      # lets Go's garbage collector work harder before the container's memory limit is reached
+      GOMEMLIMIT: ${ARCHIVE_HELPER_GOMEMLIMIT:-1800MiB}
+    logging:
+      driver: ${LOG_DRIVER:-local}
+    restart: always
+    stop_grace_period: 15s
+  opencloud:
+    volumes:
+      # our copy of config/opencloud/proxy.yaml with the /archive-api routes
+      - ./custom/proxy.yaml:/etc/opencloud/proxy.yaml

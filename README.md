@@ -9,6 +9,11 @@ to OpenCloud's security policy (CSP)**. With the CSP from opencloud-compose (`wo
 blob:`) bzip2, xz and lzma are decompressed in the background; with OpenCloud's built-in default
 CSP they still open, but the page pauses while they decompress.
 
+For archives too large for the browser (TAR and compressed files of many GB) there is an
+**optional archive helper** that runs next to OpenCloud: it opens the archive on the server, and
+the browser only receives the folder listing and the files you download. See
+[Archive helper](#archive-helper-optional).
+
 ## Features
 
 - "Open in Archive Viewer" for archive files in OpenCloud (Files app, shares and public links)
@@ -18,6 +23,8 @@ CSP they still open, but the page pauses while they decompress.
 - **Large ZIPs** (tested with 3 GiB): read with HTTP range requests, so only the archive's index
   and the files you open are fetched
 - Size limits that adapt to the device (lower on phones and tablets), configurable per server
+- **Large TAR / compressed archives** (500 MiB–20 GB+) through the optional server helper, with
+  storage caps per server and per user
 - English, German, Spanish and French (draft translations, see below)
 
 ## Supported formats
@@ -76,6 +83,26 @@ archive-viewer:
 
 The `@opencloud-eu/*` packages are pinned to the server's 8.0 line.
 
+## Archive helper (optional)
+
+A small Go service (`server/`) added to an opencloud-compose stack as an extra container. When
+installed, archives over the browser limit (except ZIPs, which never need it) open on the server
+for logged-in users:
+
+- the archive is copied as the user (OpenCloud's permissions apply) into a temp folder
+  (`./archive-temp`), listed there, and deleted when the viewer is closed or after 10 minutes
+  without activity;
+- the browser loads one folder at a time; downloads go straight to disk, one file or several as a
+  ZIP;
+- admins set the limits in `.env`: total temp space (default 50 GB), per user (25 GB), largest
+  download (10 GB file / 10 GB selection), confirmation above 1 GB, 3 downloads per user. Each
+  limit has its own message: a full server gives "Server busy… try again in a few minutes", a
+  user's own cap "close one and try again", an archive or download over a cap says so with the
+  limit, and a fourth download at once "wait for one to finish".
+
+Install, settings and upgrades: [docs/deployment/archive-helper.md](docs/deployment/archive-helper.md).
+Without it, the viewer works as described above.
+
 ## Installation
 
 1. Get `archive-viewer-<version>.zip` (from a release, or build it yourself as below).
@@ -123,7 +150,8 @@ reviewed by native speakers. Corrections are welcome: edit `l10n/locale/<lang>/a
 Archive contents are treated as untrusted: names and text are never rendered as HTML, SVGs are
 shown only as images, decompression and extraction are size-capped (against "zip bombs"), and
 nothing is ever written back to your storage. The app only fetches the file through the signed
-download URL OpenCloud provides. Details:
+download URL OpenCloud provides; the optional helper fetches it with the user's own login and
+runs in a locked-down container with storage, download and parser limits. Details:
 [docs/known-issues/security.md](docs/known-issues/security.md).
 
 ## License

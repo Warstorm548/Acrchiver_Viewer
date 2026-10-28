@@ -7,12 +7,15 @@ OpenCloud). Standalone extension at the repo root, built with OpenCloud's toolch
 TAR, TAR.GZ/TGZ, TAR.BZ2/TBZ2, TAR.XZ/TXZ, TAR.LZMA and single .gz/.bz2/.xz/.lzma files in the
 browser with pure JavaScript (no WebAssembly, no CSP change) — browse, search, sort, preview,
 download; ZIPs of any size are read by HTTP Range requests. UI in English, German,
-Spanish and French (AI-drafted). Version 0.2.2 is ready to release (no tag yet); it runs only on OpenCloud 8.0.1. Start with [project status](docs/overview/project-status.md).
+Spanish and French (AI-drafted). Version 0.2.2 is ready to release (no tag yet); it runs only on OpenCloud 8.0.1. Version 0.3.0
+(branch `feature/archive-helper`) adds an optional Go **archive helper** (`server/`, compose files
+in `deploy/`) for archives too large for the browser. Start with [project status](docs/overview/project-status.md).
 
 Commands: `pnpm install`, `pnpm build`, `pnpm check:types`, `pnpm lint`, `pnpm format:check`,
 `pnpm test:unit --run`, `pnpm test:e2e` (Chromium against the local stack; `E2E_SKIP_LARGE=1`
 for a quick run), `pnpm package` (release zip), `pnpm l10n:extract` / `pnpm l10n:compile`
-(translations; extract needs GNU gettext). Run `nvm use` first if Node 24 isn't active.
+(translations; extract needs GNU gettext). Run `nvm use` first if Node 24 isn't active. Helper:
+`cd server && go vet ./... && go test -race ./...` (Go 1.27 in `~/.local/go/bin`).
 
 ## How to use this index
 
@@ -47,7 +50,7 @@ for a quick run), `pnpm package` (release zip), `pnpm l10n:extract` / `pnpm l10n
 - [CHANGELOG.md](CHANGELOG.md) — SemVer rules (MAJOR.MINOR.PATCH) and per-version changes,
   starting at 0.1.0.
 - [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md) — licenses of ported/bundled code (seek-bzip
-  MIT port, xz-compat MIT adaptation, zip.js BSD-3-Clause).
+  MIT port, xz-compat MIT adaptation, zip.js BSD-3-Clause, ulikunitz/xz BSD-3 in the helper).
 - [README.md](README.md) — user-facing readme (step 6): features, formats, limits, install,
   build, translations, security, license.
 
@@ -58,14 +61,15 @@ for a quick run), `pnpm package` (release zip), `pnpm l10n:extract` / `pnpm l10n
 - [docs/overview/repository-layout.md](docs/overview/repository-layout.md) — every tracked file
   with line count and purpose; what steps 1 and 3 removed.
 - [docs/overview/roadmap-considerations.md](docs/overview/roadmap-considerations.md) — parked
-  options: server helper service, libarchive as plain JS, WebAssembly + CSP, extract to folder,
-  plain TAR header hopping (deferred).
+  options: server helper (done in 0.3.0), more helper formats (7z, RAR, zstd, ZIP codecs, ISO;
+  proposed), libarchive as plain JS, WebAssembly + CSP, compress on the server and extract to
+  folder (decided, not built), plain TAR header hopping (deferred).
 
 ### Tech stack
 
 - [docs/tech-stack/dependencies.md](docs/tech-stack/dependencies.md) — zip.js (native build only)
-  and devDependencies with versions, 8.0 alignment rule, install warnings, step 4 candidates.
-- [docs/tech-stack/build-tooling.md](docs/tech-stack/build-tooling.md) — Node/pnpm, scripts, what
+  and devDependencies with versions, the helper's Go module (ulikunitz/xz), 8.0 alignment rule, install warnings, step 4 candidates.
+- [docs/tech-stack/build-tooling.md](docs/tech-stack/build-tooling.md) — Node/pnpm, Go toolchain, scripts, what
   the extension-sdk `defineConfig` provides, TypeScript, ESLint, Prettier, `.gitignore`, release
   zip script, gettext config.
 
@@ -91,20 +95,30 @@ for a quick run), `pnpm package` (release zip), `pnpm l10n:extract` / `pnpm l10n
   `PreviewModal`, `download.ts`, styling conventions.
 - [docs/source/archive-engine.md](docs/source/archive-engine.md) — `src/engine/`: formats table,
   detection, ZIP (zip.js native), TAR, gzip, bzip2, worker, single files, index, limits.
+- [docs/source/archive-helper/overview.md](docs/source/archive-helper/overview.md) — server helper:
+  flow, auth through the proxy, packages, server-side engine (xz dictionary check, BCJ), viewer side.
+- [docs/source/archive-helper/api.md](docs/source/archive-helper/api.md) — helper HTTP routes,
+  entries, error codes, viewer flow.
+- [docs/source/archive-helper/storage-limits.md](docs/source/archive-helper/storage-limits.md) —
+  storage caps and reservations, hard stop, cleanup, Docker size limitation, download caps, parser
+  and container limits.
 - [docs/source/styles-and-i18n.md](docs/source/styles-and-i18n.md) — Tailwind/design-system
   styling, v8 theme tokens, translations (de/es/fr files, AI-draft note), translation workflow.
 
 ### Testing
 
-- [docs/testing/tests.md](docs/testing/tests.md) — how to run, SDK test config, the 19 spec files,
-  test patterns (stubs, range-server fetch mock, zip), browser memory measurements.
+- [docs/testing/tests.md](docs/testing/tests.md) — how to run, SDK test config, the 23 spec files,
+  Go helper tests, test patterns (stubs, range-server fetch mock, zip), browser memory measurements.
 - [docs/testing/e2e.md](docs/testing/e2e.md) — Playwright e2e suite in Chromium against the local
-  stack: setup, env vars, request rewrites instead of restarts, console guard, the 10 specs, results.
+  stack: setup, env vars, request rewrites instead of restarts, console guard, the 11 specs (incl. server helper), results.
 
 ### Deployment
 
 - [docs/deployment/deploying-to-opencloud.md](docs/deployment/deploying-to-opencloud.md) — build
   output, installing on a server (opencloud-compose), install checks, supported OpenCloud versions, release zip install, `apps.yaml` keys, releasing steps, production CSP.
+- [docs/deployment/archive-helper.md](docs/deployment/archive-helper.md) — installing the helper
+  (files, `./archive-temp`, UID), changing settings, optional fixed-size partition, upgrade diff
+  checklist and yjs note, troubleshooting, removal.
 - [docs/deployment/local-dev-environment.md](docs/deployment/local-dev-environment.md) — the local
   opencloud-compose stack (rolling 8.0.1) outside the repo: setup to recreate it, sudo commands,
   dev loop, fixtures, browser checklist, large-ZIP test + cleanup, step results, troubleshooting.
@@ -114,7 +128,8 @@ for a quick run), `pnpm package` (release zip), `pnpm l10n:extract` / `pnpm l10n
 - [docs/known-issues/bugs.md](docs/known-issues/bugs.md) — open bugs from the PR #3 review
   (R-1–R-3), known limitations (K1–K5, K7, K8), memory bugs fixed by browser testing (M-1–M-6), and how the old viewer's bugs were resolved.
 - [docs/known-issues/security.md](docs/known-issues/security.md) — untrusted-archive rules and how
-  the viewer meets them (no `v-html`, limits, SVG, filenames, auth, CSP).
+  the viewer meets them (no `v-html`, limits, SVG, filenames, auth, CSP), plus the server helper's
+  rules (proxy auth, sessions, tickets, resource limits, temp files, container).
 
 ### Original uploaded docs (historical, unverified)
 

@@ -72,6 +72,7 @@ archive-viewer:
     maxUncompressedSizeMobile: 402653184 # 384 MiB
     maxEntrySizeMobile: 268435456 # 256 MiB
     allowUnsupportedOpenCloud: false # true: run on an untested OpenCloud version (console warning)
+    archiveHelperUrl: /archive-api # server helper path (same-origin only); "" turns it off
 ```
 
 Values are merged with the manifest's `config` and reach the component as the
@@ -79,6 +80,12 @@ Values are merged with the manifest's `config` and reach the component as the
 ([zip-range-reading](../source/zip-range-reading.md)); a reverse proxy in front of OpenCloud must
 pass `Range` through (Traefik in opencloud-compose does). `disabled: true` (in `apps.yaml` or the app's `config.json`) stops the
 app from loading.
+
+## Optional: the archive helper
+
+Archives over `maxArchiveSize` (other than ZIPs) open through the optional server helper when it
+is installed; it has its own settings in `.env` (storage and download caps). Install, settings
+and upgrades: [archive-helper deployment](archive-helper.md).
 
 ## Releasing (not done yet)
 

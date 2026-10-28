@@ -3,7 +3,9 @@
 Where the Archive Viewer stands. Merged to `main` (PR #1), rework **all 6 steps done**
 (rebuilt setup; verified in a local copy of the production stack; real viewer in pure JavaScript;
 bzip2, XZ/LZMA and single compressed files; large ZIPs by HTTP Range; translations, README, release zip). Version 0.2.2 (OpenCloud version check, runs only on 8.0.1; memory fixes from PR #3; Chromium e2e suite) is ready to release;
-no tag or GitHub release yet.
+no tag or GitHub release yet. **0.3.0** (in progress on `feature/archive-helper`) adds the optional
+server helper for archives too large for the browser
+([archive-helper overview](../source/archive-helper/overview.md)).
 
 ## Summary
 
@@ -13,20 +15,23 @@ OpenCloud **8.0** line because the main server runs rolling **8.0.1**. It opens 
 TAR.GZ/TGZ, TAR.BZ2/TBZ2, TAR.XZ/TXZ, TAR.LZMA/TLZ** archives and single **.gz / .bz2 / .xz / .lzma** files in the browser: browse folders, search, sort, preview text and images,
 download single files or a selection as one zip. ZIPs of any size are read by HTTP Range requests
 (tested with 3 GiB), so only the index and the opened files are fetched. Everything runs in **plain JavaScript (no
-WebAssembly)**, so it works under OpenCloud's default production CSP with no server changes.
+WebAssembly)**, so it works under OpenCloud's default production CSP with no server changes. The
+optional Go **archive helper** (0.3.0) opens larger TAR-family and single compressed archives on
+the server, within storage and download caps set by the admin.
 History: the original upload held a legacy vanilla-JS app, a broken webpack build and an nginx
 deployment (removed in step 1); the old pre-v8 viewer was ported and deleted in step 3.
 
 ## Build / run status
 
-| Item                          | Status                                                                                        |
-| ----------------------------- | --------------------------------------------------------------------------------------------- |
-| `pnpm install`                | OK (lockfile committed; 2 harmless upstream peer warnings)                                    |
-| `pnpm build`                  | OK → `dist/manifest.json`, `dist/js/*.mjs`, `dist/assets/*.css`; no `.wasm`, no `WebAssembly` |
-| `pnpm check:types`            | OK                                                                                            |
-| `pnpm lint` / `format:check`  | OK                                                                                            |
-| `pnpm test:unit --run`        | OK, 200/200                                                                                   |
-| Loaded in a running OpenCloud | OK — local opencloud-compose, rolling 8.0.1 (steps 2–5)                                       |
+| Item                              | Status                                                                                        |
+| --------------------------------- | --------------------------------------------------------------------------------------------- |
+| `pnpm install`                    | OK (lockfile committed; 2 harmless upstream peer warnings)                                    |
+| `pnpm build`                      | OK → `dist/manifest.json`, `dist/js/*.mjs`, `dist/assets/*.css`; no `.wasm`, no `WebAssembly` |
+| `pnpm check:types`                | OK                                                                                            |
+| `pnpm lint` / `format:check`      | OK                                                                                            |
+| `pnpm test:unit --run`            | OK, 252/252                                                                                   |
+| `go test -race ./...` (`server/`) | OK (7 packages)                                                                               |
+| Loaded in a running OpenCloud     | OK — local opencloud-compose, rolling 8.0.1 (steps 2–5)                                       |
 
 ## Feature status
 
@@ -44,7 +49,8 @@ deployment (removed in step 1); the old pre-v8 viewer was ported and deleted in 
 | Large ZIPs via Range requests, signed-URL renewal, public links        | Done (step 5)                                                            |
 | German, Spanish, French UI (AI-drafted) + gettext tooling              | Done (step 6)                                                            |
 | Release zip (`pnpm package`)                                           | Done (step 6)                                                            |
-| 7z / RAR, extract to folder, server helper                             | Roadmap only ([roadmap-considerations](roadmap-considerations.md))       |
+| Server helper for archives too large for the browser (caps, tickets)   | 0.3.0 ([archive-helper](../source/archive-helper/overview.md))           |
+| 7z / RAR, extract to folder, compress on the server                    | Roadmap only ([roadmap-considerations](roadmap-considerations.md))       |
 
 `README.md` was rewritten in step 6 to describe only what the app does.
 
@@ -60,6 +66,9 @@ deployment (removed in step 1); the old pre-v8 viewer was ported and deleted in 
 
 Decisions so far: approach A (pure JS, no CSP change), view + download (no writing to OpenCloud),
 range reads for every ZIP, 1 GiB desktop / 128 MiB mobile limits, TAR header hopping deferred.
+0.3.0: optional server helper (Go, own UID 1500:1500, temp copy of the compressed archive,
+50 GB total / 25 GB per user, 10 GB downloads, confirmation above 1 GB, 3 downloads per user, no
+admin bypass); compression and extract-to-folder decided but not built.
 Details:
 [opencloud-v8-compatibility](../architecture/opencloud-v8-compatibility.md).
 
@@ -69,5 +78,5 @@ Details:
   `dist/manifest.json`).
 - Author **Warstorm548**; repo/bugs → `Warstorm548/Acrchiver_Viewer`. README states the project is
   independent and not affiliated with OpenCloud GmbH.
-- Version `0.2.2` (never released; the old "1.0.0 Production Ready" changelog in
+- Version `0.3.0` (in progress; 0.2.2 never released; the old "1.0.0 Production Ready" changelog in
   `docs/original-docs/` is historical and inaccurate).

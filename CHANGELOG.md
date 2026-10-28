@@ -13,6 +13,43 @@ Every change gets an entry and a version bump in `package.json`, which is the si
 the version: the build copies it into `dist/manifest.json` and stamps it on every compiled JS file
 (`/*! archive-viewer vX.Y.Z */`).
 
+## [0.3.0] - Unreleased
+
+Supported OpenCloud versions: **8.0.1**. On `feature/archive-helper`.
+
+### Added
+
+- Optional **archive helper** (`server/`, Go 1.27) next to OpenCloud for archives too large for
+  the browser (TAR, TAR.GZ/BZ2/XZ/LZMA, single .gz/.bz2/.xz/.lzma): copied as the logged-in user
+  into `./archive-temp`, listed and streamed on the server; deleted on close, after 10 minutes
+  without a heartbeat and on restart. Install with `deploy/compose/` and `deploy/env.example`
+  ([deployment](docs/deployment/archive-helper.md)).
+- Storage caps checked **before** a copy starts (total 50 GB, 25 GB per user, real free space)
+  with a hard stop; "Server busy…" / "too many large archives open" messages. Admins have no
+  bypass; `.env` sets the limits (also above 100 GB).
+- Download caps from the tar headers (10 GB file, 10 GB selection), confirmation above 1 GB,
+  3 downloads per user; downloads stream to disk through single-use links, several files as a
+  ZIP with an exact size.
+- Viewer: server mode with progress and Cancel, folder pages ("Show more"), server search and
+  sort, previews; `archiveHelperUrl` in `apps.yaml` (default `/archive-api`, `""` = off, same
+  origin only). Browser mode, ZIP range reading and public links are unchanged.
+- Hardening: own UID 1500:1500, read-only container, no capabilities, memory/CPU limits; parser
+  limits (entries, decompressed size, time, names); xz/lzma dictionaries over 256 MiB refused
+  before allocating.
+- Roadmap: formats the helper could open next (7z, RAR, Zstandard, ZIP codecs the browser can't
+  read, ISO), with priorities and open questions (libraries, solid archives, memory, passwords).
+- Review fixes (CodeRabbit deep review): the viewer closes a helper session also when Cancel is
+  clicked while the session is being created and when a status call fails (it held server space
+  until the timeout); status polling no longer piles up abort listeners; `archiveHelperUrl` is
+  checked with the URL parser (`/\evil.example` no longer passes as same-origin); the install
+  guide warns not to overwrite an existing `proxy.yaml`.
+- ESLint ignores Playwright's `playwright-report/` and `test-results/` (a failed e2e run made
+  `pnpm lint` fail).
+- `limits.spec.ts` turns the helper off (`archiveHelperUrl: ""`), since it tests the browser's
+  own limits; with the helper in the stack those archives now open on the server.
+- 23 new strings in de/es/fr (AI draft); unit tests for the helper client and server mode; Go
+  tests for every helper package; e2e spec `helper.spec.ts`.
+
 ## [0.2.2] - Unreleased
 
 Supported OpenCloud versions: **8.0.1**. No change to the extension itself.

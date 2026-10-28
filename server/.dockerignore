@@ -1,0 +1,5 @@
+# only what the image build needs
+**/*_test.go
+**/testdata
+Dockerfile
+.dockerignore

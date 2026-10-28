@@ -12,6 +12,14 @@ repo. Everything below was run successfully in rework step 1.
 - `engines.node >=22`.
 - `pnpm-lock.yaml` is committed; install with `pnpm install` (CI: `--frozen-lockfile`).
 
+## Go (archive helper, `server/`)
+
+Go **1.27** (`server/go.mod`). On the dev machine it is installed user-locally in `~/.local/go`
+(official tarball, checksum verified, no sudo); add `~/.local/go/bin` to `PATH` or call it by
+path. Commands in `server/`: `go vet ./...`, `go test -race ./...`, `gofmt -l .` (must print
+nothing). The image is built by compose from `server/Dockerfile` (multi-stage, `CGO_ENABLED=0`,
+`-trimpath`, distroless runtime).
+
 ## Scripts (`package.json`)
 
 | Script                          | Command                                 | Purpose                                                          |
@@ -68,6 +76,9 @@ Vite deprecation warning about `resolve.alias` `customResolver`. The build creat
 - `.prettierrc.json`: `"@opencloud-eu/prettier-config"`.
 - `.prettierignore`: dist, coverage, `pnpm-lock.yaml`, LICENSE, `docs/original-docs`,
   `.__mf__temp`, `release`, `l10n/template.pot`, `l10n/locale` (gettext's own format).
+
+ESLint (`eslint.config.js`) ignores `dist`, `coverage`, `.__mf__temp`, and Playwright's
+`playwright-report` / `test-results`.
 
 ## `.gitignore`
 

@@ -3,6 +3,10 @@ import { FIXTURES, MOBILE_OVER_ARCHIVE, MOBILE_OVER_UNCOMPRESSED } from '../env'
 import { sha256 } from '../helpers/files'
 import { expect, patchAppConfig, phone, test } from '../test'
 
+// These are the browser's own limits: with the server helper running in the stack, archives over
+// them would open on the server instead (helper.spec.ts), so it is turned off here.
+const browserOnly = { archiveHelperUrl: '' }
+
 // the viewer logs every refusal with console.error (reportError / ArchiveError)
 test.use({ allowedConsole: [/ArchiveError: .*(too large|exceeds)/] })
 
@@ -11,7 +15,7 @@ test.describe('desktop, with lowered limits from apps.yaml', () => {
     page,
     viewer
   }) => {
-    await patchAppConfig(page, { maxArchiveSize: 1000 })
+    await patchAppConfig(page, { maxArchiveSize: 1000, ...browserOnly })
     await viewer.open('sample.tar')
     await expect(page.locator('.archive-viewer-message')).toContainText(
       'This archive is larger than'
@@ -27,13 +31,13 @@ test.describe('desktop, with lowered limits from apps.yaml', () => {
     page,
     viewer
   }) => {
-    await patchAppConfig(page, { maxArchiveSize: 1000 })
+    await patchAppConfig(page, { maxArchiveSize: 1000, ...browserOnly })
     await viewer.open('sample.zip')
     await expect(viewer.row('docs')).toBeVisible()
   })
 
   test('a file over maxEntrySize is refused', async ({ consoleEntries, page, viewer }) => {
-    await patchAppConfig(page, { maxEntrySize: 1000 })
+    await patchAppConfig(page, { maxEntrySize: 1000, ...browserOnly })
     await viewer.open('large.zip')
     await viewer.openFolder('big')
     let downloaded = false
@@ -49,6 +53,7 @@ test.describe('desktop, with lowered limits from apps.yaml', () => {
 
 test.describe('mobile (128 MiB archive, 384 MiB decompressed, 256 MiB per file)', () => {
   test.use(phone)
+  test.beforeEach(({ page }) => patchAppConfig(page, browserOnly))
 
   test('an archive over 128 MiB is not downloaded', async ({ page, viewer }) => {
     await viewer.open(MOBILE_OVER_ARCHIVE)

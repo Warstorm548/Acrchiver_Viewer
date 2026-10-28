@@ -12,8 +12,20 @@ msgstr ""
 msgid "Loading archive"
 msgstr "Archiv wird geladen"
 
+msgid "Cancel"
+msgstr "Abbrechen"
+
+msgid "Open again"
+msgstr "Erneut öffnen"
+
 msgid "Download archive"
 msgstr "Archiv herunterladen"
+
+msgid "Preparing the archive on the server… %{percent}%"
+msgstr "Archiv wird auf dem Server vorbereitet… %{percent}%"
+
+msgid "Reading the archive on the server… %{percent}%"
+msgstr "Archiv wird auf dem Server gelesen… %{percent}%"
 
 msgid "Reading archive index…"
 msgstr "Archivverzeichnis wird gelesen…"
@@ -27,6 +39,38 @@ msgstr "Wird heruntergeladen… %{percent}%"
 msgid "Downloading… %{size}"
 msgstr "Wird heruntergeladen… %{size}"
 
+msgid "This archive format is not supported yet. You can download it instead."
+msgstr ""
+"Dieses Archivformat wird noch nicht unterstützt. Sie können es stattdessen "
+"herunterladen."
+
+msgid "The archive seems to be damaged or is not a valid archive."
+msgstr "Das Archiv scheint beschädigt oder kein gültiges Archiv zu sein."
+
+msgid ""
+"Server busy: not enough space to open this archive right now. Try again in a "
+"few minutes."
+msgstr "Server ausgelastet: Im Moment ist nicht genug Platz, um dieses Archiv zu öffnen. Versuchen Sie es in ein paar Minuten erneut."
+
+msgid "You have too many large archives open. Close one and try again."
+msgstr "Sie haben zu viele große Archive geöffnet. Schließen Sie eines und versuchen Sie es erneut."
+
+msgid ""
+"This archive is larger than the server allows (%{limit}). You can download "
+"it instead."
+msgstr "Dieses Archiv ist größer, als der Server erlaubt (%{limit}). Sie können es stattdessen herunterladen."
+
+msgid ""
+"This archive is too large or complex to list on the server. You can download "
+"it instead."
+msgstr "Dieses Archiv ist zu groß oder zu komplex, um es auf dem Server aufzulisten. Sie können es stattdessen herunterladen."
+
+msgid "The archive changed while it was being opened. Please try again."
+msgstr "Das Archiv wurde während des Öffnens geändert. Bitte versuchen Sie es erneut."
+
+msgid "The server could not open this archive. You can download it instead."
+msgstr "Der Server konnte dieses Archiv nicht öffnen. Sie können es stattdessen herunterladen."
+
 msgid ""
 "This device does not have enough free memory to open this archive. You can "
 "download it instead."
@@ -34,16 +78,8 @@ msgstr ""
 "Dieses Gerät hat nicht genug freien Speicher, um dieses Archiv zu öffnen. "
 "Sie können es stattdessen herunterladen."
 
-msgid "This archive format is not supported yet. You can download it instead."
-msgstr ""
-"Dieses Archivformat wird noch nicht unterstützt. Sie können es stattdessen "
-"herunterladen."
-
 msgid "The archive expands to more data than the browser is allowed to open."
 msgstr "Das Archiv entpackt sich zu mehr Daten, als der Browser öffnen darf."
-
-msgid "The archive seems to be damaged or is not a valid archive."
-msgstr "Das Archiv scheint beschädigt oder kein gültiges Archiv zu sein."
 
 msgid "The archive could not be loaded."
 msgstr "Das Archiv konnte nicht geladen werden."
@@ -55,11 +91,22 @@ msgstr ""
 "Dieses Archiv ist größer als %{limit} – mehr öffnet dieser Betrachter auf "
 "diesem Gerät nicht im Browser. Sie können es stattdessen herunterladen."
 
+msgid ""
+"This archive was closed on the server after a period of inactivity. Reload "
+"the page to open it again."
+msgstr "Dieses Archiv wurde nach längerer Inaktivität auf dem Server geschlossen. Laden Sie die Seite neu, um es wieder zu öffnen."
+
+msgid "Opening the archive was cancelled."
+msgstr "Das Öffnen des Archivs wurde abgebrochen."
+
 msgid "Search in archive"
 msgstr "Im Archiv suchen"
 
 msgid "Extracting"
 msgstr "Wird entpackt"
+
+msgid "Showing the first %{count} results"
+msgstr "Die ersten %{count} Ergebnisse werden angezeigt"
 
 msgid "%{count} result"
 msgid_plural "%{count} results"
@@ -87,6 +134,26 @@ msgstr "Keine passenden Dateien"
 msgid "This folder is empty"
 msgstr "Dieser Ordner ist leer"
 
+msgid "Loading"
+msgstr "Wird geladen"
+
+msgid "Show more (%{shown} of %{total})"
+msgstr "Mehr anzeigen (%{shown} von %{total})"
+
+msgid "Download %{size}?"
+msgstr "%{size} herunterladen?"
+
+msgid ""
+"%{count} file, %{size} in total. Make sure your device has enough free space."
+msgid_plural ""
+"%{count} files, %{size} in total. Make sure your device has enough free "
+"space."
+msgstr[0] "%{count} Datei, insgesamt %{size}. Achten Sie darauf, dass Ihr Gerät genug freien Speicherplatz hat."
+msgstr[1] "%{count} Dateien, insgesamt %{size}. Achten Sie darauf, dass Ihr Gerät genug freien Speicherplatz hat."
+
+msgid "Download"
+msgstr "Herunterladen"
+
 msgid "Name"
 msgstr "Name"
 
@@ -95,6 +162,9 @@ msgstr "Größe"
 
 msgid "Modified"
 msgstr "Geändert"
+
+msgid "Failed to list the archive"
+msgstr "Das Archiv konnte nicht aufgelistet werden"
 
 msgid "Download selected (%{count})"
 msgstr "Auswahl herunterladen (%{count})"
@@ -116,6 +186,24 @@ msgstr ""
 "Dieses Gerät hat nicht genug freien Speicher, um dies zu entpacken. Laden "
 "Sie stattdessen das ganze Archiv herunter."
 
+msgid "This download is too large (%{size}, limit %{limit})."
+msgstr "Dieser Download ist zu groß (%{size}, Grenze %{limit})."
+
+msgid ""
+"You already have %{count} downloads running. Wait for one to finish and try "
+"again."
+msgstr "Es laufen bereits %{count} Downloads. Warten Sie, bis einer fertig ist, und versuchen Sie es erneut."
+
+msgid ""
+"This archive was closed on the server. Reload the page to open it again."
+msgstr "Dieses Archiv wurde auf dem Server geschlossen. Laden Sie die Seite neu, um es wieder zu öffnen."
+
+msgid "The selection contains no files that can be downloaded."
+msgstr "Die Auswahl enthält keine Dateien, die heruntergeladen werden können."
+
+msgid "The server could not complete this. Please try again."
+msgstr "Der Server konnte das nicht abschließen. Bitte versuchen Sie es erneut."
+
 msgid "Extracting %{name}…"
 msgstr "%{name} wird entpackt…"
 
@@ -133,9 +221,6 @@ msgstr "Vorschau wird geladen"
 
 msgid "Only the beginning of the file is shown."
 msgstr "Nur der Anfang der Datei wird angezeigt."
-
-msgid "Download"
-msgstr "Herunterladen"
 
 msgid "Close"
 msgstr "Schließen"

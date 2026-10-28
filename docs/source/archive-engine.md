@@ -4,7 +4,9 @@ Reads archives entirely in the browser with **pure JavaScript** (no WebAssembly,
 OpenCloud's production CSP). Step 3 added ZIP, TAR, TAR.GZ/TGZ; step 4 added bzip2 and single
 compressed files; step 4b added XZ and legacy LZMA (details:
 [xz-lzma-decoder](xz-lzma-decoder.md)); step 5 added range reads for ZIP (details:
-[zip-range-reading](zip-range-reading.md)).
+[zip-range-reading](zip-range-reading.md)). Archives too large for the browser can instead be
+opened by the optional server helper, which has its own Go engine with the same detection and
+listing rules ([archive-helper overview](archive-helper/overview.md)).
 
 ## Formats
 
@@ -135,7 +137,9 @@ when writing the selection zip, see [viewer-ui](viewer-ui.md)).
 | Preview size          | 10 MiB declared entry size | `PreviewModal.vue`                                             |
 | Text shown            | first 1 MiB                | `PreviewModal.vue`                                             |
 
-Limits are resolved per device by `src/limits.ts` (see [zip-range-reading](zip-range-reading.md)).
+Limits are resolved per device by `src/limits.ts` (see [zip-range-reading](zip-range-reading.md)). Archives too large for the browser can instead be
+opened by the optional server helper, which has its own Go engine with the same detection and
+listing rules ([archive-helper overview](archive-helper/overview.md)).
 
 ## Memory
 

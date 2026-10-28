@@ -61,7 +61,8 @@ export const MAX_TEXT_PREVIEW = 1024 * 1024
 export default defineComponent({
   name: 'PreviewModal',
   props: {
-    handle: { type: Object as PropType<ArchiveHandle>, required: true },
+    /** The archive in browser mode; null when the helper reads it (then `read` is used). */
+    handle: { type: Object as PropType<ArchiveHandle>, required: false, default: null },
     entry: { type: Object as PropType<ArchiveEntry>, required: true },
     /** Reads the entry (with the browser's size cap and progress); defaults to `handle.read`. */
     read: {

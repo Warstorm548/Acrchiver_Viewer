@@ -33,16 +33,34 @@ signal)` →
    large when decompressed, not enough free memory — `out-of-memory` or a failed-allocation
    `RangeError` —, damaged) or "could not be loaded" (HTTP/network), plus the download button.
 
+**Server helper** (0.3.0, [archive-helper overview](archive-helper/overview.md)): instead of
+step 1's "too large" message, and when step 2/4 fails with `too-large` / out of memory, `load()`
+calls `tryServer()`. It is used only if `usableHelper()` finds all of: `archiveHelperUrl` set
+(same-origin path, `resolveHelperUrl`), a login token (`useAuthStore().accessToken`; public
+links have none), a WebDAV path (`resource.webDavPath`, else `space.webDavPath` + `resource.path`),
+a TAR-family or single compressed extension (`HELPER_EXTENSIONS`; ZIPs keep range mode), and a
+`GET /health` answer (checked once per viewer; any failure → null → browser behaviour unchanged).
+`openOnServer` posts the session, polls its status every second ("Preparing the archive on the
+server… N%" while copying, "Reading the archive on the server… N%" while scanning) with a
+**Cancel** button (state `cancelled`: message + "Open again" + "Download archive"), then starts
+the heartbeat and renders `<archive-browser :remote>`. Helper error codes get their own messages
+(server busy, too many large archives open, larger than the server allows, too complex, changed,
+generic). A lost session (heartbeat 404) switches to an error asking to reload. `closeArchive`
+closes the session on unmount/reload/cancel.
+
 Config keys (`apps.yaml` / manifest): `maxArchiveSize`, `maxUncompressedSize`, `maxEntrySize` and
 their `…Mobile` variants; invalid values fall back to the defaults (1 GiB / 2 GiB / 1 GiB desktop,
 128 / 384 / 256 MiB mobile), which are also published in `src/manifest.json` →
-`dist/manifest.json` `config`.
+`dist/manifest.json` `config`. `archiveHelperUrl` (default `/archive-api`; `""` or anything not
+starting with a single `/` turns the helper off).
 
 ## `components/ArchiveBrowser.vue`
 
-Props `handle`, `archiveName`, `maxEntrySize`, `bytesRead` (range bytes fetched so far). Builds
-`buildIndex(handle.entries)`. All reads go through `readEntry`, which refuses entries whose
-declared size is over `maxEntrySize` and shows "Extracting <name>… N%" while a read runs.
+Props `handle` **or** `remote` (a `RemoteArchive`, server helper mode), `archiveName`,
+`maxEntrySize`, `bytesRead` (range bytes fetched so far). With `handle` it builds
+`buildIndex(handle.entries)` and everything below is synchronous, as before. All reads go through
+`readEntry`, which refuses entries whose declared size is over `maxEntrySize` and shows
+"Extracting <name>… N%" while a read runs.
 
 - **Toolbar**: `oc-text-input` "Search in archive" (clear button) and "Download selected (n)".
 - **Breadcrumb**: archive name as root, then folder segments; hidden while searching (a result
@@ -62,6 +80,15 @@ declared size is over `maxEntrySize` and shows "Extracting <name>… N%" while a
   bytes are capped at `maxEntrySize` as well (see `zipEntries` below).
 - Failures → `useMessages().showErrorMessage` (host notification); `too-large` errors are replaced
   by a message naming the device limit, memory failures by "not enough free memory".
+- **Server mode** (`remote`): rows are the current folder's pages from the server (sorted there;
+  a sort change reloads; opening another folder clears the rows until its page arrives, so no
+  stale rows can be clicked; "Show more (n of total)" loads the next 500), search runs on the server
+  300 ms after typing stops ("Showing the first N results" when capped), a spinner shows while a
+  page loads. Downloads (`downloadOnServer`) ask the helper for size and caps first, show an
+  `oc-modal` "Download X?" (files + total, "make sure your device has enough free space") when
+  `confirm` is set, then follow a single-use link with `triggerUrlDownload`. Helper error codes
+  (`download-too-large` with size and limit, `too-many-downloads`, closed session, nothing to
+  download) get their own messages.
 
 ## `components/PreviewModal.vue`
 
@@ -71,12 +98,15 @@ only" note); images via `<img :src="blob:…">` (URL revoked on close); if the b
 the image (`@error`: damaged, or too many pixels — Chromium refuses a 30000×30000 PNG this way
 rather than crashing) it shows "This image could not be displayed". Messages for: unsupported or
 encrypted entries, types without preview, entries over 10 MiB, read failures. Reads use the
-browser's `read` prop (`readEntry`, with cap and progress), falling back to `handle.read`.
+browser's `read` prop (`readEntry`, with cap and progress; in server mode it reads through the
+helper), falling back to `handle.read` (`handle` is null in server mode).
 
 ## `download.ts`
 
 - `sanitizeFileName`: replaces `/`, `\` and control characters (names come from the archive).
 - `triggerDownload`: temporary `<a download>`, URL revoked after 60 s.
+- `triggerUrlDownload(url, name)`: the same for a same-origin URL (the helper's single-use links);
+  the browser saves the file as it arrives, so its size isn't limited by memory.
 - `zipEntries(handle, files, maxTotal)`: zip.js native `ZipWriter`, entries added one at a time
   (each `handle.read(file, maxTotal − bytes so far)`, so a read stops at what is left of the
   allowance; over it → `too-large`, writer closed) under their
@@ -93,7 +123,8 @@ come from OpenCloud role tokens (e.g. `ext:hover:bg-role-surface-container`). Se
 
 ## Tests
 
-`tests/unit/App.spec.ts` and `tests/unit/ArchiveBrowser.spec.ts`; see [tests](../testing/tests.md).
+`tests/unit/App.spec.ts`, `AppHelper.spec.ts` (server mode), `ArchiveBrowser.spec.ts`,
+`ArchiveBrowserRemote.spec.ts` and `helper/*.spec.ts`; see [tests](../testing/tests.md).
 
 ## When changing
 

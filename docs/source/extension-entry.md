@@ -65,7 +65,8 @@ version and note it in `CHANGELOG.md`. Tests: `tests/unit/compatibility.spec.ts`
     "maxArchiveSizeMobile": 134217728,
     "maxUncompressedSizeMobile": 402653184,
     "maxEntrySizeMobile": 268435456,
-    "allowUnsupportedOpenCloud": false
+    "allowUnsupportedOpenCloud": false,
+    "archiveHelperUrl": "/archive-api"
   }
 }
 ```
@@ -73,7 +74,9 @@ version and note it in `CHANGELOG.md`. Tests: `tests/unit/compatibility.spec.ts`
 The SDK merges it into `dist/manifest.json` (with name, version, license, author and
 `entrypoint`). OpenCloud merges the `config` block with `apps.yaml`, and the result reaches the
 viewer as `applicationConfig`. The same limit defaults are hard-coded in `src/limits.ts` as a
-fallback; a missing `allowUnsupportedOpenCloud` means `false`.
+fallback; a missing `allowUnsupportedOpenCloud` means `false`; a missing `archiveHelperUrl`
+means `/archive-api` (`src/helper/client.ts` `resolveHelperUrl`; `""` turns the server helper
+off, other origins are refused).
 
 ## When changing
 
