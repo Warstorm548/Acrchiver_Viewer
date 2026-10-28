@@ -11,7 +11,7 @@ const json = (body: unknown, status = 200) =>
   new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } })
 
 const health = {
-  version: '0.4.0',
+  version: '0.4.1',
   heartbeatSeconds: 30,
   confirmDownloadSize: 1e9,
   maxDownloadsPerUser: 3

@@ -13,6 +13,19 @@ Every change gets an entry and a version bump in `package.json`, which is the si
 the version: the build copies it into `dist/manifest.json` and stamps it on every compiled JS file
 (`/*! archive-viewer vX.Y.Z */`).
 
+## [0.4.1] - 2026-10-28
+
+Supported OpenCloud versions: **8.0.1**.
+
+### Added
+
+- `ARCHIVE_HELPER_PORT` (default `8080`): the helper's port inside the Docker network, passed to
+  the helper as `ARCHIVE_HELPER_ADDR`. The port is never published on the server, so it can't
+  clash with another service using 8080 there; when it is changed, both archive-helper backends in
+  `custom/proxy.yaml` must use the same number (noted in `proxy.yaml` and `env.example`).
+- The helper checks `ARCHIVE_HELPER_ADDR` at startup (host:port or :port, port 1–65535) and stops
+  with `invalid settings: ARCHIVE_HELPER_ADDR: …` instead of a listen error.
+
 ## [0.4.0] - 2026-10-28
 
 Supported OpenCloud versions: **8.0.1**. The first tagged release: it also contains 0.2.2 and

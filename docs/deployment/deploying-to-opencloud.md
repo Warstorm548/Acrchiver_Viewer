@@ -105,7 +105,7 @@ and upgrades: [archive-helper deployment](archive-helper.md).
 Installing a release on a server (opencloud-compose, apps folder `config/opencloud/apps`):
 
 ```
-v=0.4.0; base=https://github.com/Warstorm548/Acrchiver_Viewer/releases/download/v$v
+v=0.4.1; base=https://github.com/Warstorm548/Acrchiver_Viewer/releases/download/v$v
 curl -fsSLO $base/archive-viewer-$v.zip -O $base/archive-viewer-$v.zip.sha256
 sha256sum -c archive-viewer-$v.zip.sha256
 rm -rf config/opencloud/apps/archive-viewer && unzip -q archive-viewer-$v.zip -d config/opencloud/apps

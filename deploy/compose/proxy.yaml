@@ -10,6 +10,7 @@ additional_policies:
   - name: default
     routes:
       # --- Archive Viewer helper (start) ---
+      # Both backends use the helper's port: ARCHIVE_HELPER_PORT in .env (default 8080).
       # Downloads use single-use tickets checked by the helper itself, so a plain browser download
       # (which can't send a login token) works. Must come before /archive-api/ (first match wins).
       - endpoint: /archive-api/download/

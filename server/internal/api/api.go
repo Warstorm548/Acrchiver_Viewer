@@ -25,7 +25,7 @@ import (
 )
 
 // Version of the helper; kept equal to the viewer's package.json version.
-const Version = "0.4.0"
+const Version = "0.4.1"
 
 const (
 	// HeartbeatInterval tells the viewer how often to report that the archive is still open.

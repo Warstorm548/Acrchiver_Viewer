@@ -4,6 +4,7 @@ package config
 
 import (
 	"fmt"
+	"net"
 	"os"
 	"strconv"
 	"strings"
@@ -83,6 +84,17 @@ func (r *reader) size(key, fallback string) int64 {
 	return size
 }
 
+// addr reads a listen address: host:port or :port, with a port from 1 to 65535.
+func (r *reader) addr(key, fallback string) string {
+	text := r.str(key, fallback)
+	_, port, err := net.SplitHostPort(text)
+	number, portErr := strconv.Atoi(port)
+	if err != nil || portErr != nil || number < 1 || number > 65535 {
+		r.errs = append(r.errs, fmt.Sprintf("%s: invalid listen address %q (e.g. :8080)", key, text))
+	}
+	return text
+}
+
 func (r *reader) duration(key, fallback string) time.Duration {
 	text := r.str(key, fallback)
 	value, err := time.ParseDuration(text)
@@ -108,7 +120,7 @@ func Load(lookup func(string) (string, bool)) (Config, error) {
 	}
 	r := &reader{lookup: lookup}
 	c := Config{
-		Addr:                r.str("ARCHIVE_HELPER_ADDR", ":8080"),
+		Addr:                r.addr("ARCHIVE_HELPER_ADDR", ":8080"),
 		OpenCloudURL:        strings.TrimRight(r.str("ARCHIVE_HELPER_OPENCLOUD_URL", "http://opencloud:9200"), "/"),
 		DataDir:             r.str("ARCHIVE_HELPER_DATA_DIR", "/data"),
 		MaxStorage:          r.size("ARCHIVE_HELPER_MAX_STORAGE", "50GB"),

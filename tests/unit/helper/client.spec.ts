@@ -32,7 +32,7 @@ describe('HelperClient', () => {
     let token = 'first'
     const fetchSpy = vi
       .spyOn(globalThis, 'fetch')
-      .mockImplementation(() => Promise.resolve(json({ version: '0.4.0' })))
+      .mockImplementation(() => Promise.resolve(json({ version: '0.4.1' })))
     const client = new HelperClient('/archive-api', () => token)
     await client.health()
     token = 'renewed'

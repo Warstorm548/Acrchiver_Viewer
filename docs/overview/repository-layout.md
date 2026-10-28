@@ -13,7 +13,7 @@ Every tracked file (0.4.0), what it is, and its line count. Generated/ignored: `
 | `package.json`                  |    67 | Package metadata, scripts, `@zip.js/zip.js` dependency, devDependencies, `packageManager`                          |
 | `pnpm-lock.yaml`                |  5384 | Locked dependency tree                                                                                             |
 | `.nvmrc`                        |     1 | Node version for nvm (`24`)                                                                                        |
-| `CHANGELOG.md`                  |   161 | SemVer rules and per-version changes                                                                               |
+| `CHANGELOG.md`                  |   174 | SemVer rules and per-version changes                                                                               |
 | `playwright.config.ts`          |    30 | E2E config: Chromium, one worker, login project, global setup/teardown                                             |
 | `vite.config.ts`                |    17 | extension-sdk `defineConfig`, plus the version banner on compiled JS                                               |
 | `gettext.config.cjs`            |    17 | vue3-gettext extract/compile config (de/es/fr)                                                                     |
@@ -147,7 +147,7 @@ See [archive-helper overview](../source/archive-helper/overview.md). Tests run w
 | `server/Dockerfile`                      |    21 | Static build on `golang:1.27-alpine`, cross-compiled per platform (amd64/arm64), runs on distroless `static-debian12`; OCI labels |
 | `server/.dockerignore`                   |     5 | Keeps tests and test data out of the image                                                                                        |
 | `server/cmd/archive-helper/main.go`      |   103 | Startup checks (settings, temp folder writable, leftover cleanup), sweeper, shutdown                                              |
-| `server/internal/config/config.go`       |   129 | Environment settings, sizes and durations                                                                                         |
+| `server/internal/config/config.go`       |   141 | Environment settings, sizes, durations and the listen address                                                                     |
 | `server/internal/storage/ledger.go`      |   122 | Storage reservations: total/per-user caps, free space, hard stop                                                                  |
 | `server/internal/opencloud/client.go`    |   161 | WebDAV PROPFIND/GET as the user, path checks                                                                                      |
 | `server/internal/archive/format.go`      |   171 | Formats, detection, single-file names (ports of `detect.ts` / `single.ts`)                                                        |
@@ -169,12 +169,12 @@ See [archive-helper overview](../source/archive-helper/overview.md). Tests run w
 
 ## `deploy/`
 
-| Path                                      | Lines | Purpose                                                                                                                                |
-| ----------------------------------------- | ----: | -------------------------------------------------------------------------------------------------------------------------------------- |
-| `deploy/compose/archive-helper.yml`       |    47 | Compose overlay: helper service from `ghcr.io/warstorm548/archive-helper` (own UID, read-only, limits, `./archive-temp`) + proxy mount |
-| `deploy/compose/archive-helper-build.yml` |     9 | Optional overlay: build the helper from a clone (`archive-helper:local`)                                                               |
-| `deploy/compose/proxy.yaml`               |    62 | Upstream `proxy.yaml` + the `/archive-api` routes                                                                                      |
-| `deploy/env.example`                      |    48 | All helper settings with defaults                                                                                                      |
+| Path                                      | Lines | Purpose                                                                                                                                      |
+| ----------------------------------------- | ----: | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| `deploy/compose/archive-helper.yml`       |    50 | Compose overlay: helper service from `ghcr.io/warstorm548/archive-helper` (own UID, read-only, limits, port, `./archive-temp`) + proxy mount |
+| `deploy/compose/archive-helper-build.yml` |     9 | Optional overlay: build the helper from a clone (`archive-helper:local`)                                                                     |
+| `deploy/compose/proxy.yaml`               |    63 | Upstream `proxy.yaml` + the `/archive-api` routes                                                                                            |
+| `deploy/env.example`                      |    54 | All helper settings with defaults                                                                                                            |
 
 ## `docs/`
 

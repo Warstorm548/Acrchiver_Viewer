@@ -72,6 +72,22 @@ func TestOverridesAboveHundredGB(t *testing.T) {
 	}
 }
 
+func TestListenAddress(t *testing.T) {
+	for _, valid := range []string{":8080", ":9090", "127.0.0.1:8081", "[::1]:8080"} {
+		c, err := Load(lookup(map[string]string{"ARCHIVE_HELPER_ADDR": valid}))
+		if err != nil || c.Addr != valid {
+			t.Errorf("%q: %v, %q", valid, err, c.Addr)
+		}
+	}
+	// as the compose file builds it from an empty or wrong ARCHIVE_HELPER_PORT
+	for _, invalid := range []string{":", ":0", ":70000", ":http", "8080"} {
+		if _, err := Load(lookup(map[string]string{"ARCHIVE_HELPER_ADDR": invalid})); err == nil ||
+			!strings.Contains(err.Error(), "ARCHIVE_HELPER_ADDR") {
+			t.Errorf("%q: want an error naming ARCHIVE_HELPER_ADDR, got %v", invalid, err)
+		}
+	}
+}
+
 func TestInvalidValuesAreReported(t *testing.T) {
 	_, err := Load(lookup(map[string]string{
 		"ARCHIVE_HELPER_MAX_STORAGE":            "lots",
