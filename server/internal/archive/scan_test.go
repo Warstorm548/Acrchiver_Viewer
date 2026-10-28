@@ -302,8 +302,8 @@ func TestDamagedArchives(t *testing.T) {
 	if _, err := scanBytes(t, bad, "bad.tar", generous); !errors.Is(err, ErrCorrupt) {
 		t.Errorf("bad checksum: want ErrCorrupt, got %v", err)
 	}
-	if _, err := scanBytes(t, []byte("PK\x03\x04 a zip"), "x.zip", generous); !errors.Is(err, ErrUnsupported) {
-		t.Errorf("zip: want ErrUnsupported, got %v", err)
+	if _, err := scanBytes(t, []byte("PK\x03\x04 not a zip"), "x.zip", generous); !errors.Is(err, ErrCorrupt) {
+		t.Errorf("zip: want ErrCorrupt, got %v", err)
 	}
 	if _, err := scanBytes(t, []byte("just text"), "x.txt", generous); !errors.Is(err, ErrUnsupported) {
 		t.Errorf("text: want ErrUnsupported, got %v", err)
@@ -342,6 +342,7 @@ func TestSharedFixtures(t *testing.T) {
 		"sample.tar", "sample.tar.gz", "sample.tgz", "sample.tar.bz2", "sample.tbz2", "sample.tar.xz",
 		"sample.txz", "sample.tar.lzma", "archive-in-disguise.gz", "notes.txt.gz", "notes.txt.xz",
 		"data.json.bz2", "data.json.lzma", "filters-x86.bin.xz", "large.tar.bz2", "large.tar.xz",
+		"sample.zip", "large.zip",
 	} {
 		t.Run(name, func(t *testing.T) {
 			path := filepath.Join(dir, name)

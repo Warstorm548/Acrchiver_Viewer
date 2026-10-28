@@ -1,5 +1,5 @@
-// Package archive lists TAR-based and single compressed archives stored in the temp folder and
-// reads entries out of them. Detection and listing follow the browser engine (src/engine/), so
+// Package archive lists TAR-based, single compressed, ZIP and 7z archives stored in the temp folder
+// and reads entries out of them. Detection and listing follow the browser engine (src/engine/), so
 // the viewer shows the same tree whichever side opened the archive.
 package archive
 
@@ -21,6 +21,8 @@ const (
 	FormatBz2    Format = "bz2"
 	FormatXz     Format = "xz"
 	FormatLzma   Format = "lzma"
+	FormatZip    Format = "zip"
+	Format7z     Format = "7z"
 )
 
 var (
@@ -28,6 +30,8 @@ var (
 	ErrCorrupt     = errors.New("archive is damaged")
 	// ErrTooComplex: a parser limit was hit (entries, names, decompressed size, time, dictionary).
 	ErrTooComplex = errors.New("archive is too large or complex to list")
+	// ErrEncrypted: the archive (or its listing) is password-protected.
+	ErrEncrypted = errors.New("archive is password-protected")
 )
 
 type compression int
@@ -65,6 +69,7 @@ var formatsByExtension = map[string]Format{
 	"tar.bz2": FormatTarBz2, "tbz2": FormatTarBz2, "tbz": FormatTarBz2,
 	"tar.xz": FormatTarXz, "txz": FormatTarXz,
 	"gz": FormatGz, "bz2": FormatBz2, "xz": FormatXz, "lzma": FormatLzma, "tlz": FormatLzma,
+	"zip": FormatZip, "7z": Format7z,
 }
 
 // Extension follows OpenCloud's rule: tar.gz / tar.bz2 / tar.xz count as one extension.
@@ -94,6 +99,8 @@ func signature(head []byte) string {
 		return "bzip2"
 	case len(head) >= 6 && bytes.Equal(head[:6], []byte{0xfd, '7', 'z', 'X', 'Z', 0}):
 		return "xz"
+	case len(head) >= 6 && bytes.Equal(head[:6], []byte{'7', 'z', 0xbc, 0xaf, 0x27, 0x1c}):
+		return "7z"
 	case looksLikeTar(head):
 		return "tar"
 	}
@@ -105,12 +112,14 @@ func looksLikeTar(head []byte) bool {
 }
 
 // Detect picks the format from the extension, trusting the content when they disagree (a port of
-// the browser's resolveFormat). ZIPs are left to the browser, which reads them by range.
+// the browser's resolveFormat).
 func Detect(fileName string, head []byte) (Format, error) {
 	byExtension := formatsByExtension[Extension(fileName)]
 	switch signature(head) {
 	case "zip":
-		return "", ErrUnsupported
+		return FormatZip, nil
+	case "7z":
+		return Format7z, nil
 	case "tar":
 		return FormatTar, nil
 	case "gzip":

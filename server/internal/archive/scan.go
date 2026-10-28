@@ -38,6 +38,9 @@ type Archive struct {
 	Index  *Index
 	path   string
 	single bool
+	// size and limits are kept for 7z, whose header is read again on each Extract
+	size   int64
+	limits Limits
 }
 
 // countReader counts bytes passing through and stops on a cancelled context.
@@ -131,7 +134,7 @@ func openStream(format Format, source io.Reader) (*stream, error) {
 // corrupt maps decoder errors to ErrCorrupt, keeping cancellation and limit errors as they are.
 func corrupt(err error) error {
 	if err == nil || errors.Is(err, ErrCorrupt) || errors.Is(err, ErrTooComplex) ||
-		errors.Is(err, ErrUnsupported) || errors.Is(err, context.Canceled) ||
+		errors.Is(err, ErrUnsupported) || errors.Is(err, ErrEncrypted) || errors.Is(err, context.Canceled) ||
 		errors.Is(err, context.DeadlineExceeded) {
 		return err
 	}
@@ -155,9 +158,27 @@ func Scan(ctx context.Context, path, name string, limits Limits, progress *atomi
 	if err != nil {
 		return nil, err
 	}
-	archive := &Archive{Format: format, path: path}
+	archive := &Archive{Format: format, path: path, limits: limits}
 
-	if format == FormatTar {
+	switch format {
+	case FormatZip, Format7z:
+		info, err := file.Stat()
+		if err != nil {
+			return nil, err
+		}
+		archive.size = info.Size()
+		if format == FormatZip {
+			archive.Index, err = scanZip(ctx, file, archive.size, limits, progress)
+		} else {
+			archive.Index, err = scan7z(ctx, file, archive.size, limits)
+		}
+		if err != nil {
+			return nil, err
+		}
+		// only the directory or header was read: the whole archive is now listed
+		progress.Store(archive.size)
+		return archive, nil
+	case FormatTar:
 		info, err := file.Stat()
 		if err != nil {
 			return nil, err

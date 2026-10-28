@@ -14,11 +14,16 @@ type Entry struct {
 	IsDir bool   `json:"isDirectory"`
 	Size  int64  `json:"size"`
 	// Modified is milliseconds since 1970 (0 = unknown).
-	Modified  int64 `json:"modified,omitempty"`
-	Supported bool  `json:"supported"`
+	Modified int64 `json:"modified,omitempty"`
+	// LocalTime: Modified is a wall-clock time without a zone (a ZIP's DOS date), sent as if UTC.
+	LocalTime bool `json:"localTime,omitempty"`
+	Supported bool `json:"supported"`
 
-	// offset is where the entry's data starts in the uncompressed stream.
+	// offset is where the entry's data starts in the uncompressed stream (ZIP: in the file; 7z:
+	// the file's index), so sorting by it gives archive order.
 	offset int64
+	// zip is set for readable ZIP entries.
+	zip *zipData
 	// positions in Index.entries and in the parent's children, so a duplicate replaces in O(1)
 	listPos, childPos int
 }
