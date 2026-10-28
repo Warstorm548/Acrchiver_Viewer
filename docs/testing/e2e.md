@@ -92,6 +92,8 @@ minute, 3.04 GiB) and deletes it from the server, the trash and `test-fixtures/`
   passed in 3.3 minutes; `./archive-temp` empty afterwards. The first run found a real bug (server
   mode showed the previous folder's rows while the next page loaded) and showed that
   `limits.spec.ts` must turn the helper off, since its archives now open on the server.
+- 2026-10-28, after the CodeRabbit review fixes (session closed on early Cancel / failed status,
+  URL check): all 71 tests and the login step passed again in 3.4 minutes; `./archive-temp` empty.
 - Sanity: with the CSP rewrite removed, the four fallback tests fail (no "worker unavailable"), so
   the simulation is what makes them pass.
 
