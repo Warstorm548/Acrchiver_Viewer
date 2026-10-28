@@ -224,6 +224,11 @@ func TestOpenErrors(t *testing.T) {
 func TestFailuresFreeTheirSpace(t *testing.T) {
 	f := newFixture(t, 1<<20, 1<<20)
 	good := tarGz(t, map[string]string{"a.txt": "a"})
+	// a 7z with an encrypted header (archive/testdata/make-7z-zip.sh)
+	lockedSevenZip, err := os.ReadFile(filepath.Join("..", "archive", "testdata", "sample-aes-header.7z"))
+	if err != nil {
+		t.Fatal(err)
+	}
 	cases := map[string]struct {
 		file *fakeFile
 		code string
@@ -232,7 +237,9 @@ func TestFailuresFreeTheirSpace(t *testing.T) {
 		"grew.tar.gz":     {&fakeFile{data: good, etag: `"1"`, propSize: 10}, CodeChanged},
 		"shrank.tar.gz":   {&fakeFile{data: good, etag: `"1"`, propSize: len(good) + 10}, CodeChanged},
 		"broken.tar.gz":   {&fakeFile{data: good[:len(good)/2], etag: `"1"`}, CodeCorrupt},
-		"text.zip":        {&fakeFile{data: []byte("PK\x03\x04..."), etag: `"1"`}, CodeUnsupported},
+		"text.zip":        {&fakeFile{data: []byte("PK\x03\x04..."), etag: `"1"`}, CodeCorrupt},
+		"notes.rar":       {&fakeFile{data: []byte("Rar!\x1a\x07\x01\x00"), etag: `"1"`}, CodeUnsupported},
+		"locked.7z":       {&fakeFile{data: lockedSevenZip, etag: `"1"`}, CodeEncrypted},
 	}
 	for name, c := range cases {
 		t.Run(name, func(t *testing.T) {

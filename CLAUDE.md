@@ -8,8 +8,9 @@ TAR, TAR.GZ/TGZ, TAR.BZ2/TBZ2, TAR.XZ/TXZ, TAR.LZMA and single .gz/.bz2/.xz/.lzm
 browser with pure JavaScript (no WebAssembly, no CSP change) — browse, search, sort, preview,
 download; ZIPs of any size are read by HTTP Range requests. UI in English, German,
 Spanish and French (AI-drafted). Version 0.2.2 is ready to release (no tag yet); it runs only on OpenCloud 8.0.1. Version 0.3.0
-(branch `feature/archive-helper`) adds an optional Go **archive helper** (`server/`, compose files
-in `deploy/`) for archives too large for the browser. Start with [project status](docs/overview/project-status.md).
+(on `main`, untagged) adds an optional Go **archive helper** (`server/`, compose files in
+`deploy/`) for archives too large for the browser; 0.4.0 (branch `feature/helper-7z-zip`) lets it
+open 7z and large ZIPs. Start with [project status](docs/overview/project-status.md).
 
 Commands: `pnpm install`, `pnpm build`, `pnpm check:types`, `pnpm lint`, `pnpm format:check`,
 `pnpm test:unit --run`, `pnpm test:e2e` (Chromium against the local stack; `E2E_SKIP_LARGE=1`
@@ -50,7 +51,8 @@ for a quick run), `pnpm package` (release zip), `pnpm l10n:extract` / `pnpm l10n
 - [CHANGELOG.md](CHANGELOG.md) — SemVer rules (MAJOR.MINOR.PATCH) and per-version changes,
   starting at 0.1.0.
 - [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md) — licenses of ported/bundled code (seek-bzip
-  MIT port, xz-compat MIT adaptation, zip.js BSD-3-Clause, ulikunitz/xz BSD-3 in the helper).
+  MIT port, xz-compat MIT adaptation, zip.js BSD-3-Clause; in the helper ulikunitz/xz, the
+  patched sevenzip copy, the Deflate64 port of Go's flate and the other Go modules).
 - [README.md](README.md) — user-facing readme (step 6): features, formats, limits, install,
   build, translations, security, license.
 
@@ -61,14 +63,14 @@ for a quick run), `pnpm package` (release zip), `pnpm l10n:extract` / `pnpm l10n
 - [docs/overview/repository-layout.md](docs/overview/repository-layout.md) — every tracked file
   with line count and purpose; what steps 1 and 3 removed.
 - [docs/overview/roadmap-considerations.md](docs/overview/roadmap-considerations.md) — parked
-  options: server helper (done in 0.3.0), more helper formats (7z, RAR, zstd, ZIP codecs, ISO;
-  proposed), libarchive as plain JS, WebAssembly + CSP, compress on the server and extract to
+  options: server helper (done in 0.3.0), more helper formats (7z and ZIP codecs done in 0.4.0;
+  RAR, zstd, ISO proposed), libarchive as plain JS, WebAssembly + CSP, compress on the server and extract to
   folder (decided, not built), plain TAR header hopping (deferred).
 
 ### Tech stack
 
 - [docs/tech-stack/dependencies.md](docs/tech-stack/dependencies.md) — zip.js (native build only)
-  and devDependencies with versions, the helper's Go module (ulikunitz/xz), 8.0 alignment rule, install warnings, step 4 candidates.
+  and devDependencies with versions, the helper's Go modules (ulikunitz/xz, patched sevenzip, zstd, ppmd), 8.0 alignment rule, install warnings, step 4 candidates.
 - [docs/tech-stack/build-tooling.md](docs/tech-stack/build-tooling.md) — Node/pnpm, Go toolchain, scripts, what
   the extension-sdk `defineConfig` provides, TypeScript, ESLint, Prettier, `.gitignore`, release
   zip script, gettext config.
@@ -96,12 +98,15 @@ for a quick run), `pnpm package` (release zip), `pnpm l10n:extract` / `pnpm l10n
 - [docs/source/archive-engine.md](docs/source/archive-engine.md) — `src/engine/`: formats table,
   detection, ZIP (zip.js native), TAR, gzip, bzip2, worker, single files, index, limits.
 - [docs/source/archive-helper/overview.md](docs/source/archive-helper/overview.md) — server helper:
-  flow, auth through the proxy, packages, server-side engine (xz dictionary check, BCJ), viewer side.
+  flow, auth through the proxy, packages, dependencies, server-side engine (xz dictionary check, BCJ), viewer side.
 - [docs/source/archive-helper/api.md](docs/source/archive-helper/api.md) — helper HTTP routes,
   entries, error codes, viewer flow.
 - [docs/source/archive-helper/storage-limits.md](docs/source/archive-helper/storage-limits.md) —
   storage caps and reservations, hard stop, cleanup, Docker size limitation, download caps, parser
   and container limits.
+- [docs/source/archive-helper/zip-and-7z.md](docs/source/archive-helper/zip-and-7z.md) — 0.4.0:
+  when the viewer sends ZIPs/7z to the helper, own ZIP directory parser (zip.js rules, methods,
+  Deflate64), 7z via the patched sevenzip copy, memory checks, encrypted data, tests.
 - [docs/source/styles-and-i18n.md](docs/source/styles-and-i18n.md) — Tailwind/design-system
   styling, v8 theme tokens, translations (de/es/fr files, AI-draft note), translation workflow.
 

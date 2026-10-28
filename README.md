@@ -9,9 +9,9 @@ to OpenCloud's security policy (CSP)**. With the CSP from opencloud-compose (`wo
 blob:`) bzip2, xz and lzma are decompressed in the background; with OpenCloud's built-in default
 CSP they still open, but the page pauses while they decompress.
 
-For archives too large for the browser (TAR and compressed files of many GB) there is an
-**optional archive helper** that runs next to OpenCloud: it opens the archive on the server, and
-the browser only receives the folder listing and the files you download. See
+For archives too large for the browser (TAR, ZIP and compressed files of many GB), and for 7z,
+there is an **optional archive helper** that runs next to OpenCloud: it opens the archive on the
+server, and the browser only receives the folder listing and the files you download. See
 [Archive helper](#archive-helper-optional).
 
 ## Features
@@ -23,8 +23,8 @@ the browser only receives the folder listing and the files you download. See
 - **Large ZIPs** (tested with 3 GiB): read with HTTP range requests, so only the archive's index
   and the files you open are fetched
 - Size limits that adapt to the device (lower on phones and tablets), configurable per server
-- **Large TAR / compressed archives** (500 MiB–20 GB+) through the optional server helper, with
-  storage caps per server and per user
+- **Large TAR / ZIP / compressed archives** (500 MiB–20 GB+) and **7z** through the optional
+  server helper, with storage caps per server and per user
 - English, German, Spanish and French (draft translations, see below)
 
 ## Supported formats
@@ -38,9 +38,14 @@ the browser only receives the folder listing and the files you download. See
 | TAR + xz                          | `.tar.xz`, `.txz`             |
 | TAR + legacy LZMA                 | `.tar.lzma`, `.tlz`           |
 | Single compressed files           | `.gz`, `.bz2`, `.xz`, `.lzma` |
+| 7z (archive helper only)          | `.7z`                         |
 
-Not supported (a download button is offered instead): 7z and RAR; password-protected ZIP entries;
-Deflate64, bzip2 or LZMA compression inside a ZIP; xz files using the ARM64 or RISC-V filter.
+With the archive helper, ZIP entries compressed with Deflate64 (Windows Explorer, ZIPs over
+~2 GB), bzip2, LZMA, zstd or xz can be read too.
+
+Not supported (a download button is offered instead): RAR; password-protected archives and
+entries; multi-volume 7z; without the helper, 7z and the ZIP methods above; xz files using the
+ARM64 or RISC-V filter.
 
 ## Limits
 
@@ -86,8 +91,9 @@ The `@opencloud-eu/*` packages are pinned to the server's 8.0 line.
 ## Archive helper (optional)
 
 A small Go service (`server/`) added to an opencloud-compose stack as an extra container. When
-installed, archives over the browser limit (except ZIPs, which never need it) open on the server
-for logged-in users:
+installed, archives over the browser limit, 7z archives, and ZIPs with entries the browser can't
+decompress open on the server for logged-in users (if the helper fails, a ZIP is still read in the
+browser):
 
 - the archive is copied as the user (OpenCloud's permissions apply) into a temp folder
   (`./archive-temp`), listed there, and deleted when the viewer is closed or after 10 minutes

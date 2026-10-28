@@ -98,8 +98,13 @@ func TestDetect(t *testing.T) {
 		{"old.tar", make([]byte, 262), FormatTar, nil},
 		{"a.tar.lzma", append([]byte{0x5d}, make([]byte, 20)...), FormatLzma, nil},
 		{"a.lzma", append([]byte{0xff}, make([]byte, 20)...), "", ErrUnsupported},
-		{"a.zip", []byte("PK\x03\x04"), "", ErrUnsupported},
-		{"a.7z", []byte("7z\xbc\xaf"), "", ErrUnsupported},
+		{"a.zip", []byte("PK\x03\x04"), FormatZip, nil},
+		{"a.tar.gz", []byte("PK\x05\x06"), FormatZip, nil}, // content wins
+		{"a.7z", []byte("7z\xbc\xaf\x27\x1c"), Format7z, nil},
+		{"a.zip", []byte("7z\xbc\xaf\x27\x1c"), Format7z, nil},
+		{"a.7z", []byte("7z\xbc\xaf"), "", ErrUnsupported},    // signature cut short
+		{"sfx.zip", []byte("MZ\x90\x00"), "", ErrUnsupported}, // as the browser: PK must come first
+		{"a.rar", []byte("Rar!\x1a\x07\x01\x00"), "", ErrUnsupported},
 	}
 	for _, c := range cases {
 		got, err := Detect(c.name, c.head)

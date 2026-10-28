@@ -2,8 +2,9 @@
 
 Options discussed but **not scheduled**, plus decisions for later features. Steps 3–6 built
 the viewer in pure JavaScript in the browser with no server or CSP changes ("approach A");
-0.3.0 added the optional server helper (option B below); see [project-status](project-status.md).
-Revisit the others when a need appears (7z/RAR, writing into OpenCloud).
+0.3.0 added the optional server helper (option B below), 0.4.0 taught it 7z and large ZIPs; see
+[project-status](project-status.md). Revisit the others when a need appears (RAR, writing into
+OpenCloud).
 
 ## Why these are separate
 
@@ -18,7 +19,7 @@ Built as `server/` (Go) with a compose overlay and two proxy routes: large TAR-f
 compressed archives are copied as the user into a capped temp folder, listed and streamed from
 there. See [archive-helper overview](../source/archive-helper/overview.md) and
 [deployment](../deployment/archive-helper.md). Possible later improvements: checkpoints in the
-decompressed stream (zlib `zran`-style) for fast random access into big `.tar.gz`; 7z/RAR on the
+decompressed stream (zlib `zran`-style) for fast random access into big `.tar.gz`; RAR on the
 server; sharing one temp copy between users of the same file (each read re-checked with the user).
 
 ## C — libarchive compiled to plain JavaScript
@@ -38,34 +39,35 @@ builds. Risk is low (`'unsafe-inline'` is already present) but it is server-wide
 on every server that installs the app, and must be kept out of upstream-tracked files (use the
 `custom/` overlay). Decided against so the app works on a default OpenCloud.
 
-## More formats through the helper (proposed, not scheduled)
+## More formats through the helper (7z and ZIP done in 0.4.0, rest proposed)
 
 Formats the archive helper could open, reusing its temp copy, storage caps, sessions, download
 caps and tickets, and the viewer's server mode; mostly a new reader in `server/internal/archive/`
 plus registering extensions. Each would be its own MINOR release with tests. Order suggested
 2026-10-28:
 
-| Priority | Format                                                      | Today                                                | What the helper would add                                                                                 |
-| -------- | ----------------------------------------------------------- | ---------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
-| 1        | **7z** (`.7z`)                                              | Registered in "Open with", shows "not supported yet" | Open at any size (LZMA/LZMA2 and other codecs need WebAssembly in the browser, none needed on the server) |
-| 1        | **RAR** (`.rar`)                                            | Same as 7z                                           | Reading/extracting with an open-source decoder; creating RAR stays impossible (proprietary)               |
-| 2        | **Zstandard** (`.tar.zst`, `.tzst`, `.zst`)                 | Not registered                                       | Common in modern backups and Linux packages; browsers can't decode it without WebAssembly                 |
-| 3        | **ZIP entries the browser can't read**                      | ZIP opens, those entries show as unreadable          | Deflate64 (Windows Explorer ZIPs over ~2 GB), bzip2, LZMA, zstd inside a ZIP; password-protected entries  |
-| 4        | **Disk images** (`.iso`)                                    | Not registered                                       | Browse and extract without downloading 4–8 GB                                                             |
-| 5        | `.tar.lz4`, `.tar.lz` (lzip), `.Z`, `.cpio`, `.deb`, `.rpm` | Not registered                                       | Possible, rarely stored in a cloud                                                                        |
+| Priority | Format                                                      | Today                                                                    | What the helper would add                                                                                 |
+| -------- | ----------------------------------------------------------- | ------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------- |
+| 1        | **7z** (`.7z`)                                              | **Done in 0.4.0** ([zip-and-7z](../source/archive-helper/zip-and-7z.md)) | Open at any size (LZMA/LZMA2 and other codecs need WebAssembly in the browser, none needed on the server) |
+| 1        | **RAR** (`.rar`)                                            | Registered in "Open with", shows "not supported yet"                     | Reading/extracting with an open-source decoder; creating RAR stays impossible (proprietary)               |
+| 2        | **Zstandard** (`.tar.zst`, `.tzst`, `.zst`)                 | Not registered                                                           | Common in modern backups and Linux packages; browsers can't decode it without WebAssembly                 |
+| 3        | **ZIP entries the browser can't read**                      | **Done in 0.4.0** except password-protected entries                      | Deflate64 (Windows Explorer ZIPs over ~2 GB), bzip2, LZMA, zstd inside a ZIP; password-protected entries  |
+| 4        | **Disk images** (`.iso`)                                    | Not registered                                                           | Browse and extract without downloading 4–8 GB                                                             |
+| 5        | `.tar.lz4`, `.tar.lz` (lzip), `.Z`, `.cpio`, `.deb`, `.rpm` | Not registered                                                           | Possible, rarely stored in a cloud                                                                        |
 
 Before building:
 
-- **Libraries:** pick plain-Go decoders and check license and codec coverage first (not verified
-  yet); add them to [dependencies](../tech-stack/dependencies.md) and `THIRD-PARTY-NOTICES.md`.
-- **Solid archives** (7z, RAR): many files share one compressed stream, so reading a late file
-  decompresses everything before it, as with `.tar.gz` today.
-- **Memory:** 7z/RAR can declare large dictionaries or memory-heavy codecs (PPMd), zstd large
-  windows. Each needs a check before allocating, like `MaxDictionarySize` for xz.
+- **Libraries:** pick plain-Go decoders and check license and codec coverage first; add them to
+  [dependencies](../tech-stack/dependencies.md) and `THIRD-PARTY-NOTICES.md`. Audit header
+  parsing for allocations taken from header counts (the 7z library needed a patch for that).
+- **Solid archives** (RAR): many files share one compressed stream, so reading a late file
+  decompresses everything before it, as with `.tar.gz` and solid 7z today.
+- **Memory:** RAR can declare large dictionaries, zstd large windows. Each needs a check before
+  allocating, like `MaxDictionarySize` (now also for LZMA/PPMd/zstd in ZIP and 7z).
 - **Passwords** (7z, RAR, ZIP): need a password dialog, and the password would be sent to the
-  helper. That is a decision for the owner before any encrypted format is supported.
-- **ZIP routing:** ZIPs stay in browser range mode; only the unreadable entries (or the whole ZIP
-  when the user asks) would go through the helper, which needs its own design.
+  helper. Still the owner's decision; 0.4.0 refuses encrypted data with a clear message.
+- **ZIP routing** (0.4.0): ZIPs over `maxArchiveSize`, or with entries only the helper decodes,
+  go to the helper; others stay in browser range mode.
 
 ## Compress on the server (decided, not built)
 

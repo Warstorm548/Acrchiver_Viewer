@@ -166,3 +166,36 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
 OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ```
+
+## github.com/bodgit/sevenzip v1.6.5 — BSD 3-Clause License (server helper, patched copy)
+
+Copied into `server/third_party/sevenzip` and compiled into the archive helper to read 7z.
+Patched to cap header counts and header size (`server/third_party/sevenzip/PATCHES.md`). Its
+license text, Copyright (c) 2020 Matt Dainty, is in `server/third_party/sevenzip/LICENSE`.
+
+## Go `compress/flate` (go1.27.3) — BSD 3-Clause License (server helper, ported)
+
+`server/internal/deflate64/` is Go's deflate decoder (`inflate.go`, `dict_decoder.go`) changed to
+decode Deflate64. Its license text, Copyright 2009 The Go Authors, is in
+`server/internal/deflate64/LICENSE`.
+
+## Other Go modules in the server helper (0.4.0)
+
+Compiled into the archive helper binary, unmodified; the image build downloads them from their
+module paths, each with its full license text. None is part of the web app's release zip.
+
+| Module                               | Version            | License      | Used for                             |
+| ------------------------------------ | ------------------ | ------------ | ------------------------------------ |
+| `github.com/klauspost/compress`      | v1.19.0            | BSD-3-Clause | zstd (ZIP method 93, 7z)             |
+| `github.com/stangelandcl/ppmd`       | v0.1.1             | MIT          | PPMd (7z)                            |
+| `github.com/andybalholm/brotli`      | v1.2.2             | MIT          | Brotli (7z, via sevenzip)            |
+| `github.com/pierrec/lz4/v4`          | v4.1.27            | BSD-3-Clause | LZ4 (7z, via sevenzip)               |
+| `github.com/bodgit/plumbing`         | v1.3.0             | BSD-3-Clause | Reader helpers (via sevenzip)        |
+| `github.com/bodgit/windows`          | v1.0.1             | BSD-3-Clause | Windows file times (via sevenzip)    |
+| `github.com/hashicorp/golang-lru/v2` | v2.0.7             | MPL-2.0      | Stream reader cache (via sevenzip)   |
+| `github.com/spf13/afero`             | v1.15.0            | Apache-2.0   | File system interface (via sevenzip) |
+| `go4.org`                            | v0.0.0-20260112195 | Apache-2.0   | Reader-at helpers (via sevenzip)     |
+| `golang.org/x/text`                  | v0.40.0            | BSD-3-Clause | UTF-16 names (via sevenzip)          |
+
+MPL-2.0 applies per file: golang-lru is used as published, and its source is available at its
+module path.

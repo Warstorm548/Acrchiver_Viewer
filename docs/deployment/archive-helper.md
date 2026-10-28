@@ -83,6 +83,8 @@ than `ARCHIVE_HELPER_MAX_STORAGE`.
 ## Updating the helper
 
 `git pull` the Archive Viewer repo, then `sudo docker compose build archive-helper && sudo docker compose up -d archive-helper`.
+0.4.0 (7z and large ZIPs) needs no new settings; rebuild the helper together with the new viewer
+build, since the viewer only sends ZIPs and 7z to a helper that reads them.
 
 ## Troubleshooting
 

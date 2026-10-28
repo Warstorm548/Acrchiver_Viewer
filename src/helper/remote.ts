@@ -4,12 +4,28 @@ import { DownloadInfo, HelperClient, HelperError, HelperHealth, RemoteEntry } fr
 /** Entries per folder page; more are loaded with "Show more". */
 export const PAGE_SIZE = 500
 
+/** A date from the helper; a wall-clock time is shown in the user's zone, as zip.js does. */
+const toDate = (milliseconds: number, localTime?: boolean): Date => {
+  const date = new Date(milliseconds)
+  if (!localTime) {
+    return date
+  }
+  return new Date(
+    date.getUTCFullYear(),
+    date.getUTCMonth(),
+    date.getUTCDate(),
+    date.getUTCHours(),
+    date.getUTCMinutes(),
+    date.getUTCSeconds()
+  )
+}
+
 export const toArchiveEntry = (entry: RemoteEntry): ArchiveEntry => ({
   path: entry.path,
   name: entry.name,
   isDirectory: entry.isDirectory,
   size: entry.size,
-  modified: entry.modified ? new Date(entry.modified) : undefined,
+  modified: entry.modified ? toDate(entry.modified, entry.localTime) : undefined,
   supported: entry.supported
 })
 

@@ -11,6 +11,9 @@ import { ArchiveEntry, ArchiveError, ArchiveHandle } from './types'
 /** Compression methods the native build can decompress: stored and deflate. */
 const SUPPORTED_METHODS = new Set([0, 8])
 
+/** Methods only the server helper decodes: Deflate64, bzip2, LZMA, zstd, xz. */
+const HELPER_METHODS = new Set([9, 12, 14, 93, 95])
+
 /** Bigger chunks mean fewer HTTP requests when reading by range (zip.js default: 512 KiB). */
 const CHUNK_SIZE = 4 * 1024 * 1024
 
@@ -73,7 +76,12 @@ const toArchiveEntry = (entry: Entry, path: string): ArchiveEntry => ({
   encrypted: entry.encrypted,
   supported:
     entry.directory ||
-    (!entry.encrypted && !entry.symlink && SUPPORTED_METHODS.has(entry.compressionMethod))
+    (!entry.encrypted && !entry.symlink && SUPPORTED_METHODS.has(entry.compressionMethod)),
+  needsServer:
+    !entry.directory &&
+    !entry.encrypted &&
+    !entry.symlink &&
+    HELPER_METHODS.has(entry.compressionMethod)
 })
 
 /**

@@ -2,101 +2,113 @@ msgid ""
 msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 
-#: src/App.vue:20
+#: src/App.vue:26
 msgid "Loading archive"
 msgstr ""
 
-#: src/App.vue:28
+#: src/App.vue:34
 #: src/components/ArchiveBrowser.vue:210
 msgid "Cancel"
 msgstr ""
 
-#: src/App.vue:41
+#: src/App.vue:47
 msgid "Open again"
 msgstr ""
 
-#: src/App.vue:51
+#: src/App.vue:57
 msgid "Download archive"
 msgstr ""
 
-#: src/App.vue:161
+#: src/App.vue:188
 msgid "Preparing the archive on the server… %{percent}%"
 msgstr ""
 
-#: src/App.vue:166
+#: src/App.vue:193
 msgid "Reading the archive on the server… %{percent}%"
 msgstr ""
 
-#: src/App.vue:171
+#: src/App.vue:198
 msgid "Reading archive index…"
 msgstr ""
 
-#: src/App.vue:174
+#: src/App.vue:201
 msgid "Decompressing…"
 msgstr ""
 
-#: src/App.vue:178
+#: src/App.vue:205
 msgid "Downloading… %{percent}%"
 msgstr ""
 
-#: src/App.vue:179
+#: src/App.vue:206
 msgid "Downloading… %{size}"
 msgstr ""
 
-#: src/App.vue:183
+#: src/App.vue:210
 msgid "This archive format is not supported yet. You can download it instead."
 msgstr ""
 
-#: src/App.vue:185
+#: src/App.vue:212
 msgid "The archive seems to be damaged or is not a valid archive."
 msgstr ""
 
-#: src/App.vue:191
+#: src/App.vue:218
 msgid "Server busy: not enough space to open this archive right now. Try again in a few minutes."
 msgstr ""
 
-#: src/App.vue:195
+#: src/App.vue:222
 msgid "You have too many large archives open. Close one and try again."
 msgstr ""
 
-#: src/App.vue:197
+#: src/App.vue:224
 msgid "This archive is larger than the server allows (%{limit}). You can download it instead."
 msgstr ""
 
-#: src/App.vue:206
+#: src/App.vue:233
 msgid "This archive is too large or complex to list on the server. You can download it instead."
 msgstr ""
 
-#: src/App.vue:210
+#: src/App.vue:237
+msgid "This archive is password-protected, which is not supported. You can download it instead."
+msgstr ""
+
+#: src/App.vue:241
 msgid "The archive changed while it was being opened. Please try again."
 msgstr ""
 
-#: src/App.vue:212
+#: src/App.vue:243
 msgid "The server could not open this archive. You can download it instead."
 msgstr ""
 
-#: src/App.vue:217
+#: src/App.vue:248
 msgid "This device does not have enough free memory to open this archive. You can download it instead."
 msgstr ""
 
-#: src/App.vue:231
+#: src/App.vue:262
 msgid "The archive expands to more data than the browser is allowed to open."
 msgstr ""
 
-#: src/App.vue:238
+#: src/App.vue:269
 msgid "The archive could not be loaded."
 msgstr ""
 
-#: src/App.vue:315
+#: src/App.vue:347
 msgid "This archive is larger than %{limit}, the most this viewer opens in the browser on this device. You can download it instead."
 msgstr ""
 
-#: src/App.vue:406
+#: src/App.vue:452
 msgid "This archive was closed on the server after a period of inactivity. Reload the page to open it again."
 msgstr ""
 
-#: src/App.vue:416
+#: src/App.vue:462
 msgid "Opening the archive was cancelled."
+msgstr ""
+
+#: src/App.vue:507
+msgid "The server could not prepare this archive, so it is read in the browser, where some files may not open."
+msgstr ""
+
+#: src/App.vue:519
+msgid "This archive format can only be opened when the server helper is installed. You can download it instead."
 msgstr ""
 
 #: src/components/ArchiveBrowser.vue:7
@@ -184,58 +196,58 @@ msgstr ""
 msgid "Failed to list the archive"
 msgstr ""
 
-#: src/components/ArchiveBrowser.vue:410
+#: src/components/ArchiveBrowser.vue:423
 msgid "Download selected (%{count})"
 msgstr ""
 
-#: src/components/ArchiveBrowser.vue:411
+#: src/components/ArchiveBrowser.vue:424
 msgid "Download selected"
 msgstr ""
 
-#: src/components/ArchiveBrowser.vue:457
+#: src/components/ArchiveBrowser.vue:470
 msgid "Files larger than %{limit} cannot be extracted in the browser on this device. Download the whole archive instead."
 msgstr ""
 
-#: src/components/ArchiveBrowser.vue:465
+#: src/components/ArchiveBrowser.vue:478
 msgid "This device does not have enough free memory to extract this. Download the whole archive instead."
 msgstr ""
 
-#: src/components/ArchiveBrowser.vue:474
+#: src/components/ArchiveBrowser.vue:487
 msgid "This download is too large (%{size}, limit %{limit})."
 msgstr ""
 
-#: src/components/ArchiveBrowser.vue:479
+#: src/components/ArchiveBrowser.vue:492
 msgid "You already have %{count} downloads running. Wait for one to finish and try again."
 msgstr ""
 
-#: src/components/ArchiveBrowser.vue:485
+#: src/components/ArchiveBrowser.vue:498
 msgid "This archive was closed on the server. Reload the page to open it again."
 msgstr ""
 
-#: src/components/ArchiveBrowser.vue:489
+#: src/components/ArchiveBrowser.vue:502
 msgid "The selection contains no files that can be downloaded."
 msgstr ""
 
-#: src/components/ArchiveBrowser.vue:491
+#: src/components/ArchiveBrowser.vue:504
 msgid "The server could not complete this. Please try again."
 msgstr ""
 
-#: src/components/ArchiveBrowser.vue:520
+#: src/components/ArchiveBrowser.vue:533
 msgid "Extracting %{name}…"
 msgstr ""
 
-#: src/components/ArchiveBrowser.vue:522
+#: src/components/ArchiveBrowser.vue:535
 msgid "Extracting %{name}… %{percent}%"
 msgstr ""
 
-#: src/components/ArchiveBrowser.vue:582
-#: src/components/ArchiveBrowser.vue:588
+#: src/components/ArchiveBrowser.vue:595
+#: src/components/ArchiveBrowser.vue:601
 msgid "Failed to download \"%{name}\""
 msgstr ""
 
-#: src/components/ArchiveBrowser.vue:608
-#: src/components/ArchiveBrowser.vue:618
-#: src/components/ArchiveBrowser.vue:643
+#: src/components/ArchiveBrowser.vue:621
+#: src/components/ArchiveBrowser.vue:631
+#: src/components/ArchiveBrowser.vue:656
 msgid "Failed to download the selection"
 msgstr ""
 

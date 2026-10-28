@@ -14,6 +14,8 @@ export interface ArchiveEntry {
   encrypted?: boolean
   /** Whether the entry's content can be read (false for symlinks, encrypted or unsupported compression). */
   supported: boolean
+  /** A ZIP entry the browser can't decompress but the server helper can (Deflate64, bzip2, …). */
+  needsServer?: boolean
 }
 
 export interface ArchiveHandle {

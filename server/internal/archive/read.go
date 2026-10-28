@@ -50,7 +50,12 @@ func (a *Archive) Extract(ctx context.Context, entries []*Entry, fn func(entry *
 	}
 	defer file.Close()
 
-	if a.Format == FormatTar {
+	switch a.Format {
+	case FormatZip:
+		return extractZip(ctx, file, sorted, fn)
+	case Format7z:
+		return extract7z(ctx, file, a.size, a.limits, sorted, fn)
+	case FormatTar:
 		for _, entry := range sorted {
 			section := io.NewSectionReader(file, entry.offset, entry.Size)
 			reader := &exactReader{r: &countReader{ctx: ctx, r: section, count: new(atomic.Int64)}, left: entry.Size}

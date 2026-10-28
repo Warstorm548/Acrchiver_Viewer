@@ -22,7 +22,7 @@
 
 ## Translations — `l10n/`
 
-German, Spanish and French cover **all 67 strings** (step 6; 3 added with the memory fixes, 23 with the server helper in 0.3.0). They were **drafted by Claude (AI)**
+German, Spanish and French cover **all 70 strings** (step 6; 3 added with the memory fixes, 23 with the server helper in 0.3.0, 3 with 7z/ZIP in 0.4.0). They were **drafted by Claude (AI)**
 and not yet reviewed by native speakers (noted in each `.po` header and the README). English needs
 no table: the msgids are the English text. Formal register (Sie / usted / vous); Spanish uses
 "archivo comprimido" for archive ("archivo" alone means file); French puts a space before `%`.

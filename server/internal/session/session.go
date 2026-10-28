@@ -37,6 +37,7 @@ const (
 	CodeUnsupported = "unsupported-format"
 	CodeCorrupt     = "corrupt"
 	CodeTooComplex  = "too-complex"
+	CodeEncrypted   = "encrypted"
 	CodeChanged     = "changed"
 	CodeDownload    = "download-failed"
 	CodeStorage     = "storage-error"
@@ -317,6 +318,8 @@ func codeFor(err error) string {
 		return CodeUnsupported
 	case errors.Is(err, archive.ErrTooComplex):
 		return CodeTooComplex
+	case errors.Is(err, archive.ErrEncrypted):
+		return CodeEncrypted
 	case errors.Is(err, archive.ErrCorrupt):
 		return CodeCorrupt
 	case errors.Is(err, opencloud.ErrChanged):
