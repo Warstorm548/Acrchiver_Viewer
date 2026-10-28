@@ -1,103 +1,103 @@
-// Phase 0 prototype: reports what the OpenCloud proxy forwards, so the auth design can be
-// verified before the real helper is written. Replaced by the real server in phase 1.
+// archive-helper lists and extracts archives that are too large for the browser, next to
+// OpenCloud. See docs/source/archive-helper/ in the Archive Viewer repository.
 package main
 
 import (
-	"encoding/json"
-	"io"
-	"log"
+	"context"
+	"errors"
+	"log/slog"
 	"net/http"
-	"net/url"
 	"os"
-	"strings"
+	"os/signal"
+	"syscall"
+	"time"
+
+	"github.com/Warstorm548/Acrchiver_Viewer/server/internal/api"
+	"github.com/Warstorm548/Acrchiver_Viewer/server/internal/archive"
+	"github.com/Warstorm548/Acrchiver_Viewer/server/internal/config"
+	"github.com/Warstorm548/Acrchiver_Viewer/server/internal/opencloud"
+	"github.com/Warstorm548/Acrchiver_Viewer/server/internal/session"
+	"github.com/Warstorm548/Acrchiver_Viewer/server/internal/storage"
 )
 
-func env(key, fallback string) string {
-	if value := os.Getenv(key); value != "" {
-		return value
-	}
-	return fallback
-}
-
-var openCloudURL = strings.TrimRight(env("ARCHIVE_HELPER_OPENCLOUD_URL", "http://opencloud:9200"), "/")
-
-func writeJSON(w http.ResponseWriter, status int, body any) {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(status)
-	_ = json.NewEncoder(w).Encode(body)
-}
-
-// headers lists which interesting headers arrived; values are shown only for non-secret ones.
-func headers(r *http.Request) map[string]any {
-	auth := r.Header.Get("Authorization")
-	scheme, _, _ := strings.Cut(auth, " ")
-	return map[string]any{
-		"x-remote-user":       r.Header.Get("X-Remote-User"),
-		"authorization":       scheme,
-		"x-access-token-sent": r.Header.Get("X-Access-Token") != "",
-		"x-forwarded-for":     r.Header.Get("X-Forwarded-For"),
-		"path":                r.URL.Path,
-	}
-}
-
-// davURL builds the internal WebDAV URL for a path like /spaces/<id>/dir/file.tar.gz.
-func davURL(webDavPath string) (string, bool) {
-	if !strings.HasPrefix(webDavPath, "/spaces/") || strings.Contains(webDavPath, "..") {
-		return "", false
-	}
-	segments := strings.Split(strings.TrimPrefix(webDavPath, "/"), "/")
-	for i, segment := range segments {
-		segments[i] = url.PathEscape(segment)
-	}
-	return openCloudURL + "/dav/" + strings.Join(segments, "/"), true
-}
-
-func probe(r *http.Request, webDavPath string) map[string]any {
-	target, ok := davURL(webDavPath)
-	if !ok {
-		return map[string]any{"error": "invalid path"}
-	}
-	result := map[string]any{}
-	body := `<?xml version="1.0"?><d:propfind xmlns:d="DAV:"><d:prop><d:getcontentlength/><d:getetag/></d:prop></d:propfind>`
-	propfind, _ := http.NewRequestWithContext(r.Context(), "PROPFIND", target, strings.NewReader(body))
-	propfind.Header.Set("Authorization", r.Header.Get("Authorization"))
-	propfind.Header.Set("Depth", "0")
-	if response, err := http.DefaultClient.Do(propfind); err != nil {
-		result["propfind_error"] = err.Error()
-	} else {
-		data, _ := io.ReadAll(io.LimitReader(response.Body, 4096))
-		response.Body.Close()
-		result["propfind_status"] = response.StatusCode
-		result["propfind_body"] = string(data)
-	}
-	get, _ := http.NewRequestWithContext(r.Context(), "GET", target, nil)
-	get.Header.Set("Authorization", r.Header.Get("Authorization"))
-	get.Header.Set("Range", "bytes=0-15")
-	if response, err := http.DefaultClient.Do(get); err != nil {
-		result["get_error"] = err.Error()
-	} else {
-		data, _ := io.ReadAll(io.LimitReader(response.Body, 64))
-		response.Body.Close()
-		result["get_status"] = response.StatusCode
-		result["get_etag"] = response.Header.Get("ETag")
-		result["get_bytes"] = len(data)
-	}
-	return result
-}
-
 func main() {
-	mux := http.NewServeMux()
-	mux.HandleFunc("/archive-api/download/", func(w http.ResponseWriter, r *http.Request) {
-		writeJSON(w, http.StatusOK, map[string]any{"route": "download", "headers": headers(r)})
+	slog.SetDefault(slog.New(slog.NewTextHandler(os.Stderr, nil)))
+	if err := run(); err != nil {
+		slog.Error("archive-helper stopped", "error", err)
+		os.Exit(1)
+	}
+}
+
+func run() error {
+	cfg, err := config.Load(nil)
+	if err != nil {
+		return err
+	}
+	// refuse to start rather than half-work: the viewer then stays in browser mode
+	if err := session.CheckWritable(cfg.DataDir); err != nil {
+		return err
+	}
+	if removed, err := session.RemoveOrphans(cfg.DataDir); err != nil {
+		return err
+	} else if removed > 0 {
+		slog.Info("removed temp files left by an earlier run", "files", removed)
+	}
+
+	ledger := storage.NewLedger(cfg.MaxStorage, cfg.MaxStoragePerUser, func() (int64, error) {
+		return storage.FreeSpace(cfg.DataDir)
 	})
-	mux.HandleFunc("/archive-api/", func(w http.ResponseWriter, r *http.Request) {
-		result := map[string]any{"route": "api", "headers": headers(r)}
-		if path := r.URL.Query().Get("path"); path != "" {
-			result["probe"] = probe(r, path)
+	manager := session.NewManager(session.Config{
+		Dir:         cfg.DataDir,
+		Timeout:     cfg.SessionTimeout,
+		ScanTimeout: cfg.ScanTimeout,
+		Limits:      archive.Limits{MaxEntries: cfg.MaxEntries, MaxScanSize: cfg.MaxScanSize},
+	}, ledger, opencloud.NewClient(cfg.OpenCloudURL, &http.Client{Timeout: 0}))
+
+	server := &http.Server{
+		Addr:              cfg.Addr,
+		Handler:           api.New(cfg, manager).Handler(),
+		ReadHeaderTimeout: 10 * time.Second,
+		IdleTimeout:       2 * time.Minute,
+		// no write timeout: downloads of several GB take as long as they take
+	}
+
+	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGTERM, os.Interrupt)
+	defer stop()
+	go func() {
+		ticker := time.NewTicker(30 * time.Second)
+		defer ticker.Stop()
+		for {
+			select {
+			case <-ctx.Done():
+				return
+			case <-ticker.C:
+				manager.Sweep()
+			}
 		}
-		writeJSON(w, http.StatusOK, result)
-	})
-	address := env("ARCHIVE_HELPER_ADDR", ":8080")
-	log.Printf("archive-helper prototype listening on %s, OpenCloud at %s", address, openCloudURL)
-	log.Fatal(http.ListenAndServe(address, mux))
+	}()
+
+	errs := make(chan error, 1)
+	go func() { errs <- server.ListenAndServe() }()
+	slog.Info("archive-helper started", "version", api.Version, "addr", cfg.Addr,
+		"maxStorage", cfg.MaxStorage, "maxStoragePerUser", cfg.MaxStoragePerUser,
+		"maxDownloadSize", cfg.MaxDownloadSize, "maxSelectionSize", cfg.MaxSelectionSize,
+		"maxDownloadsPerUser", cfg.MaxDownloadsPerUser, "sessionTimeout", cfg.SessionTimeout)
+
+	select {
+	case err := <-errs:
+		return err
+	case <-ctx.Done():
+	}
+	slog.Info("shutting down")
+	shutdownCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	shutdownErr := server.Shutdown(shutdownCtx)
+	manager.CloseAll()
+	if _, err := session.RemoveOrphans(cfg.DataDir); err != nil {
+		slog.Warn("cleanup on shutdown failed", "error", err)
+	}
+	if errors.Is(shutdownErr, context.DeadlineExceeded) {
+		return nil // downloads still running are cut off; their temp files are gone
+	}
+	return shutdownErr
 }
