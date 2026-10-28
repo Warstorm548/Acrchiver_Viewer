@@ -1,0 +1,26 @@
+# Archive Viewer helper: lists and extracts large archives on the server.
+# Copy into opencloud-compose/custom/ together with proxy.yaml and add
+# `:custom/archive-helper.yml` to COMPOSE_FILE in .env. Paths are relative to the
+# opencloud-compose directory (the first compose file's folder).
+services:
+  archive-helper:
+    build: ${ARCHIVE_HELPER_BUILD_DIR:-../Acrchiver_Viewer/server}
+    image: archive-helper:${ARCHIVE_HELPER_TAG:-dev}
+    # its own user ID, shared with no other container (it reaches OpenCloud only over HTTP)
+    user: ${ARCHIVE_HELPER_UID_GID:-1500:1500}
+    read_only: true
+    cap_drop: [ALL]
+    security_opt:
+      - no-new-privileges:true
+    networks:
+      opencloud-net:
+    # no published ports: only the OpenCloud proxy can reach it
+    environment:
+      ARCHIVE_HELPER_OPENCLOUD_URL: ${ARCHIVE_HELPER_OPENCLOUD_URL:-http://opencloud:9200}
+    logging:
+      driver: ${LOG_DRIVER:-local}
+    restart: always
+  opencloud:
+    volumes:
+      # our copy of config/opencloud/proxy.yaml with the /archive-api routes
+      - ./custom/proxy.yaml:/etc/opencloud/proxy.yaml
