@@ -536,7 +536,7 @@ export default defineComponent({
         // entries only the helper can decompress (Deflate64, bzip2, …): open it there instead
         // (with its progress and Cancel); the range listing is used only if the helper is
         // missing or fails
-        if (opened?.entries.some((entry) => entry.needsServer)) {
+        if (!serverFailed && opened?.entries.some((entry) => entry.needsServer)) {
           let onServer = false
           try {
             onServer = await tryServerOrRange()

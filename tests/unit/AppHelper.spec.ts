@@ -373,6 +373,18 @@ describe('App with the server helper and ZIPs', () => {
     expect(calls.filter((c) => c.url === '/archive-api/sessions')).toHaveLength(1)
   })
 
+  it('asks a failed helper only once for a big ZIP that also needs it for its entries', async () => {
+    const zip = await makeZip(12) // bzip2
+    const calls = fakeServer({ archive: zip, openError: { code: 'server-busy', status: 507 } })
+    vi.spyOn(console, 'warn').mockImplementation(() => {})
+    const wrapper = zipWrapper(zip, 10)
+    await waitFor(() =>
+      expect(wrapper.findAll('.archive-name').map((n) => n.text())).toEqual(['docs', 'root.txt'])
+    )
+    expect(wrapper.find('.archive-viewer-notice').exists()).toBe(true)
+    expect(calls.filter((c) => c.url === '/archive-api/sessions')).toHaveLength(1)
+  })
+
   it('leaves a small ZIP the browser can read to range mode', async () => {
     const zip = await makeZip()
     const calls = fakeServer({ archive: zip })
