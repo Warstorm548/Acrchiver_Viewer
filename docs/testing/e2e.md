@@ -99,6 +99,8 @@ minute, 3.04 GiB) and deletes it from the server, the trash and `test-fixtures/`
   empty, `big-test.zip` removed. `sample.7z` and `sample-deflate64.zip` come from
   `make-fixtures.sh` when the 7-Zip CLI (`7z`) is installed; downloads are compared with
   `sample.tar`, since Python can't read them.
+- 2026-10-28, after the CodeRabbit review fixes (7z parser hardening, ZIP move flow): all 76
+  tests and the login step passed again in 3.6 minutes (peak 556 MiB); `./archive-temp` empty.
 - Sanity: with the CSP rewrite removed, the four fallback tests fail (no "worker unavailable"), so
   the simulation is what makes them pass.
 
