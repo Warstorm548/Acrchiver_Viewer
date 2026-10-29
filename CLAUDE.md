@@ -80,7 +80,8 @@ for a quick run), `pnpm package` (release zip), `pnpm l10n:extract` / `pnpm l10n
   and devDependencies with versions, the helper's Go modules (ulikunitz/xz, patched sevenzip, zstd, ppmd), 8.0 alignment rule, install warnings, step 4 candidates.
 - [docs/tech-stack/build-tooling.md](docs/tech-stack/build-tooling.md) — Node/pnpm, Go toolchain, scripts, what
   the extension-sdk `defineConfig` provides, TypeScript, ESLint, Prettier, `.gitignore`, release
-  zip script, release workflow (GHCR image + GitHub release), gettext config.
+  zip script, release workflows (viewer `release.yml`, helper `release-helper.yml` with the GHCR
+  image), gettext config.
 
 ### Architecture
 
@@ -119,7 +120,7 @@ for a quick run), `pnpm package` (release zip), `pnpm l10n:extract` / `pnpm l10n
 
 ### Testing
 
-- [docs/testing/tests.md](docs/testing/tests.md) — how to run, SDK test config, the 23 spec files,
+- [docs/testing/tests.md](docs/testing/tests.md) — how to run, SDK test config, the 25 spec files,
   Go helper tests, test patterns (stubs, range-server fetch mock, zip), browser memory measurements.
 - [docs/testing/e2e.md](docs/testing/e2e.md) — Playwright e2e suite in Chromium against the local
   stack: setup, env vars, request rewrites instead of restarts, console guard, the 11 specs (incl. server helper), results.

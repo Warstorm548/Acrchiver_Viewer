@@ -591,9 +591,10 @@ export default defineComponent({
         }
         if (!opened) {
           // only when too large for the browser (the metadata's size was wrong): the "too large"
-          // message stays unless the helper can open it
-          if (!serverFailed) {
-            await tryServer()
+          // message stays unless the helper can open it; it was set before this helper check, so
+          // set it again in case the check found the helper installed but not set up correctly
+          if (!serverFailed && !(await tryServer()) && !signal.aborted) {
+            tooLarge()
           }
           return
         }

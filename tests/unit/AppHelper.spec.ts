@@ -241,6 +241,17 @@ describe('App with the server helper', () => {
     expect(calls[0].url).toBe('https://cloud.test/signed')
   })
 
+  it('names a helper that is not ready when the download turns out larger than its metadata said', async () => {
+    vi.spyOn(console, 'warn').mockImplementation(() => {})
+    fakeServer({ healthChanges: { ready: false, problems: ['temp-not-writable'] } })
+    const wrapper = createWrapper({ size: 10 })
+    await waitFor(() =>
+      expect(wrapper.find('.archive-viewer-message').text()).toContain(
+        'installed but not set up correctly'
+      )
+    )
+  })
+
   it.each([
     [{ code: 'server-busy', status: 507 }, 'Server busy: not enough space'],
     [{ code: 'user-quota', status: 507 }, 'too many large archives open'],

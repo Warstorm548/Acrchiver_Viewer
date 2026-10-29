@@ -13,7 +13,7 @@ globals, `clearMocks`, includes `**/*.spec.ts`, excludes `node_modules`, `dist`,
 setup file adds a `<base href="/">` to the document. Node 24 provides `CompressionStream` /
 `DecompressionStream`, which the engine and tests rely on.
 
-## Specs (291 tests in 25 files, all passing)
+## Specs (292 tests in 25 files, all passing)
 
 | File                                      | Covers                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
 | ----------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -83,7 +83,8 @@ frees everything, quota/busy/too-large, failures free their space (incl. `encryp
 tickets: limit, single use, expiry, file kept while a download runs, startup cleanup only
 `ah-*`, writability check), `api` (whole flow over HTTP incl. ZIP download, access rules, caps,
 error codes, health with `features`/`ready`/`problems`, not ready with an unwritable temp folder
-and an unreachable OpenCloud, the 30 s readiness cache, `Content-Disposition`).
+and an unreachable OpenCloud, `status.php` answers that don't count (404, no status JSON, not
+installed, 503), the 30 s readiness cache and no caching of a canceled check, `Content-Disposition`).
 
 ## Patterns
 

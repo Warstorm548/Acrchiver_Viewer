@@ -2,6 +2,8 @@ package api
 
 import (
 	"context"
+	"encoding/json"
+	"io"
 	"net/http"
 	"sync"
 	"time"
@@ -58,12 +60,18 @@ func (r *readiness) Problems(ctx context.Context) []string {
 	if !r.openCloudReachable(ctx) {
 		problems = append(problems, problemOpenCloudUnreachable)
 	}
+	// a /health caller that gave up mid-check proves nothing about OpenCloud: answer it, but let
+	// the next request check again instead of caching a false "unreachable"
+	if ctx.Err() != nil {
+		return problems
+	}
 	r.problems, r.checked = problems, r.now()
 	return problems
 }
 
-// openCloudReachable: any HTTP answer from OpenCloud's status.php counts, only a failed connection
-// (wrong ARCHIVE_HELPER_OPENCLOUD_URL, OpenCloud down) or a 5xx doesn't.
+// openCloudReachable: OpenCloud's status.php must answer 200 with its status JSON
+// (`"installed": true`). A failed connection, an error status or another server's answer (a wrong
+// ARCHIVE_HELPER_OPENCLOUD_URL, OpenCloud down or still starting) count as unreachable.
 func (r *readiness) openCloudReachable(ctx context.Context) bool {
 	ctx, cancel := context.WithTimeout(ctx, readinessTimeout)
 	defer cancel()
@@ -75,6 +83,12 @@ func (r *readiness) openCloudReachable(ctx context.Context) bool {
 	if err != nil {
 		return false
 	}
-	response.Body.Close()
-	return response.StatusCode < 500
+	defer response.Body.Close()
+	if response.StatusCode != http.StatusOK {
+		return false
+	}
+	var status struct {
+		Installed bool `json:"installed"`
+	}
+	return json.NewDecoder(io.LimitReader(response.Body, 64<<10)).Decode(&status) == nil && status.Installed
 }

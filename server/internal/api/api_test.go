@@ -57,6 +57,10 @@ func newEnv(t *testing.T, change func(*config.Config)) *env {
 	t.Helper()
 	data := buildArchive(t)
 	oc := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path == "/status.php" {
+			fmt.Fprint(w, `{"installed":true,"productname":"OpenCloud"}`)
+			return
+		}
 		if r.Header.Get("Authorization") != "Bearer token" || r.URL.Path != "/dav"+filePath {
 			w.WriteHeader(http.StatusNotFound)
 			return
@@ -328,6 +332,39 @@ func TestHealthNotReady(t *testing.T) {
 	problems := fmt.Sprint(body["problems"])
 	if body["ready"] != false || !strings.Contains(problems, problemTempNotWritable) || !strings.Contains(problems, problemOpenCloudUnreachable) {
 		t.Errorf("health = %v %v", body["ready"], body["problems"])
+	}
+}
+
+func TestReadinessNeedsOpenCloudStatus(t *testing.T) {
+	answers := map[string]func(http.ResponseWriter){
+		"404 (another server)": func(w http.ResponseWriter) { http.NotFound(w, nil) },
+		"200 without status":   func(w http.ResponseWriter) { fmt.Fprint(w, "<html>hello</html>") },
+		"not installed":        func(w http.ResponseWriter) { fmt.Fprint(w, `{"installed":false}`) },
+		"503 (starting)":       func(w http.ResponseWriter) { w.WriteHeader(http.StatusServiceUnavailable) },
+	}
+	for name, answer := range answers {
+		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) { answer(w) }))
+		r := newReadiness(t.TempDir(), server.URL)
+		if p := r.Problems(context.Background()); len(p) != 1 || p[0] != problemOpenCloudUnreachable {
+			t.Errorf("%s: problems = %v, want opencloud-unreachable", name, p)
+		}
+		server.Close()
+	}
+}
+
+func TestReadinessDoesNotCacheACanceledCheck(t *testing.T) {
+	healthy := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		fmt.Fprint(w, `{"installed":true}`)
+	}))
+	t.Cleanup(healthy.Close)
+	r := newReadiness(t.TempDir(), healthy.URL)
+	canceled, cancel := context.WithCancel(context.Background())
+	cancel()
+	if p := r.Problems(canceled); len(p) != 1 {
+		t.Fatalf("a canceled check can't reach OpenCloud, got %v", p)
+	}
+	if p := r.Problems(context.Background()); len(p) != 0 {
+		t.Errorf("the next check must run again instead of using the canceled result, got %v", p)
 	}
 }
 

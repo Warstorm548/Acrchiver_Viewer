@@ -44,6 +44,8 @@ Works with viewer **0.5.x**.
 
 - `/health` reports `features` (`format:<format>` for each format it opens, `download:selection`),
   `ready` and `problems` (`temp-not-writable`, `opencloud-unreachable`). The checks run at most
-  every 30 s; OpenCloud is asked at `ARCHIVE_HELPER_OPENCLOUD_URL/status.php` with a 3 s timeout.
+  every 30 s (not cached when the caller gave up); OpenCloud must answer
+  `ARCHIVE_HELPER_OPENCLOUD_URL/status.php` with 200 and its status JSON (`"installed": true`)
+  within 3 s, so a wrong URL pointing at another server is reported too.
 - A warning at startup when `ARCHIVE_HELPER_ADDR` uses a loopback host (`127.x.x.x`, `::1`,
   `localhost`), which the OpenCloud proxy can't reach.
