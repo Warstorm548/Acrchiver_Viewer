@@ -7,7 +7,7 @@ import { decompressAsync } from './workerClient'
 import { openZip } from './zip'
 
 export * from './types'
-export { archiveExtension, resolveFormat, SIGNATURE_LENGTH } from './detect'
+export { archiveExtension, formatForExtension, resolveFormat, SIGNATURE_LENGTH } from './detect'
 export { BlobBuilder, isOutOfMemory, MAX_BUFFER_SIZE } from './buffer'
 export { buildIndex, parentPath } from './tree'
 export { HttpRangeReader, RangeRequestError } from './rangeReader'

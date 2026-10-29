@@ -5,11 +5,13 @@ import (
 	"archive/zip"
 	"bytes"
 	"compress/gzip"
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"strings"
 	"testing"
 	"time"
@@ -71,6 +73,7 @@ func newEnv(t *testing.T, change func(*config.Config)) *env {
 	t.Cleanup(oc.Close)
 	cfg, _ := config.Load(func(string) (string, bool) { return "", false })
 	cfg.DataDir = t.TempDir()
+	cfg.OpenCloudURL = oc.URL
 	if change != nil {
 		change(&cfg)
 	}
@@ -306,6 +309,44 @@ func TestHealth(t *testing.T) {
 	status, body, _ := e.call("GET", "/archive-api/health", "alice", nil)
 	if status != http.StatusOK || body["version"] != Version || body["confirmDownloadSize"].(float64) != 1e9 || body["heartbeatSeconds"].(float64) != 30 {
 		t.Errorf("health = %d %v", status, body)
+	}
+	features, _ := body["features"].([]any)
+	if body["ready"] != true || len(body["problems"].([]any)) != 0 || len(features) != len(Features) || features[1] != "format:7z" {
+		t.Errorf("health readiness/features = %v %v %v", body["ready"], body["problems"], features)
+	}
+}
+
+func TestHealthNotReady(t *testing.T) {
+	closed := httptest.NewServer(http.NotFoundHandler())
+	closed.Close()
+	e := newEnv(t, func(c *config.Config) { c.OpenCloudURL = closed.URL })
+	if err := os.Chmod(e.cfg.DataDir, 0o500); err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { os.Chmod(e.cfg.DataDir, 0o700) })
+	_, body, _ := e.call("GET", "/archive-api/health", "alice", nil)
+	problems := fmt.Sprint(body["problems"])
+	if body["ready"] != false || !strings.Contains(problems, problemTempNotWritable) || !strings.Contains(problems, problemOpenCloudUnreachable) {
+		t.Errorf("health = %v %v", body["ready"], body["problems"])
+	}
+}
+
+func TestReadinessIsCached(t *testing.T) {
+	dir := t.TempDir()
+	r := newReadiness(dir, "http://127.0.0.1:1")
+	now := time.Unix(1_700_000_000, 0)
+	r.now = func() time.Time { return now }
+	if p := r.Problems(context.Background()); len(p) != 1 || p[0] != problemOpenCloudUnreachable {
+		t.Fatalf("first check = %v", p)
+	}
+	os.Chmod(dir, 0o500)
+	t.Cleanup(func() { os.Chmod(dir, 0o700) })
+	if p := r.Problems(context.Background()); len(p) != 1 {
+		t.Errorf("within the TTL the cached result is used, got %v", p)
+	}
+	now = now.Add(readinessTTL)
+	if p := r.Problems(context.Background()); len(p) != 2 {
+		t.Errorf("after the TTL the checks run again, got %v", p)
 	}
 }
 

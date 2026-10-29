@@ -1,6 +1,8 @@
-# Changelog
+# Archive Viewer changelog
 
-All notable changes to the Archive Viewer are recorded here, newest first.
+All notable changes to the Archive Viewer extension are recorded here, newest first. The server
+helper has its own version and changelog since 0.5.0: [ArchiveHelperChangelog.md](ArchiveHelperChangelog.md).
+Up to 0.4.1 both shared one version, and their changes are recorded below.
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html) — `MAJOR.MINOR.PATCH`:
@@ -10,8 +12,52 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 - **PATCH** — bug fixes and small tweaks.
 
 Every change gets an entry and a version bump in `package.json`, which is the single source of
-the version: the build copies it into `dist/manifest.json` and stamps it on every compiled JS file
-(`/*! archive-viewer vX.Y.Z */`).
+the viewer's version: the build copies it into `dist/manifest.json` and stamps it on every
+compiled JS file (`/*! archive-viewer vX.Y.Z */`).
+
+## Compatibility
+
+Each entry names the OpenCloud versions and the helper versions it works with. The viewer uses a
+helper only when its version is in `SUPPORTED_HELPER` (`src/helper/gate.ts`); any other helper is
+ignored and the viewer stays in browser mode (an admin can override that with
+`allowUnsupportedHelper` in `apps.yaml`).
+
+| Viewer | OpenCloud | Helper |
+| ------ | --------- | ------ |
+| 0.5.x  | 8.0.1     | ^0.5.0 |
+| 0.4.1  | 8.0.1     | 0.4.1  |
+| 0.4.0  | 8.0.1     | 0.4.0  |
+
+## [0.5.0] - 2026-10-29
+
+Supported OpenCloud versions: **8.0.1**. Works with helper **^0.5.0** (0.5.x).
+
+**Upgrading:** `ARCHIVE_HELPER_PORT` is now required in opencloud-compose's `.env` (e.g.
+`ARCHIVE_HELPER_PORT=8080`), and the new `custom/archive-helper.yml` and `custom/proxy.yaml` from
+the helper release replace the old ones. Without the port only the helper refuses to start:
+OpenCloud runs as usual and the viewer stays in browser mode.
+
+### Added
+
+- **Helper gate** (`src/helper/gate.ts`): before using the helper the viewer checks `/health`,
+  which must answer within 5 s, look like the helper, report a version in `^0.5.0` and report
+  itself ready. Otherwise the viewer works in browser mode only and logs the exact reason to the
+  browser console (for the admin). The check runs again for every opened archive, so a fixed
+  helper is used without a reload.
+- The helper is used for a format only when its `/health` features list `format:<format>`, and
+  "Download selected" is shown for server archives only with `download:selection`.
+- `allowUnsupportedHelper` (default `false`) in `apps.yaml`: use a helper outside the supported
+  range anyway (it must still be ready). The console says so.
+- Messages tell "helper not installed" apart from "installed but not set up correctly" for 7z
+  files and for archives too large for the browser.
+
+### Changed
+
+- The release zip is named `ArchiveViewer-<version>.zip` (the folder inside is still
+  `archive-viewer/`, the app ID OpenCloud installs it under).
+- The changelog is now `ArchiveViewerChangelog.md`; the helper's is `ArchiveHelperChangelog.md`.
+- Extension and helper are released separately: tags `v<version>` (viewer) and
+  `helper-v<version>` (helper image and compose files).
 
 ## [0.4.1] - 2026-10-28
 

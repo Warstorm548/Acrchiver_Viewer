@@ -17,13 +17,14 @@ was removed in step 1.
   `vue3-gettext`, `@opencloud-eu/web-pkg`, …) are **not** bundled. Each file carries a
   `/*! archive-viewer v<version> */` comment, so a deployed build shows its version.
 
-`pnpm package` packs `dist/` into `release/archive-viewer-<version>.zip` (+ `.sha256`) whose
-top folder is already `archive-viewer/` and which also carries `LICENSE` and
+`pnpm package` packs `dist/` into `release/ArchiveViewer-<version>.zip` (+ `.sha256`; named
+`archive-viewer-<version>.zip` up to 0.4.1) whose top folder is already `archive-viewer/` (the app
+id) and which also carries `LICENSE` and
 `THIRD-PARTY-NOTICES.md` (see [build-tooling](../tech-stack/build-tooling.md)).
 
 ## Installing
 
-From a release zip: check it (`sha256sum -c archive-viewer-<version>.zip.sha256`) and unzip it in
+From a release zip: check it (`sha256sum -c ArchiveViewer-<version>.zip.sha256`) and unzip it in
 the apps directory below, which creates `archive-viewer/`; then restart (step 2). By hand:
 
 1. Put the contents of `dist/` in a folder named **`archive-viewer`** (the folder name becomes the
@@ -52,7 +53,7 @@ Requirements from the OpenCloud web service: each app has its own directory, con
 ## Supported OpenCloud versions
 
 Each release runs only on the exact OpenCloud versions it was tested on (`8.0.1` for 0.2.x, listed
-in `CHANGELOG.md`). On any other version, or if the version can't be read, the viewer hides
+in `ArchiveViewerChangelog.md`). On any other version, or if the version can't be read, the viewer hides
 itself (no "Open in Archive Viewer", no file types). Before upgrading OpenCloud, install a viewer
 release that supports the new version, or set `allowUnsupportedOpenCloud: true` (below) at your
 own risk. Details: [extension-entry](../source/extension-entry.md).
@@ -72,6 +73,7 @@ archive-viewer:
     maxUncompressedSizeMobile: 402653184 # 384 MiB
     maxEntrySizeMobile: 268435456 # 256 MiB
     allowUnsupportedOpenCloud: false # true: run on an untested OpenCloud version (console warning)
+    allowUnsupportedHelper: false # true: use a helper outside the supported range (console warning)
     archiveHelperUrl: /archive-api # server helper path (same-origin only); "" turns it off
 ```
 
@@ -89,30 +91,43 @@ and upgrades: [archive-helper deployment](archive-helper.md).
 
 ## Releasing
 
-`.github/workflows/release.yml` does the publishing; 0.4.0 is the first tagged release.
+The viewer and the helper have their own versions (since 0.5.0) and are released separately:
 
-1. Bump `version` in `package.json` (semver; the manifest and JS banner copy it) and
-   `api.Version` in `server/internal/api/api.go` to the same value, and date the version's entry
-   in `CHANGELOG.md` (its text becomes the release notes).
-2. Locally: all checks and `pnpm test:e2e` against the local stack (the workflow can't run e2e).
-3. On `main`: `git tag v<version> && git push origin v<version>`.
-4. The workflow checks that the three versions agree, runs the Go and viewer checks, pushes
-   `ghcr.io/warstorm548/archive-helper:<version>` and `:latest` (linux/amd64 + linux/arm64), and
-   creates the GitHub release with `archive-viewer-<version>.zip` + `.sha256` and the helper's
-   `archive-helper.yml`, `proxy.yaml` and `archive-helper.env.example`. Watch it with
-   `gh run watch`.
+| Part   | Version in                                                         | Changelog                   | Tag                 | Workflow             |
+| ------ | ------------------------------------------------------------------ | --------------------------- | ------------------- | -------------------- |
+| Viewer | `package.json`                                                     | `ArchiveViewerChangelog.md` | `v<version>`        | `release.yml`        |
+| Helper | `api.Version` (`server/internal/api/api.go`) + compose default tag | `ArchiveHelperChangelog.md` | `helper-v<version>` | `release-helper.yml` |
 
-Installing a release on a server (opencloud-compose, apps folder `config/opencloud/apps`):
+The viewer decides which helper versions it uses (`SUPPORTED_HELPER` in `src/helper/gate.ts`,
+listed in the compatibility table of `ArchiveViewerChangelog.md`);
+`tests/unit/helperVersion.spec.ts` fails when the repository's helper is outside that range, the
+compose default tag differs from `api.Version`, or a changelog lacks the current version.
+
+1. Bump the version of the part you release and date its changelog entry (its text becomes the
+   release notes). A helper change that breaks its API bumps the helper's **minor** version and
+   needs a viewer release that moves `SUPPORTED_HELPER`.
+2. Locally: all checks and `pnpm test:e2e` against the local stack (the workflows can't run e2e).
+3. On `main`: `git tag v<version> && git push origin v<version>` (viewer) and/or
+   `git tag helper-v<version> && git push origin helper-v<version>` (helper).
+4. `release.yml` checks tag = `package.json`, runs the viewer and Go checks and creates the
+   release "Archive Viewer X" with `ArchiveViewer-<version>.zip` + `.sha256`.
+   `release-helper.yml` checks tag = `api.Version` = compose default tag, runs the Go checks and
+   unit tests, pushes `ghcr.io/warstorm548/archive-helper:<version>` and `:latest` (linux/amd64 +
+   linux/arm64) and creates the release "Archive Helper X" with `archive-helper.yml`,
+   `proxy.yaml` and `archive-helper.env.example`. Watch them with `gh run watch`.
+
+Installing a viewer release on a server (opencloud-compose, apps folder `config/opencloud/apps`):
 
 ```
-v=0.4.1; base=https://github.com/Warstorm548/Acrchiver_Viewer/releases/download/v$v
-curl -fsSLO $base/archive-viewer-$v.zip -O $base/archive-viewer-$v.zip.sha256
-sha256sum -c archive-viewer-$v.zip.sha256
-rm -rf config/opencloud/apps/archive-viewer && unzip -q archive-viewer-$v.zip -d config/opencloud/apps
+v=0.5.0; base=https://github.com/Warstorm548/Acrchiver_Viewer/releases/download/v$v
+curl -fsSLO $base/ArchiveViewer-$v.zip -O $base/ArchiveViewer-$v.zip.sha256
+sha256sum -c ArchiveViewer-$v.zip.sha256
+rm -rf config/opencloud/apps/archive-viewer && unzip -q ArchiveViewer-$v.zip -d config/opencloud/apps
 sudo docker compose restart opencloud
 ```
 
-Then update the helper to the same version ([archive-helper](archive-helper.md#updating-the-helper)).
+Then install or update a helper version the viewer supports
+([archive-helper](archive-helper.md#updating-the-helper)).
 
 ## Production security policy (CSP)
 

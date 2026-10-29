@@ -1,7 +1,7 @@
-# Release: on a version tag (v0.4.0), checks that the tag matches package.json and the helper's
-# api.Version, runs the Go and viewer checks, publishes the helper image to GitHub's container
-# registry (linux/amd64 + linux/arm64) and creates the GitHub release with the extension zip and
-# the helper's deploy files. See docs/deployment/deploying-to-opencloud.md ("Releasing").
+# Viewer release: on a version tag (v0.5.0), checks that the tag matches package.json, runs the
+# viewer and Go checks and creates the GitHub release with the extension zip. The helper has its
+# own version and workflow (release-helper.yml, tags helper-v*). See
+# docs/deployment/deploying-to-opencloud.md ("Releasing").
 name: Release
 
 on:
@@ -10,9 +10,6 @@ on:
 
 permissions:
   contents: read
-
-env:
-  IMAGE: ghcr.io/warstorm548/archive-helper
 
 jobs:
   check:
@@ -23,14 +20,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Tag, package.json and helper version agree
+      - name: Tag and package.json agree
         id: version
         run: |
           tag="${GITHUB_REF_NAME#v}"
           package=$(node -p "require('./package.json').version")
-          helper=$(sed -n 's/^const Version = "\(.*\)"$/\1/p' server/internal/api/api.go)
-          echo "tag $tag, package.json $package, api.Version $helper"
-          if [ "$tag" != "$package" ] || [ "$tag" != "$helper" ]; then
+          echo "tag $tag, package.json $package"
+          if [ "$tag" != "$package" ]; then
             echo "::error::versions differ"
             exit 1
           fi
@@ -65,35 +61,9 @@ jobs:
           path: release/
           if-no-files-found: error
 
-  image:
-    name: Helper image
-    needs: check
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      packages: write
-    steps:
-      - uses: actions/checkout@v4
-      - uses: docker/setup-buildx-action@v3
-      - uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-      - uses: docker/build-push-action@v6
-        with:
-          context: server
-          platforms: linux/amd64,linux/arm64
-          push: true
-          tags: |
-            ${{ env.IMAGE }}:${{ needs.check.outputs.version }}
-            ${{ env.IMAGE }}:latest
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-
   release:
     name: GitHub release
-    needs: [check, image]
+    needs: check
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -108,13 +78,11 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           VERSION: ${{ needs.check.outputs.version }}
         run: |
-          # this version's CHANGELOG entry, without its heading
+          # this version's changelog entry, without its heading
           awk -v head="## [$VERSION]" 'index($0, head) == 1 { found = 1; next }
-            found && /^## \[/ { exit } found' CHANGELOG.md > notes.md
-          test -s notes.md || { echo "::error::no CHANGELOG entry for $VERSION"; exit 1; }
-          printf '\n## Install\n\nExtension: unzip `archive-viewer-%s.zip` into OpenCloud'"'"'s apps folder and restart OpenCloud.\nHelper image: `docker pull %s:%s` (linux/amd64, linux/arm64); compose files attached below.\nSee [deployment](https://github.com/%s/blob/v%s/docs/deployment/archive-helper.md).\n' \
-            "$VERSION" "$IMAGE" "$VERSION" "$GITHUB_REPOSITORY" "$VERSION" >> notes.md
-          cp deploy/env.example release/archive-helper.env.example
+            found && /^## \[/ { exit } found' ArchiveViewerChangelog.md > notes.md
+          test -s notes.md || { echo "::error::no ArchiveViewerChangelog.md entry for $VERSION"; exit 1; }
+          printf '\n## Install\n\nUnzip `ArchiveViewer-%s.zip` into OpenCloud'"'"'s apps folder and restart OpenCloud.\nThe optional server helper is released separately (`helper-v*` releases); see the compatibility table in [ArchiveViewerChangelog.md](https://github.com/%s/blob/v%s/ArchiveViewerChangelog.md).\n' \
+            "$VERSION" "$GITHUB_REPOSITORY" "$VERSION" >> notes.md
           gh release create "$GITHUB_REF_NAME" --title "Archive Viewer $VERSION" --notes-file notes.md \
-            "release/archive-viewer-$VERSION.zip" "release/archive-viewer-$VERSION.zip.sha256" \
-            deploy/compose/archive-helper.yml deploy/compose/proxy.yaml release/archive-helper.env.example
+            "release/ArchiveViewer-$VERSION.zip" "release/ArchiveViewer-$VERSION.zip.sha256"

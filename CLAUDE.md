@@ -7,10 +7,10 @@ OpenCloud). Standalone extension at the repo root, built with OpenCloud's toolch
 TAR, TAR.GZ/TGZ, TAR.BZ2/TBZ2, TAR.XZ/TXZ, TAR.LZMA and single .gz/.bz2/.xz/.lzma files in the
 browser with pure JavaScript (no WebAssembly, no CSP change) — browse, search, sort, preview,
 download; ZIPs of any size are read by HTTP Range requests. UI in English, German,
-Spanish and French (AI-drafted). Version 0.2.2 is ready to release (no tag yet); it runs only on OpenCloud 8.0.1. Version 0.3.0
-(on `main`, untagged) adds an optional Go **archive helper** (`server/`, compose files in
-`deploy/`) for archives too large for the browser; 0.4.0 (branch `feature/helper-7z-zip`) lets it
-open 7z and large ZIPs. Start with [project status](docs/overview/project-status.md).
+Spanish and French (AI-drafted); runs only on OpenCloud 8.0.1. An optional Go **archive helper**
+(`server/`, compose files in `deploy/`, since 0.3.0) opens archives too large for the browser,
+7z and large ZIPs; since 0.5.0 it has its own version, and the viewer uses it only when
+`src/helper/gate.ts` accepts it (else browser mode). Start with [project status](docs/overview/project-status.md).
 
 Commands: `pnpm install`, `pnpm build`, `pnpm check:types`, `pnpm lint`, `pnpm format:check`,
 `pnpm test:unit --run`, `pnpm test:e2e` (Chromium against the local stack; `E2E_SKIP_LARGE=1`
@@ -38,9 +38,13 @@ for a quick run), `pnpm package` (release zip), `pnpm l10n:extract` / `pnpm l10n
 - One bullet per doc: path + a short description of what it covers (Prettier may wrap it).
 - When a bug in [bugs](docs/known-issues/bugs.md) is fixed, remove it there and update any doc
   that mentions it.
-- **Every change bumps the SemVer version** in `package.json` (MAJOR breaking, MINOR feature,
-  PATCH fix) and adds an entry to [CHANGELOG.md](CHANGELOG.md) in the same change. Unreleased
-  versions collect further changes until tagged.
+- **Every change bumps the SemVer version** of the part it changes, with a changelog entry in the
+  same change; unreleased versions collect further changes until tagged. Viewer: `package.json`
+  (MAJOR breaking, MINOR feature, PATCH fix) + [ArchiveViewerChangelog.md](ArchiveViewerChangelog.md).
+  Helper (own version since 0.5.0): `Version` in `server/internal/api/api.go` and the default
+  image tag in `deploy/compose/archive-helper.yml` (MINOR = breaking API change, PATCH =
+  compatible) + [ArchiveHelperChangelog.md](ArchiveHelperChangelog.md). A breaking helper change
+  also needs a viewer release that moves `SUPPORTED_HELPER` in `src/helper/gate.ts`.
 - **Supporting a new OpenCloud version** = test it, add it to `SUPPORTED_OPENCLOUD_VERSIONS` in
   `src/compatibility.ts`, bump the version and list it in the changelog entry.
 
@@ -48,8 +52,11 @@ for a quick run), `pnpm package` (release zip), `pnpm l10n:extract` / `pnpm l10n
 
 ### Root
 
-- [CHANGELOG.md](CHANGELOG.md) — SemVer rules (MAJOR.MINOR.PATCH) and per-version changes,
-  starting at 0.1.0.
+- [ArchiveViewerChangelog.md](ArchiveViewerChangelog.md) — the viewer's SemVer rules,
+  compatibility table (OpenCloud and helper versions) and per-version changes, starting at 0.1.0
+  (helper changes up to 0.4.1 too).
+- [ArchiveHelperChangelog.md](ArchiveHelperChangelog.md) — the helper's own SemVer rules (minor =
+  breaking API change) and changes, from 0.5.0.
 - [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md) — licenses of ported/bundled code (seek-bzip
   MIT port, xz-compat MIT adaptation, zip.js BSD-3-Clause; in the helper ulikunitz/xz, the
   patched sevenzip copy, the Deflate64 port of Go's flate and the other Go modules).
@@ -120,11 +127,14 @@ for a quick run), `pnpm package` (release zip), `pnpm l10n:extract` / `pnpm l10n
 ### Deployment
 
 - [docs/deployment/deploying-to-opencloud.md](docs/deployment/deploying-to-opencloud.md) — build
-  output, installing on a server (opencloud-compose), install checks, supported OpenCloud versions, release zip install, `apps.yaml` keys, releasing (tag → release workflow), production CSP.
+  output, installing on a server (opencloud-compose), install checks, supported OpenCloud versions, release zip install, `apps.yaml` keys, releasing (viewer `v*` and helper `helper-v*` tags → two workflows), production CSP.
 - [docs/deployment/archive-helper.md](docs/deployment/archive-helper.md) — installing the helper
   from the release files and the published image (files, `./archive-temp`, UID), changing settings,
   optional fixed-size partition, upgrade diff checklist and yjs note, updating (pull a version, from
-  0.3.x, building from source), existing setups and own domains, troubleshooting, removal.
+  0.3.x/0.4.x, building from source), existing setups and own domains, troubleshooting, removal.
+- [docs/deployment/ports.md](docs/deployment/ports.md) — which ports the stack uses: the helper's
+  required `ARCHIVE_HELPER_PORT` (internal, set only in `.env`), OpenCloud's internal ports,
+  Traefik's 80/443 and how to move them (Let's Encrypt, URL, external proxy).
 - [docs/deployment/local-dev-environment.md](docs/deployment/local-dev-environment.md) — the local
   opencloud-compose stack (rolling 8.0.1) outside the repo: setup to recreate it, sudo commands,
   dev loop, fixtures, browser checklist, large-ZIP test + cleanup, step results, troubleshooting.

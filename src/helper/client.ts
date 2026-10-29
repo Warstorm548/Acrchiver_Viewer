@@ -28,6 +28,11 @@ export const resolveHelperUrl = (config: Record<string, unknown> | undefined): s
 
 export interface HelperHealth {
   version: string
+  /** What this helper offers (`format:<format>`, `download:selection`); see src/helper/gate.ts. */
+  features: string[]
+  /** False when the helper runs but is set up wrong; `problems` then says why. */
+  ready: boolean
+  problems: string[]
   maxStorage: number
   maxStoragePerUser: number
   maxDownloadSize: number
@@ -107,6 +112,9 @@ export class HelperClient {
       if ((error as Error).name === 'AbortError') {
         throw error
       }
+      if ((error as Error).name === 'TimeoutError') {
+        throw new HelperError('timeout', 0, 'The helper did not answer in time')
+      }
       throw new HelperError('unreachable', 0, (error as Error).message)
     }
     if (!response.ok) {
@@ -131,7 +139,10 @@ export class HelperClient {
     const response = await this.request(path, init)
     try {
       return (await response.json()) as T
-    } catch {
+    } catch (error) {
+      if ((error as Error).name === 'TimeoutError') {
+        throw new HelperError('timeout', 0, 'The helper did not answer in time')
+      }
       // e.g. OpenCloud's web UI answering for a path the proxy doesn't route to the helper
       throw new HelperError('not-a-helper', response.status, 'Unexpected answer from the helper')
     }
@@ -145,8 +156,9 @@ export class HelperClient {
     })
   }
 
-  health(): Promise<HelperHealth> {
-    return this.json<HelperHealth>('/health')
+  /** The helper's settings and state; `signal` limits how long to wait (see src/helper/gate.ts). */
+  health(signal?: AbortSignal): Promise<HelperHealth> {
+    return this.json<HelperHealth>('/health', { signal })
   }
 
   open(webDavPath: string): Promise<SessionStatus> {

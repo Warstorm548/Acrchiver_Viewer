@@ -1,0 +1,107 @@
+# Helper release: on a helper tag (helper-v0.5.0), checks that the tag matches the helper's
+# api.Version and the compose file's default image tag, runs the Go checks and the unit tests
+# (which include the viewer/helper version checks), publishes the helper image to GitHub's
+# container registry (linux/amd64 + linux/arm64) and creates the GitHub release with the compose
+# files. The viewer has its own workflow (release.yml, tags v*). See
+# docs/deployment/deploying-to-opencloud.md ("Releasing").
+name: Release helper
+
+on:
+  push:
+    tags: ['helper-v*.*.*']
+
+permissions:
+  contents: read
+
+env:
+  IMAGE: ghcr.io/warstorm548/archive-helper
+
+jobs:
+  check:
+    name: Check
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Tag, api.Version and compose image tag agree
+        id: version
+        run: |
+          tag="${GITHUB_REF_NAME#helper-v}"
+          helper=$(sed -n 's/^const Version = "\(.*\)"$/\1/p' server/internal/api/api.go)
+          compose=$(sed -n 's/.*archive-helper:\${ARCHIVE_HELPER_TAG:-\(.*\)}.*/\1/p' deploy/compose/archive-helper.yml)
+          echo "tag $tag, api.Version $helper, compose default tag $compose"
+          if [ "$tag" != "$helper" ] || [ "$tag" != "$compose" ]; then
+            echo "::error::versions differ"
+            exit 1
+          fi
+          echo "version=$tag" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: server/go.mod
+          cache-dependency-path: server/go.sum
+      - name: Helper tests
+        working-directory: server
+        run: |
+          go vet ./...
+          go test -race ./...
+
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm test:unit --run
+
+  image:
+    name: Helper image
+    needs: check
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - uses: docker/build-push-action@v6
+        with:
+          context: server
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: |
+            ${{ env.IMAGE }}:${{ needs.check.outputs.version }}
+            ${{ env.IMAGE }}:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  release:
+    name: GitHub release
+    needs: [check, image]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Create the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ needs.check.outputs.version }}
+        run: |
+          # this version's changelog entry, without its heading
+          awk -v head="## [$VERSION]" 'index($0, head) == 1 { found = 1; next }
+            found && /^## \[/ { exit } found' ArchiveHelperChangelog.md > notes.md
+          test -s notes.md || { echo "::error::no ArchiveHelperChangelog.md entry for $VERSION"; exit 1; }
+          printf '\n## Install\n\nImage: `docker pull %s:%s` (linux/amd64, linux/arm64); compose files attached below.\nSee [deployment](https://github.com/%s/blob/%s/docs/deployment/archive-helper.md).\n' \
+            "$IMAGE" "$VERSION" "$GITHUB_REPOSITORY" "$GITHUB_REF_NAME" >> notes.md
+          mkdir -p release
+          cp deploy/env.example release/archive-helper.env.example
+          gh release create "$GITHUB_REF_NAME" --title "Archive Helper $VERSION" --notes-file notes.md --latest=false \
+            deploy/compose/archive-helper.yml deploy/compose/proxy.yaml release/archive-helper.env.example

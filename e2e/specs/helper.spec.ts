@@ -228,6 +228,58 @@ test.describe('without a working helper', () => {
   })
 })
 
+test.describe('the helper gate (0.5.0)', () => {
+  // the viewer explains why it doesn't use the helper in the console
+  test.use({ allowedConsole: [/Archive Viewer: /] })
+
+  /** Answers /health with the real helper's answer, changed. */
+  const patchHealth = (page: Page, changes: Record<string, unknown>, delay = 0) =>
+    page.route('**/archive-api/health', async (route) => {
+      const response = await route.fetch()
+      const json = { ...(await response.json()), ...changes }
+      await new Promise((resolve) => setTimeout(resolve, delay))
+      await route.fulfill({ response, json })
+    })
+
+  for (const [name, changes] of [
+    ['an unsupported version', { version: '0.6.0' }],
+    ['a helper that is not ready', { ready: false, problems: ['temp-not-writable'] }],
+    ['a helper without 7z', { features: ['format:zip'] }]
+  ] as const) {
+    test(`a 7z is not sent to ${name}`, async ({ page, viewer }) => {
+      await patchHealth(page, changes)
+      let opened = false
+      page.on('request', (request) => {
+        opened ||= request.method() === 'POST' && request.url().endsWith('/archive-api/sessions')
+      })
+      await viewer.open('sample.7z')
+      await expect(page.locator('.archive-viewer-message')).toContainText(
+        'installed but not set up correctly'
+      )
+      expect(opened).toBe(false)
+    })
+  }
+
+  test('a helper that answers too late leaves the browser limits in place', async ({
+    page,
+    viewer
+  }) => {
+    await serverMode(page)
+    await patchHealth(page, {}, 6_000)
+    await viewer.open('sample.tar.xz')
+    await expect(page.locator('.archive-viewer-message')).toContainText(
+      'installed but not set up correctly',
+      { timeout: 15_000 }
+    )
+  })
+
+  test('browser formats still open with a helper that is not ready', async ({ page, viewer }) => {
+    await patchHealth(page, { ready: false, problems: ['opencloud-unreachable'] })
+    await viewer.open('sample.tar')
+    await expect(page.locator('.archive-row').first()).toBeVisible()
+  })
+})
+
 test.describe('a helper that refuses a big ZIP', () => {
   // the simulated refusal itself shows up in the console
   test.use({ allowedConsole: [/status of 507/] })

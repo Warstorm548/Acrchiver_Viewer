@@ -4,65 +4,68 @@ Every tracked file (0.4.0), what it is, and its line count. Generated/ignored: `
 
 ## Root
 
-| Path                            | Lines | Purpose                                                                                                            |
-| ------------------------------- | ----: | ------------------------------------------------------------------------------------------------------------------ |
-| `README.md`                     |   179 | User-facing readme (rewritten in step 6)                                                                           |
-| `CLAUDE.md`                     |   159 | Index into `docs/`                                                                                                 |
-| `LICENSE`                       |   661 | GNU AGPL-3.0 (canonical gnu.org text); copyright notice is in `README.md`                                          |
-| `THIRD-PARTY-NOTICES.md`        |   201 | Licenses of ported (seek-bzip) and bundled (zip.js) code; the helper's Go modules                                  |
-| `package.json`                  |    67 | Package metadata, scripts, `@zip.js/zip.js` dependency, devDependencies, `packageManager`                          |
-| `pnpm-lock.yaml`                |  5384 | Locked dependency tree                                                                                             |
-| `.nvmrc`                        |     1 | Node version for nvm (`24`)                                                                                        |
-| `CHANGELOG.md`                  |   174 | SemVer rules and per-version changes                                                                               |
-| `playwright.config.ts`          |    30 | E2E config: Chromium, one worker, login project, global setup/teardown                                             |
-| `vite.config.ts`                |    17 | extension-sdk `defineConfig`, plus the version banner on compiled JS                                               |
-| `gettext.config.cjs`            |    17 | vue3-gettext extract/compile config (de/es/fr)                                                                     |
-| `scripts/package.mjs`           |    64 | `pnpm package`: release zip + SHA-256 from `dist/`                                                                 |
-| `tsconfig.json`                 |     4 | Extends `@opencloud-eu/tsconfig`                                                                                   |
-| `extension.d.ts`                |     1 | Vite client types                                                                                                  |
-| `eslint.config.js`              |     8 | OpenCloud ESLint config + ignores                                                                                  |
-| `.prettierrc.json`              |     1 | OpenCloud Prettier config                                                                                          |
-| `.prettierignore`               |    16 | dist, coverage, lockfile, LICENSE, original docs, `.__mf__temp`, Playwright output, vendored `server/third_party/` |
-| `.gitignore`                    |    21 | node_modules, dist, coverage, editor/env files, `.__mf__temp/`, Playwright output + login                          |
-| `.github/workflows/release.yml` |   120 | On a `v*` tag: version check, Go + viewer checks, helper image to GHCR (amd64/arm64), GitHub release               |
+| Path                                   | Lines | Purpose                                                                                                            |
+| -------------------------------------- | ----: | ------------------------------------------------------------------------------------------------------------------ |
+| `README.md`                            |   179 | User-facing readme (rewritten in step 6)                                                                           |
+| `CLAUDE.md`                            |   159 | Index into `docs/`                                                                                                 |
+| `LICENSE`                              |   661 | GNU AGPL-3.0 (canonical gnu.org text); copyright notice is in `README.md`                                          |
+| `THIRD-PARTY-NOTICES.md`               |   201 | Licenses of ported (seek-bzip) and bundled (zip.js) code; the helper's Go modules                                  |
+| `package.json`                         |    67 | Package metadata, scripts, `@zip.js/zip.js` dependency, devDependencies, `packageManager`                          |
+| `pnpm-lock.yaml`                       |  5384 | Locked dependency tree                                                                                             |
+| `.nvmrc`                               |     1 | Node version for nvm (`24`)                                                                                        |
+| `ArchiveViewerChangelog.md`            |   220 | The viewer's SemVer rules, compatibility table (OpenCloud, helper) and per-version changes                         |
+| `ArchiveHelperChangelog.md`            |    49 | The helper's own SemVer rules (minor = breaking API) and changes, from 0.5.0                                       |
+| `playwright.config.ts`                 |    30 | E2E config: Chromium, one worker, login project, global setup/teardown                                             |
+| `vite.config.ts`                       |    17 | extension-sdk `defineConfig`, plus the version banner on compiled JS                                               |
+| `gettext.config.cjs`                   |    17 | vue3-gettext extract/compile config (de/es/fr)                                                                     |
+| `scripts/package.mjs`                  |    66 | `pnpm package`: release zip `ArchiveViewer-<version>.zip` + SHA-256 from `dist/`                                   |
+| `tsconfig.json`                        |     4 | Extends `@opencloud-eu/tsconfig`                                                                                   |
+| `extension.d.ts`                       |     1 | Vite client types                                                                                                  |
+| `eslint.config.js`                     |     8 | OpenCloud ESLint config + ignores                                                                                  |
+| `.prettierrc.json`                     |     1 | OpenCloud Prettier config                                                                                          |
+| `.prettierignore`                      |    16 | dist, coverage, lockfile, LICENSE, original docs, `.__mf__temp`, Playwright output, vendored `server/third_party/` |
+| `.gitignore`                           |    21 | node_modules, dist, coverage, editor/env files, `.__mf__temp/`, Playwright output + login                          |
+| `.github/workflows/release.yml`        |    88 | On a `v*` tag: version check, Go + viewer checks, GitHub release with the extension zip                            |
+| `.github/workflows/release-helper.yml` |   107 | On a `helper-v*` tag: version check, Go checks + unit tests, helper image to GHCR (amd64/arm64), GitHub release    |
 
 ## `src/`
 
-| Path                                | Lines | Purpose                                                                                                                                |
-| ----------------------------------- | ----: | -------------------------------------------------------------------------------------------------------------------------------------- |
-| `src/index.ts`                      |    80 | `defineWebApplication`: version check, Tailwind import, file types, route, translations                                                |
-| `src/compatibility.ts`              |    91 | OpenCloud version check: supported versions, `waitForProductVersion`, `checkCompatibility`                                             |
-| `src/manifest.json`                 |    12 | Default `config` (6 size limits, `allowUnsupportedOpenCloud`, `archiveHelperUrl`) merged into `dist/manifest.json`                     |
-| `src/limits.ts`                     |    65 | Desktop/mobile limits: `isMobileDevice`, `resolveLimits`, defaults rationale                                                           |
-| `src/App.vue`                       |   606 | Viewer shell: ZIP range mode, size check, capped streamed download, detect + open, server helper (7z, big ZIPs, `needsServer`), errors |
-| `src/components/ArchiveBrowser.vue` |   714 | File table: folders, breadcrumb, search, sort, selection, downloads, cap, progress; server mode (pages, server search, confirm)        |
-| `src/components/PreviewModal.vue`   |   133 | Text/image preview in `oc-modal` (reads via the capped `read` prop)                                                                    |
-| `src/download.ts`                   |    94 | `sanitizeFileName`, `triggerDownload`, `triggerUrlDownload`, `zipEntries` (selection → zip)                                            |
-| `src/helper/client.ts`              |   203 | Archive helper HTTP client, `HelperError`, `resolveHelperUrl` (same-origin only)                                                       |
-| `src/helper/remote.ts`              |   111 | `RemoteArchive`: one helper session (pages, search, preview, downloads, heartbeat, close)                                              |
-| `src/engine/index.ts`               |    72 | `openArchive` + re-exports (incl. range reader)                                                                                        |
-| `src/engine/types.ts`               |    57 | Entry/handle/limit types, `ArchiveError` (incl. `range-unsupported`, `out-of-memory`)                                                  |
-| `src/engine/buffer.ts`              |   171 | `GrowableBuffer` (resizable, size hint), `BlobBuilder`, `MAX_BUFFER_SIZE`, out-of-memory mapping                                       |
-| `src/engine/detect.ts`              |   107 | Extension + signature → format                                                                                                         |
-| `src/engine/zip.ts`                 |   133 | ZIP via zip.js native build (no WebAssembly), Blob or range source, capped entry reads                                                 |
-| `src/engine/rangeReader.ts`         |    79 | `HttpRangeReader`: zip.js Reader over HTTP Range, URL renewal                                                                          |
-| `src/engine/tar.ts`                 |   162 | Own TAR parser (ustar, pax, GNU long names)                                                                                            |
-| `src/engine/gzip.ts`                |    66 | Browser `DecompressionStream` gunzip into one buffer sized from ISIZE, size limit                                                      |
-| `src/engine/tree.ts`                |    78 | Path normalization and folder index                                                                                                    |
-| `src/engine/fileTypes.ts`           |    44 | Text/image detection and MIME types                                                                                                    |
-| `src/engine/bzip2.ts`               |   411 | bzip2 decoder, TypeScript port of seek-bzip (MIT)                                                                                      |
-| `src/engine/decompress.worker.ts`   |    34 | Web Worker running bzip2/xz/lzma decoders                                                                                              |
-| `src/engine/workerClient.ts`        |    93 | `decompressAsync`: worker, main-thread fallback (no Worker / CSP), abort                                                               |
-| `src/engine/single.ts`              |    36 | Single compressed file as a one-entry archive                                                                                          |
-| `src/engine/xz.ts`                  |   306 | XZ container decoder (from the spec)                                                                                                   |
-| `src/engine/lzmaAlone.ts`           |    41 | Legacy .lzma reader                                                                                                                    |
-| `src/engine/decompressors.ts`       |    25 | `decompress(kind)` for bzip2/xz/lzma                                                                                                   |
-| `src/engine/lzma/lzmaDecoder.ts`    |   227 | LZMA decoder (adapted from xz-compat, MIT)                                                                                             |
-| `src/engine/lzma/lzma2.ts`          |    91 | LZMA2 chunk decoder                                                                                                                    |
-| `src/engine/lzma/rangeDecoder.ts`   |   103 | Range decoder + bit trees                                                                                                              |
-| `src/engine/lzma/filters.ts`        |   182 | Delta + BCJ filters (liblzma logic)                                                                                                    |
-| `src/engine/lzma/checks.ts`         |    70 | CRC32, CRC64, SHA-256                                                                                                                  |
-| `src/engine/lzma/output.ts`         |    26 | Output / dictionary buffer on `GrowableBuffer`                                                                                         |
+| Path                                | Lines | Purpose                                                                                                                                      |
+| ----------------------------------- | ----: | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| `src/index.ts`                      |    80 | `defineWebApplication`: version check, Tailwind import, file types, route, translations                                                      |
+| `src/compatibility.ts`              |    91 | OpenCloud version check: supported versions, `waitForProductVersion`, `checkCompatibility`                                                   |
+| `src/manifest.json`                 |    13 | Default `config` (6 size limits, `allowUnsupportedOpenCloud`, `allowUnsupportedHelper`, `archiveHelperUrl`) merged into `dist/manifest.json` |
+| `src/limits.ts`                     |    65 | Desktop/mobile limits: `isMobileDevice`, `resolveLimits`, defaults rationale                                                                 |
+| `src/App.vue`                       |   650 | Viewer shell: ZIP range mode, size check, capped streamed download, detect + open, server helper (7z, big ZIPs, `needsServer`), errors       |
+| `src/components/ArchiveBrowser.vue` |   721 | File table: folders, breadcrumb, search, sort, selection, downloads, cap, progress; server mode (pages, server search, confirm)              |
+| `src/components/PreviewModal.vue`   |   133 | Text/image preview in `oc-modal` (reads via the capped `read` prop)                                                                          |
+| `src/download.ts`                   |    94 | `sanitizeFileName`, `triggerDownload`, `triggerUrlDownload`, `zipEntries` (selection → zip)                                                  |
+| `src/helper/client.ts`              |   215 | Archive helper HTTP client, `HelperError`, `resolveHelperUrl` (same-origin only)                                                             |
+| `src/helper/remote.ts`              |   116 | `RemoteArchive`: one helper session (pages, search, preview, downloads, heartbeat, close)                                                    |
+| `src/helper/gate.ts`                |   141 | Helper gate: `/health` timeout, shape, supported range `^0.5.0`, override, ready → usable / missing / misconfigured                          |
+| `src/engine/index.ts`               |    72 | `openArchive` + re-exports (incl. range reader)                                                                                              |
+| `src/engine/types.ts`               |    57 | Entry/handle/limit types, `ArchiveError` (incl. `range-unsupported`, `out-of-memory`)                                                        |
+| `src/engine/buffer.ts`              |   171 | `GrowableBuffer` (resizable, size hint), `BlobBuilder`, `MAX_BUFFER_SIZE`, out-of-memory mapping                                             |
+| `src/engine/detect.ts`              |   111 | Extension + signature → format                                                                                                               |
+| `src/engine/zip.ts`                 |   133 | ZIP via zip.js native build (no WebAssembly), Blob or range source, capped entry reads                                                       |
+| `src/engine/rangeReader.ts`         |    79 | `HttpRangeReader`: zip.js Reader over HTTP Range, URL renewal                                                                                |
+| `src/engine/tar.ts`                 |   162 | Own TAR parser (ustar, pax, GNU long names)                                                                                                  |
+| `src/engine/gzip.ts`                |    66 | Browser `DecompressionStream` gunzip into one buffer sized from ISIZE, size limit                                                            |
+| `src/engine/tree.ts`                |    78 | Path normalization and folder index                                                                                                          |
+| `src/engine/fileTypes.ts`           |    44 | Text/image detection and MIME types                                                                                                          |
+| `src/engine/bzip2.ts`               |   411 | bzip2 decoder, TypeScript port of seek-bzip (MIT)                                                                                            |
+| `src/engine/decompress.worker.ts`   |    34 | Web Worker running bzip2/xz/lzma decoders                                                                                                    |
+| `src/engine/workerClient.ts`        |    93 | `decompressAsync`: worker, main-thread fallback (no Worker / CSP), abort                                                                     |
+| `src/engine/single.ts`              |    36 | Single compressed file as a one-entry archive                                                                                                |
+| `src/engine/xz.ts`                  |   306 | XZ container decoder (from the spec)                                                                                                         |
+| `src/engine/lzmaAlone.ts`           |    41 | Legacy .lzma reader                                                                                                                          |
+| `src/engine/decompressors.ts`       |    25 | `decompress(kind)` for bzip2/xz/lzma                                                                                                         |
+| `src/engine/lzma/lzmaDecoder.ts`    |   227 | LZMA decoder (adapted from xz-compat, MIT)                                                                                                   |
+| `src/engine/lzma/lzma2.ts`          |    91 | LZMA2 chunk decoder                                                                                                                          |
+| `src/engine/lzma/rangeDecoder.ts`   |   103 | Range decoder + bit trees                                                                                                                    |
+| `src/engine/lzma/filters.ts`        |   182 | Delta + BCJ filters (liblzma logic)                                                                                                          |
+| `src/engine/lzma/checks.ts`         |    70 | CRC32, CRC64, SHA-256                                                                                                                        |
+| `src/engine/lzma/output.ts`         |    26 | Output / dictionary buffer on `GrowableBuffer`                                                                                               |
 
 Details: [extension-entry](../source/extension-entry.md), [viewer-ui](../source/viewer-ui.md),
 [archive-engine](../source/archive-engine.md).
@@ -71,43 +74,45 @@ Details: [extension-entry](../source/extension-entry.md), [viewer-ui](../source/
 
 | Path                     | Lines | Purpose                                                                 |
 | ------------------------ | ----: | ----------------------------------------------------------------------- |
-| `l10n/translations.json` |   227 | Compiled de/es/fr translations (70 strings), imported by `src/index.ts` |
-| `l10n/template.pot`      |   293 | All msgids (`pnpm l10n:extract`)                                        |
-| `l10n/locale/de/app.po`  |   295 | German translations (AI-drafted)                                        |
-| `l10n/locale/es/app.po`  |   293 | Spanish translations (AI-drafted)                                       |
-| `l10n/locale/fr/app.po`  |   290 | French translations (AI-drafted)                                        |
+| `l10n/translations.json` |   233 | Compiled de/es/fr translations (70 strings), imported by `src/index.ts` |
+| `l10n/template.pot`      |   301 | All msgids (`pnpm l10n:extract`)                                        |
+| `l10n/locale/de/app.po`  |   306 | German translations (AI-drafted)                                        |
+| `l10n/locale/es/app.po`  |   304 | Spanish translations (AI-drafted)                                       |
+| `l10n/locale/fr/app.po`  |   301 | French translations (AI-drafted)                                        |
 
 ## `tests/`
 
-| Path                                      | Lines | Purpose                                                            |
-| ----------------------------------------- | ----: | ------------------------------------------------------------------ |
-| `tests/unit/App.spec.ts`                  |   180 | Viewer flow: range mode, renewal, fallbacks, limits, errors        |
-| `tests/unit/ArchiveBrowser.spec.ts`       |   133 | Navigation, search, sort, downloads, entry cap, progress           |
-| `tests/unit/AppHelper.spec.ts`            |   406 | Server helper flow: when used, progress, fallbacks, errors, cancel |
-| `tests/unit/ArchiveBrowserRemote.spec.ts` |   191 | Server mode: pages, sort, search, downloads, confirmation, errors  |
-| `tests/unit/helper/client.spec.ts`        |   110 | Helper client: URL rule, token, errors, URLs, keepalive            |
-| `tests/unit/helper/remote.spec.ts`        |    78 | `RemoteArchive`: entries, heartbeat, lost session, close           |
-| `tests/unit/limits.spec.ts`               |    52 | Device detection, limit resolution, manifest = defaults            |
-| `tests/unit/compatibility.spec.ts`        |   101 | OpenCloud version check                                            |
-| `tests/unit/index.spec.ts`                |    44 | Entry module: register, hide, override                             |
-| `tests/unit/translations.spec.ts`         |    50 | Translation completeness and placeholders                          |
-| `tests/unit/download.spec.ts`             |    85 | Safe selection-zip paths                                           |
-| `tests/unit/rangeServer.ts`               |    38 | Test helper: `fetch` mock serving byte ranges                      |
-| `tests/unit/engine/tar.spec.ts`           |    84 | TAR parser                                                         |
-| `tests/unit/engine/zip.spec.ts`           |   117 | ZIP reader, range source, entry cap                                |
-| `tests/unit/engine/rangeReader.spec.ts`   |    80 | Range reader: 206/200/401/errors/abort                             |
-| `tests/unit/engine/gzip.spec.ts`          |    67 | gunzip + limit                                                     |
-| `tests/unit/engine/buffer.spec.ts`        |   118 | Buffers, blob builder, out-of-memory mapping                       |
-| `tests/unit/engine/workerClient.spec.ts`  |    81 | Worker fallback (CSP), errors, abort                               |
-| `tests/unit/engine/resizable.spec.ts`     |    78 | Engine on resizable buffers with browser-strict Blob/TextDecoder   |
-| `tests/unit/engine/tree.spec.ts`          |    71 | Folder index                                                       |
-| `tests/unit/engine/detect.spec.ts`        |    66 | Format detection                                                   |
-| `tests/unit/engine/tarBuilder.ts`         |    94 | Test helper: builds tar/gzip bytes                                 |
-| `tests/unit/engine/bzip2.spec.ts`         |    49 | bzip2 decoder vs libbz2 samples                                    |
-| `tests/unit/engine/single.spec.ts`        |    66 | Single compressed files, .bz2/.tar.bz2 via openArchive             |
-| `tests/unit/engine/bzip2Samples.ts`       |    48 | Test data: libbz2 output (base64) + SHA-256                        |
-| `tests/unit/engine/xz.spec.ts`            |    94 | xz and legacy lzma decoders vs liblzma                             |
-| `tests/unit/engine/xzSamples.ts`          |   140 | Test data: liblzma output (base64) + SHA-256                       |
+| Path                                      | Lines | Purpose                                                                           |
+| ----------------------------------------- | ----: | --------------------------------------------------------------------------------- |
+| `tests/unit/App.spec.ts`                  |   180 | Viewer flow: range mode, renewal, fallbacks, limits, errors                       |
+| `tests/unit/ArchiveBrowser.spec.ts`       |   133 | Navigation, search, sort, downloads, entry cap, progress                          |
+| `tests/unit/AppHelper.spec.ts`            |   495 | Server helper flow: when used, progress, fallbacks, errors, cancel                |
+| `tests/unit/ArchiveBrowserRemote.spec.ts` |   195 | Server mode: pages, sort, search, downloads, confirmation, errors                 |
+| `tests/unit/helper/client.spec.ts`        |   110 | Helper client: URL rule, token, errors, URLs, keepalive                           |
+| `tests/unit/helper/remote.spec.ts`        |    78 | `RemoteArchive`: entries, heartbeat, lost session, close                          |
+| `tests/unit/helper/gate.spec.ts`          |   120 | Helper gate: range, missing vs misconfigured, timeout, override                   |
+| `tests/unit/limits.spec.ts`               |    52 | Device detection, limit resolution, manifest = defaults                           |
+| `tests/unit/compatibility.spec.ts`        |   101 | OpenCloud version check                                                           |
+| `tests/unit/index.spec.ts`                |    44 | Entry module: register, hide, override                                            |
+| `tests/unit/translations.spec.ts`         |    50 | Translation completeness and placeholders                                         |
+| `tests/unit/helperVersion.spec.ts`        |    28 | Repo helper in the viewer's range, compose tag = `api.Version`, changelog entries |
+| `tests/unit/download.spec.ts`             |    85 | Safe selection-zip paths                                                          |
+| `tests/unit/rangeServer.ts`               |    38 | Test helper: `fetch` mock serving byte ranges                                     |
+| `tests/unit/engine/tar.spec.ts`           |    84 | TAR parser                                                                        |
+| `tests/unit/engine/zip.spec.ts`           |   117 | ZIP reader, range source, entry cap                                               |
+| `tests/unit/engine/rangeReader.spec.ts`   |    80 | Range reader: 206/200/401/errors/abort                                            |
+| `tests/unit/engine/gzip.spec.ts`          |    67 | gunzip + limit                                                                    |
+| `tests/unit/engine/buffer.spec.ts`        |   118 | Buffers, blob builder, out-of-memory mapping                                      |
+| `tests/unit/engine/workerClient.spec.ts`  |    81 | Worker fallback (CSP), errors, abort                                              |
+| `tests/unit/engine/resizable.spec.ts`     |    78 | Engine on resizable buffers with browser-strict Blob/TextDecoder                  |
+| `tests/unit/engine/tree.spec.ts`          |    71 | Folder index                                                                      |
+| `tests/unit/engine/detect.spec.ts`        |    66 | Format detection                                                                  |
+| `tests/unit/engine/tarBuilder.ts`         |    94 | Test helper: builds tar/gzip bytes                                                |
+| `tests/unit/engine/bzip2.spec.ts`         |    49 | bzip2 decoder vs libbz2 samples                                                   |
+| `tests/unit/engine/single.spec.ts`        |    66 | Single compressed files, .bz2/.tar.bz2 via openArchive                            |
+| `tests/unit/engine/bzip2Samples.ts`       |    48 | Test data: libbz2 output (base64) + SHA-256                                       |
+| `tests/unit/engine/xz.spec.ts`            |    94 | xz and legacy lzma decoders vs liblzma                                            |
+| `tests/unit/engine/xzSamples.ts`          |   140 | Test data: liblzma output (base64) + SHA-256                                      |
 
 ## `e2e/`
 
@@ -133,8 +138,8 @@ Playwright suite, see [e2e](../testing/e2e.md).
 | `e2e/specs/csp-fallback.spec.ts`  |    30 | Spec (table in e2e.md)                                                               |
 | `e2e/specs/version-gate.spec.ts`  |    51 | Spec (table in e2e.md)                                                               |
 | `e2e/specs/i18n.spec.ts`          |    31 | Spec (table in e2e.md)                                                               |
-| `e2e/specs/large-zip.spec.ts`     |   143 | Spec (table in e2e.md)                                                               |
-| `e2e/specs/helper.spec.ts`        |   152 | Spec (table in e2e.md); needs the helper in the local stack                          |
+| `e2e/specs/large-zip.spec.ts`     |   147 | Spec (table in e2e.md)                                                               |
+| `e2e/specs/helper.spec.ts`        |   248 | Spec (table in e2e.md); needs the helper in the local stack                          |
 
 ## `server/` (archive helper, Go)
 
@@ -144,10 +149,10 @@ See [archive-helper overview](../source/archive-helper/overview.md). Tests run w
 | Path                                     | Lines | Purpose                                                                                                                           |
 | ---------------------------------------- | ----: | --------------------------------------------------------------------------------------------------------------------------------- |
 | `server/go.mod` / `server/go.sum`        |    24 | Module, Go 1.27, xz, sevenzip (`replace` → `third_party/`), klauspost zstd, ppmd                                                  |
-| `server/Dockerfile`                      |    21 | Static build on `golang:1.27-alpine`, cross-compiled per platform (amd64/arm64), runs on distroless `static-debian12`; OCI labels |
+| `server/Dockerfile`                      |    20 | Static build on `golang:1.27-alpine`, cross-compiled per platform (amd64/arm64), runs on distroless `static-debian12`; OCI labels |
 | `server/.dockerignore`                   |     5 | Keeps tests and test data out of the image                                                                                        |
-| `server/cmd/archive-helper/main.go`      |   103 | Startup checks (settings, temp folder writable, leftover cleanup), sweeper, shutdown                                              |
-| `server/internal/config/config.go`       |   141 | Environment settings, sizes, durations and the listen address                                                                     |
+| `server/cmd/archive-helper/main.go`      |   106 | Startup checks (settings, temp folder writable, leftover cleanup), sweeper, shutdown                                              |
+| `server/internal/config/config.go`       |   162 | Environment settings, sizes, durations, the required listen address and the loopback warning                                      |
 | `server/internal/storage/ledger.go`      |   122 | Storage reservations: total/per-user caps, free space, hard stop                                                                  |
 | `server/internal/opencloud/client.go`    |   161 | WebDAV PROPFIND/GET as the user, path checks                                                                                      |
 | `server/internal/archive/format.go`      |   171 | Formats, detection, single-file names (ports of `detect.ts` / `single.ts`)                                                        |
@@ -155,7 +160,7 @@ See [archive-helper overview](../source/archive-helper/overview.md). Tests run w
 | `server/internal/archive/scan.go`        |   306 | Scan: decompressors, tar walk with data offsets, limits                                                                           |
 | `server/internal/archive/read.go`        |   102 | Extract entries in archive order (one pass for a selection)                                                                       |
 | `server/internal/archive/zip.go`         |   474 | ZIP: own central-directory parser (zip.js rules), method decoders, CRC check                                                      |
-| `server/internal/archive/sevenzip.go`    |   307 | 7z: checked/lazy decoders registered with sevenzip, listing, extraction                                                           |
+| `server/internal/archive/sevenzip.go`    |   317 | 7z: checked/lazy decoders registered with sevenzip, listing, extraction                                                           |
 | `server/internal/archive/xz.go`          |   451 | Streaming xz container with checks; dictionary limit before allocating                                                            |
 | `server/internal/archive/filters.go`     |   257 | Streaming BCJ and delta filters (liblzma logic)                                                                                   |
 | `server/internal/archive/testdata/`      |     – | Reference `xz` output (`make-xz.sh`); 7z/ZIP made by 7-Zip and Python (`make-7z-zip.sh`)                                          |
@@ -164,17 +169,18 @@ See [archive-helper overview](../source/archive-helper/overview.md). Tests run w
 | `server/internal/session/session.go`     |   447 | Sessions: copy + scan job, owner checks, timeout, cleanup                                                                         |
 | `server/internal/session/tickets.go`     |   168 | Download preparation (caps, ZIP names) and single-use tickets                                                                     |
 | `server/internal/zipstream/zipstream.go` |   336 | Store-only ZIP/ZIP64 writer with exact size; `Names`, `SanitizeFileName`                                                          |
-| `server/internal/api/api.go`             |   391 | HTTP routes, error codes, downloads                                                                                               |
+| `server/internal/api/api.go`             |   409 | HTTP routes, `Version` and `Features`, error codes, downloads                                                                     |
+| `server/internal/api/readiness.go`       |    80 | `/health` readiness: temp folder writable, OpenCloud `status.php` reachable, 30 s cache                                           |
 | `server/internal/*/*_test.go`            |     – | Unit and HTTP tests for each package                                                                                              |
 
 ## `deploy/`
 
 | Path                                      | Lines | Purpose                                                                                                                                      |
 | ----------------------------------------- | ----: | -------------------------------------------------------------------------------------------------------------------------------------------- |
-| `deploy/compose/archive-helper.yml`       |    50 | Compose overlay: helper service from `ghcr.io/warstorm548/archive-helper` (own UID, read-only, limits, port, `./archive-temp`) + proxy mount |
-| `deploy/compose/archive-helper-build.yml` |     9 | Optional overlay: build the helper from a clone (`archive-helper:local`)                                                                     |
-| `deploy/compose/proxy.yaml`               |    63 | Upstream `proxy.yaml` + the `/archive-api` routes                                                                                            |
-| `deploy/env.example`                      |    54 | All helper settings with defaults                                                                                                            |
+| `deploy/compose/archive-helper.yml`       |    53 | Compose overlay: helper service from `ghcr.io/warstorm548/archive-helper` (own UID, read-only, limits, port, `./archive-temp`) + proxy mount |
+| `deploy/compose/archive-helper-build.yml` |    12 | Optional overlay: build the helper from a clone (`archive-helper:local`)                                                                     |
+| `deploy/compose/proxy.yaml`               |    65 | Upstream `proxy.yaml` + the `/archive-api` routes                                                                                            |
+| `deploy/env.example`                      |    56 | Helper settings: the required `ARCHIVE_HELPER_PORT`, the rest with defaults                                                                  |
 
 ## `docs/`
 

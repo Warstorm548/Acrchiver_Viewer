@@ -7,6 +7,7 @@
     "maxUncompressedSizeMobile": 402653184,
     "maxEntrySizeMobile": 268435456,
     "allowUnsupportedOpenCloud": false,
+    "allowUnsupportedHelper": false,
     "archiveHelperUrl": "/archive-api"
   }
 }

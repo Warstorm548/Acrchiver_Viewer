@@ -8,6 +8,7 @@
         clear-button-enabled
       />
       <oc-button
+        v-if="canDownloadSelection"
         class="archive-download-selected"
         appearance="filled"
         :disabled="selectedPaths.size === 0 || downloading"
@@ -613,6 +614,11 @@ export default defineComponent({
       return [...files.values()]
     }
 
+    /** A helper that doesn't offer selection downloads still serves single files. */
+    const canDownloadSelection = computed(
+      () => !props.remote || props.remote.hasFeature('download:selection')
+    )
+
     const downloadSelection = async () => {
       if (props.remote) {
         // the helper expands folders and checks the caps itself
@@ -691,6 +697,7 @@ export default defineComponent({
       selectedPaths,
       allRowsSelected,
       selectionLabel,
+      canDownloadSelection,
       previewEntry,
       downloading,
       extracting,

@@ -4,7 +4,7 @@ import { version as appVersion } from '../package.json'
 /**
  * OpenCloud versions this release is tested on. Exact versions on purpose: the viewer refuses to
  * run on anything else, so an untested OpenCloud upgrade can't break it half-way. Supporting a new
- * version means adding it here in a new release (and noting it in CHANGELOG.md).
+ * version means adding it here in a new release (and noting it in ArchiveViewerChangelog.md).
  */
 export const SUPPORTED_OPENCLOUD_VERSIONS = ['8.0.1']
 
