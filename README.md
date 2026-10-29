@@ -73,7 +73,7 @@ archive-viewer:
 ## Compatibility
 
 Each release runs only on the exact OpenCloud versions it was tested on. This release supports
-**OpenCloud 8.0.1** (rolling); [CHANGELOG.md](CHANGELOG.md) lists the supported versions for each
+**OpenCloud 8.0.1** (rolling); [ArchiveViewerChangelog.md](ArchiveViewerChangelog.md) lists the supported versions for each
 release. On any other version, or if the server version can't be read, the viewer hides itself
 and logs the reason in the browser console. This is on purpose, so an OpenCloud upgrade can't
 leave a half-working viewer.
@@ -108,14 +108,22 @@ browser):
   user's own cap "close one and try again", an archive or download over a cap says so with the
   limit, and a fourth download at once "wait for one to finish".
 
+The helper has its own version and releases (`helper-v…`); each viewer release uses only the
+helper versions it was tested with (listed in [ArchiveViewerChangelog.md](ArchiveViewerChangelog.md)).
+Its one required setting is `ARCHIVE_HELPER_PORT` in `.env`, a port inside the Docker network
+that is never published on the server ([ports](docs/deployment/ports.md)). If the helper is
+missing, stopped, the wrong version or not set up correctly, the viewer notices, works in the
+browser as without it (the browser console says why) and uses the helper again once it is fixed;
+OpenCloud itself is never affected.
+
 Install, settings and upgrades: [docs/deployment/archive-helper.md](docs/deployment/archive-helper.md).
 Without it, the viewer works as described above.
 
 ## Installation
 
-1. Get `archive-viewer-<version>.zip` from the
+1. Get `ArchiveViewer-<version>.zip` from the
    [releases](https://github.com/Warstorm548/Acrchiver_Viewer/releases) (or build it yourself as
-   below); the release page also has the helper's compose files.
+   below); the helper's compose files are in the separate "Archive Helper" releases.
 2. Unzip it into OpenCloud's web apps folder so you get
    `<apps folder>/archive-viewer/manifest.json`. With
    [opencloud-compose](https://github.com/opencloud-eu/opencloud-compose) that is
@@ -133,7 +141,7 @@ Requires Node 24 (`.nvmrc`) and pnpm (via Corepack).
 ```bash
 pnpm install
 pnpm build           # → dist/
-pnpm package         # → release/archive-viewer-<version>.zip + .sha256
+pnpm package         # → release/ArchiveViewer-<version>.zip + .sha256
 ```
 
 Development:

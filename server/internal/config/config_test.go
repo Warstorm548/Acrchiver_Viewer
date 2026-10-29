@@ -37,8 +37,17 @@ func lookup(values map[string]string) func(string) (string, bool) {
 	}
 }
 
+// withAddr adds the required listen address to the values.
+func withAddr(values map[string]string) map[string]string {
+	all := map[string]string{"ARCHIVE_HELPER_ADDR": ":8080"}
+	for key, value := range values {
+		all[key] = value
+	}
+	return all
+}
+
 func TestDefaults(t *testing.T) {
-	c, err := Load(lookup(nil))
+	c, err := Load(lookup(withAddr(nil)))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -57,10 +66,10 @@ func TestDefaults(t *testing.T) {
 }
 
 func TestOverridesAboveHundredGB(t *testing.T) {
-	c, err := Load(lookup(map[string]string{
+	c, err := Load(lookup(withAddr(map[string]string{
 		"ARCHIVE_HELPER_MAX_STORAGE":   "250GB",
 		"ARCHIVE_HELPER_OPENCLOUD_URL": "http://oc:9200/",
-	}))
+	})))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -79,8 +88,14 @@ func TestListenAddress(t *testing.T) {
 			t.Errorf("%q: %v, %q", valid, err, c.Addr)
 		}
 	}
-	// as the compose file builds it from an empty or wrong ARCHIVE_HELPER_PORT
-	for _, invalid := range []string{":", ":0", ":70000", ":http", "8080"} {
+	// as the compose file builds it from a missing ARCHIVE_HELPER_PORT
+	for _, missing := range []map[string]string{nil, {"ARCHIVE_HELPER_ADDR": ""}, {"ARCHIVE_HELPER_ADDR": ":"}} {
+		if _, err := Load(lookup(missing)); err == nil || !strings.Contains(err.Error(), "ARCHIVE_HELPER_PORT is not set") {
+			t.Errorf("%v: want the missing-port error, got %v", missing, err)
+		}
+	}
+	// as the compose file builds it from a wrong ARCHIVE_HELPER_PORT
+	for _, invalid := range []string{":0", ":70000", ":http", "8080"} {
 		if _, err := Load(lookup(map[string]string{"ARCHIVE_HELPER_ADDR": invalid})); err == nil ||
 			!strings.Contains(err.Error(), "ARCHIVE_HELPER_ADDR") {
 			t.Errorf("%q: want an error naming ARCHIVE_HELPER_ADDR, got %v", invalid, err)
@@ -88,12 +103,24 @@ func TestListenAddress(t *testing.T) {
 	}
 }
 
+func TestLoopbackWarning(t *testing.T) {
+	cases := map[string]bool{
+		":8080": false, "0.0.0.0:8080": false, "[::]:8080": false, "helper:8080": false,
+		"127.0.0.1:8080": true, "127.1.2.3:8080": true, "[::1]:8080": true, "localhost:8080": true,
+	}
+	for addr, want := range cases {
+		if got := LoopbackWarning(addr) != ""; got != want {
+			t.Errorf("LoopbackWarning(%q) warns = %v, want %v", addr, got, want)
+		}
+	}
+}
+
 func TestInvalidValuesAreReported(t *testing.T) {
-	_, err := Load(lookup(map[string]string{
+	_, err := Load(lookup(withAddr(map[string]string{
 		"ARCHIVE_HELPER_MAX_STORAGE":            "lots",
 		"ARCHIVE_HELPER_SESSION_TIMEOUT":        "soon",
 		"ARCHIVE_HELPER_MAX_DOWNLOADS_PER_USER": "0",
-	}))
+	})))
 	if err == nil {
 		t.Fatal("expected an error")
 	}

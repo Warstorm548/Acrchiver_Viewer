@@ -10,17 +10,19 @@ additional_policies:
   - name: default
     routes:
       # --- Archive Viewer helper (start) ---
-      # Both backends use the helper's port: ARCHIVE_HELPER_PORT in .env (default 8080).
+      # Both backends use the helper's port from .env (ARCHIVE_HELPER_PORT, passed to OpenCloud by
+      # archive-helper.yml; OpenCloud expands ${…} in this file). Without it /archive-api answers
+      # 502 and the viewer stays in browser mode.
       # Downloads use single-use tickets checked by the helper itself, so a plain browser download
       # (which can't send a login token) works. Must come before /archive-api/ (first match wins).
       - endpoint: /archive-api/download/
-        backend: http://archive-helper:8080
+        backend: http://archive-helper:${ARCHIVE_HELPER_PORT}
         unprotected: true
         skip_x_access_token: true
       # Login required. The proxy sets X-Remote-User to the user's ID, replacing any value the
       # client sent; the helper never receives OpenCloud's internal token.
       - endpoint: /archive-api/
-        backend: http://archive-helper:8080
+        backend: http://archive-helper:${ARCHIVE_HELPER_PORT}
         remote_user_header: X-Remote-User
         skip_x_access_token: true
       # --- Archive Viewer helper (end) ---

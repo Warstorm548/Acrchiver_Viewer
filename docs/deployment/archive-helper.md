@@ -8,22 +8,21 @@ updates don't touch it. Docker commands need sudo; run them in your own terminal
 
 ## Files
 
-| Repo file                                                        | Goes to (opencloud-compose)            | Purpose                                                                 |
-| ---------------------------------------------------------------- | -------------------------------------- | ----------------------------------------------------------------------- |
-| Release file / repo file                                         | Goes to (opencloud-compose)            | Purpose                                                                 |
-| ---------------------------------------------------------------- | -------------------------------------- | ----------------------------------------------------------------------- |
-| `archive-helper.yml` (`deploy/compose/`)                         | `custom/archive-helper.yml`            | The `archive-helper` service (published image) + proxy mount            |
-| `proxy.yaml` (`deploy/compose/`)                                 | `custom/proxy.yaml`                    | Upstream `config/opencloud/proxy.yaml` + the two `/archive-api` routes  |
-| `archive-helper.env.example` (`deploy/env.example`)              | lines in `.env` (only what you change) | Settings with defaults                                                  |
-| image `ghcr.io/warstorm548/archive-helper:<version>`             | pulled by compose                      | The helper, linux/amd64 and linux/arm64, built by the release workflow  |
-| `deploy/compose/archive-helper-build.yml` (repo only, optional)  | `custom/archive-helper-build.yml`      | Builds from a clone instead (development)                               |
+| Release file / repo file                                        | Goes to (opencloud-compose)          | Purpose                                                                |
+| --------------------------------------------------------------- | ------------------------------------ | ---------------------------------------------------------------------- |
+| `archive-helper.yml` (`deploy/compose/`)                        | `custom/archive-helper.yml`          | The `archive-helper` service (published image) + proxy mount           |
+| `proxy.yaml` (`deploy/compose/`)                                | `custom/proxy.yaml`                  | Upstream `config/opencloud/proxy.yaml` + the two `/archive-api` routes |
+| `archive-helper.env.example` (`deploy/env.example`)             | lines in `.env` (the port + changes) | Settings: the required port, the rest with defaults                    |
+| image `ghcr.io/warstorm548/archive-helper:<version>`            | pulled by compose                    | The helper, linux/amd64 and linux/arm64, built by the release workflow |
+| `deploy/compose/archive-helper-build.yml` (repo only, optional) | `custom/archive-helper-build.yml`    | Builds from a clone instead (development)                              |
 
 ## Install
 
-1. Download the compose files of the release you install (no clone of this repository needed),
-   in the opencloud-compose folder:
+1. Download the compose files of the **helper release** you install (`helper-v…` releases; no
+   clone of this repository needed; pick a version the installed viewer supports, see the
+   compatibility table in `ArchiveViewerChangelog.md`), in the opencloud-compose folder:
    ```
-   v=0.4.1; base=https://github.com/Warstorm548/Acrchiver_Viewer/releases/download/v$v
+   v=0.5.0; base=https://github.com/Warstorm548/Acrchiver_Viewer/releases/download/helper-v$v
    curl -fsSLO $base/archive-helper.yml -O $base/proxy.yaml -O $base/archive-helper.env.example
    ```
 2. **Check for an existing proxy config first.** `deploy/compose/proxy.yaml` is upstream's
@@ -42,16 +41,19 @@ updates don't touch it. Docker commands need sudo; run them in your own terminal
    ```
 4. In `.env`, append `:custom/archive-helper.yml` to `COMPOSE_FILE`, e.g.
    `COMPOSE_FILE=docker-compose.yml:traefik/opencloud.yml:custom/archive-viewer.yml:custom/archive-helper.yml`
-   (on the main server: whatever it has now, plus `:custom/archive-helper.yml`). Copy any setting
-   you want to change from `archive-helper.env.example`; set `ARCHIVE_HELPER_TAG` to the same
-   version as the installed viewer.
+   (on the main server: whatever it has now, plus `:custom/archive-helper.yml`). Add the
+   **required** port, e.g. `ARCHIVE_HELPER_PORT=8080` (any number 1–65535; it exists only inside
+   the Docker network, see [ports](ports.md)). Copy any other setting you want to change from
+   `archive-helper.env.example`.
 5. Pull and start (OpenCloud restarts once to load the new `proxy.yaml`):
    ```
    sudo docker compose pull archive-helper
    sudo docker compose up -d
    sudo docker compose logs archive-helper
    ```
-   The log ends with `archive-helper started version=… maxStorage=…`.
+   The log ends with `archive-helper started version=… addr=:<port> maxStorage=…`. Without the
+   port it says `ARCHIVE_HELPER_PORT is not set in .env` and the helper keeps restarting until it
+   is set; OpenCloud is not affected and the viewer stays in browser mode.
 6. Check: open an archive over the browser limit in the viewer; it shows "Preparing the archive
    on the server…", and a file `ah-….archive` appears in `./archive-temp` while it is open.
 
@@ -67,12 +69,15 @@ the system); to use another disk, point `ARCHIVE_HELPER_TEMP_DIR` at a folder th
   If the folder isn't writable the helper **refuses to start** and logs
   `temp folder … is not writable by uid … run: sudo chown -R …`; the viewer then stays in browser
   mode.
-- Port (`ARCHIVE_HELPER_PORT`, default `8080`, 0.4.1+): the port the helper listens on **inside
-  the Docker network**. It is never published on the server, so it can't clash with another
-  service using 8080 there and normally needs no change. To change it anyway, set it in `.env`,
-  change both `backend: http://archive-helper:8080` lines in `custom/proxy.yaml` to the same
-  number, then `sudo docker compose up -d` (helper and OpenCloud restart). An invalid value stops
-  the helper with `invalid settings: ARCHIVE_HELPER_ADDR: …`.
+- Port (`ARCHIVE_HELPER_PORT`, **required** since 0.5.0, no default): the port the helper
+  listens on **inside the Docker network**. It is never published on the server, so it can't
+  clash with ports in use there ([ports](ports.md)). `.env` is the only place it is set: the
+  helper listens on it and OpenCloud's proxy reads it (`custom/proxy.yaml` uses
+  `${ARCHIVE_HELPER_PORT}`, which `archive-helper.yml` passes into the `opencloud` container). To
+  change it, edit `.env` and run `sudo docker compose up -d` (helper and OpenCloud restart). A
+  missing value stops the helper with `ARCHIVE_HELPER_PORT is not set in .env`, an invalid one
+  with `invalid settings: ARCHIVE_HELPER_ADDR: …`. Setting `ARCHIVE_HELPER_ADDR` to a loopback
+  host (`127.0.0.1:…`) logs a warning: the proxy can't reach it.
 
 ## Optional: a hard size limit from the operating system
 
@@ -96,21 +101,27 @@ than `ARCHIVE_HELPER_MAX_STORAGE`.
 
 ## Updating the helper
 
-Update it together with the viewer, to the same version (the viewer only sends ZIPs and 7z to a
-helper that reads them, 0.4.0+):
+The helper has its own version since 0.5.0. Install a version the viewer supports (the
+compatibility table in `ArchiveViewerChangelog.md`; a viewer 0.5.x uses helpers `^0.5.0`). A
+helper outside that range is ignored and the viewer stays in browser mode, which the browser
+console explains (`allowUnsupportedHelper: true` in `apps.yaml` overrides it, for testing).
 
 ```
-sed -i 's/^ARCHIVE_HELPER_TAG=.*/ARCHIVE_HELPER_TAG=0.4.1/' .env   # or edit .env by hand
+sed -i 's/^ARCHIVE_HELPER_TAG=.*/ARCHIVE_HELPER_TAG=0.5.0/' .env   # or edit .env by hand
 sudo docker compose pull archive-helper && sudo docker compose up -d archive-helper
 ```
 
-Compare the release's `archive-helper.yml` and `archive-helper.env.example` with your copies for
-new settings (0.4.1 adds the optional `ARCHIVE_HELPER_PORT`; its `proxy.yaml` only gained a
-comment, so an existing copy can stay). **From 0.3.x** (built from a clone): replace
-`custom/archive-helper.yml` with the 0.4.0 file, which pulls the image instead; the clone is then
-no longer needed. To keep building from source (development), also copy
-`deploy/compose/archive-helper-build.yml` to `custom/`, add `:custom/archive-helper-build.yml`
-after `:custom/archive-helper.yml` in `COMPOSE_FILE`, and use
+Compare the release's `archive-helper.yml`, `proxy.yaml` and `archive-helper.env.example` with
+your copies for new settings. **From 0.4.x to 0.5.0:** add `ARCHIVE_HELPER_PORT` to `.env` (use
+8080 to keep the old port), replace `custom/archive-helper.yml` and `custom/proxy.yaml` with the
+0.5.0 files (or, with a merged `proxy.yaml`, change both archive-helper backends to
+`http://archive-helper:${ARCHIVE_HELPER_PORT}`), then `sudo docker compose up -d`. **From 0.3.x**
+(built from a clone): the same, the new `archive-helper.yml` pulls the image instead; the clone is
+then no longer needed. To keep building from source (development), clone the repository as
+`Archive_Viewer` next to opencloud-compose
+(`git clone https://github.com/Warstorm548/Acrchiver_Viewer.git Archive_Viewer`, or set
+`ARCHIVE_HELPER_BUILD_DIR`), copy `deploy/compose/archive-helper-build.yml` to `custom/`, add
+`:custom/archive-helper-build.yml` after `:custom/archive-helper.yml` in `COMPOSE_FILE`, and use
 `sudo docker compose build archive-helper && sudo docker compose up -d archive-helper`.
 
 ## Existing setups and your own domain
@@ -134,12 +145,13 @@ Check these on an existing server:
 
 ## Troubleshooting
 
-| Symptom                                                  | Cause / fix                                                                                                                                                 |
-| -------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Large archives still show "larger than … in the browser" | Helper not reachable: `sudo docker compose ps`, logs; `/archive-api/health` must return JSON, not the web page (proxy.yaml not mounted → restart opencloud) |
-| Helper keeps restarting                                  | Log line names the problem: settings (`invalid settings: …`) or temp folder owner                                                                           |
-| "Server busy…" although nobody uses it                   | Disk full (the real free space is checked too) or caps set too low                                                                                          |
-| `502` from `/archive-api/…`                              | Helper container stopped, or `ARCHIVE_HELPER_PORT` and the port in `custom/proxy.yaml`'s backends differ                                                    |
+| Symptom                                                  | Cause / fix                                                                                                                                                    |
+| -------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Large archives still show "larger than … in the browser" | Helper not reachable: `sudo docker compose ps`, logs; `/archive-api/health` must return JSON, not the web page (proxy.yaml not mounted → restart opencloud)    |
+| "…installed but not set up correctly"                    | The browser console (F12) names the reason: unsupported helper version, `temp-not-writable`, `opencloud-unreachable` (`ARCHIVE_HELPER_OPENCLOUD_URL`), timeout |
+| Helper keeps restarting                                  | Log line names the problem: `ARCHIVE_HELPER_PORT is not set in .env`, other settings (`invalid settings: …`) or temp folder owner                              |
+| "Server busy…" although nobody uses it                   | Disk full (the real free space is checked too) or caps set too low                                                                                             |
+| `502` from `/archive-api/…`                              | Helper container stopped or without a port, or an old `custom/proxy.yaml` with a fixed port in its backends (use `${ARCHIVE_HELPER_PORT}`)                     |
 
 ## Removing it
 

@@ -22,6 +22,10 @@ const fakeRemote = () => {
   }
   return {
     health: { maxDownloadsPerUser: 3 } as HelperHealth,
+    features: ['download:selection'],
+    hasFeature(feature: string) {
+      return this.features.includes(feature)
+    },
     children: vi.fn((folder: string, _sort: string, _desc: boolean, offset = 0) =>
       Promise.resolve({
         // pages of two, to exercise "Show more"

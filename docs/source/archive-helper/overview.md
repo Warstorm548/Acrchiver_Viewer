@@ -86,10 +86,16 @@ deflate and tar are Go's standard library ([dependencies](../../tech-stack/depen
   (`PAGE_SIZE` 500), search, preview reads, download preparation, heartbeat every
   `heartbeatSeconds` (a 404 means the session timed out), close on unmount and with
   `keepalive` on `pagehide`.
-- When it is used is decided in `App.vue` ([viewer-ui](../viewer-ui.md)).
+- `gate.ts`: `checkHelper` decides whether the helper may be used at all: `/health` within 5 s
+  (`HEALTH_TIMEOUT_MS`), the expected fields, a version in `SUPPORTED_HELPER` (`^0.5.0`; apps.yaml
+  `allowUnsupportedHelper` overrides only this) and `ready: true`. Results are `missing` (nothing
+  answers as the helper: unreachable, 404/502/503, OpenCloud's web page) or `misconfigured`
+  (timeout, other errors, wrong shape or version, not ready); the reason goes to the console.
+- When it is used for a file is decided in `App.vue` ([viewer-ui](../viewer-ui.md)).
 
 ## When changing the helper
 
-Keep `api.Version` equal to `package.json`, run `go vet ./... && go test -race ./...` in
-`server/`, rebuild the image, and update [api](api.md) / [storage-limits](storage-limits.md) /
+Bump `api.Version` (the helper's own SemVer: minor = breaking API change, patch = compatible) and
+the default image tag in `deploy/compose/archive-helper.yml`, add an `ArchiveHelperChangelog.md`
+entry, run `go vet ./... && go test -race ./...` in `server/`, rebuild the image, and update [api](api.md) / [storage-limits](storage-limits.md) /
 [deployment](../../deployment/archive-helper.md) and `deploy/` as needed.

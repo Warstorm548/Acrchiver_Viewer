@@ -66,6 +66,11 @@ export class RemoteArchive {
     return this.client.entry(this.sessionId, entry.path)
   }
 
+  /** The helper lists this optional feature (see src/helper/gate.ts). */
+  hasFeature(feature: string): boolean {
+    return this.health.features?.includes(feature) ?? false
+  }
+
   /** Checks a download (size, caps); with `issue` also returns its single-use link. */
   prepareDownload(paths: string[], issue: boolean): Promise<DownloadInfo> {
     return this.client.downloads(this.sessionId, paths, issue)

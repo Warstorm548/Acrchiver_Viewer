@@ -8,7 +8,7 @@ It lives **outside this repo** (not pushed), so this doc records how to recreate
 
 ```
 ~/Projects/OpenCloud/
-  Acrchiver_Viewer/      # this repo; its dist/ is mounted into OpenCloud
+  Archive_Viewer/        # this repo (GitHub: Acrchiver_Viewer); its dist/ is mounted into OpenCloud
   opencloud-compose/     # git clone of github.com/opencloud-eu/opencloud-compose (main)
     .env                 # our settings (gitignored upstream)
     custom/archive-viewer.yml   # our overlay (custom/ is gitignored upstream)
@@ -43,6 +43,7 @@ TRAEFIK_SERVICES_TLS_CONFIG="tls=true"
 OC_DOCKER_IMAGE=opencloudeu/opencloud-rolling
 OC_DOCKER_TAG=8.0.1
 DEMO_USERS=true
+ARCHIVE_HELPER_PORT=8080
 INITIAL_ADMIN_PASSWORD=admin
 PROXY_ENABLE_BASIC_AUTH=true   # dev only: curl -u admin:admin WebDAV uploads
 ```
@@ -53,7 +54,7 @@ PROXY_ENABLE_BASIC_AUTH=true   # dev only: curl -u admin:admin WebDAV uploads
 services:
   opencloud:
     volumes:
-      - ../Acrchiver_Viewer/dist:/var/lib/opencloud/web/assets/apps/archive-viewer:ro
+      - ../Archive_Viewer/dist:/var/lib/opencloud/web/assets/apps/archive-viewer:ro
       # replaces the upstream apps.yaml mount (same target path)
       - ./custom/apps.yaml:/etc/opencloud/apps.yaml
 ```
@@ -95,7 +96,7 @@ sudo docker compose restart opencloud                  # after every app rebuild
 sudo docker compose down                               # stop (add -v to wipe data)
 ```
 
-Dev loop: `pnpm build` in `Acrchiver_Viewer` → `sudo docker compose restart opencloud` → reload
+Dev loop: `pnpm build` in `Archive_Viewer` → `sudo docker compose restart opencloud` → reload
 the browser. OpenCloud only discovers apps and reads `apps.yaml` at startup. Build before the
 first `up` so `dist/` exists.
 

@@ -24,8 +24,21 @@ import (
 	"github.com/Warstorm548/Acrchiver_Viewer/server/internal/zipstream"
 )
 
-// Version of the helper; kept equal to the viewer's package.json version.
-const Version = "0.4.1"
+// Version is the helper's own SemVer, independent of the viewer's (see ArchiveHelperChangelog.md):
+// a minor bump marks a breaking change to this API, a patch bump a compatible one. The viewer only
+// uses helper versions in its supported range (src/helper/gate.ts).
+const Version = "0.5.0"
+
+// Features lists what this helper offers; the viewer uses an optional feature only when it is
+// listed, so a patch release can add one without breaking older viewers.
+var Features = []string{
+	"format:" + string(archive.FormatZip), "format:" + string(archive.Format7z),
+	"format:" + string(archive.FormatTar), "format:" + string(archive.FormatTarGz),
+	"format:" + string(archive.FormatTarBz2), "format:" + string(archive.FormatTarXz),
+	"format:" + string(archive.FormatGz), "format:" + string(archive.FormatBz2),
+	"format:" + string(archive.FormatXz), "format:" + string(archive.FormatLzma),
+	"download:selection",
+}
 
 const (
 	// HeartbeatInterval tells the viewer how often to report that the archive is still open.
@@ -38,12 +51,13 @@ const (
 )
 
 type Server struct {
-	cfg      config.Config
-	sessions *session.Manager
+	cfg       config.Config
+	sessions  *session.Manager
+	readiness *readiness
 }
 
 func New(cfg config.Config, sessions *session.Manager) *Server {
-	return &Server{cfg: cfg, sessions: sessions}
+	return &Server{cfg: cfg, sessions: sessions, readiness: newReadiness(cfg.DataDir, cfg.OpenCloudURL)}
 }
 
 func (s *Server) Handler() http.Handler {
@@ -139,8 +153,12 @@ func (s *Server) writeFailure(w http.ResponseWriter, err error) {
 }
 
 func (s *Server) health(w http.ResponseWriter, r *http.Request, user string) {
+	problems := s.readiness.Problems(r.Context())
 	writeJSON(w, http.StatusOK, map[string]any{
 		"version":               Version,
+		"features":              Features,
+		"ready":                 len(problems) == 0,
+		"problems":              problems,
 		"maxStorage":            s.cfg.MaxStorage,
 		"maxStoragePerUser":     s.cfg.MaxStoragePerUser,
 		"maxDownloadSize":       s.cfg.MaxDownloadSize,

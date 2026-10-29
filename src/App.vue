@@ -71,6 +71,7 @@ import ArchiveBrowser from './components/ArchiveBrowser.vue'
 import {
   archiveExtension,
   ArchiveError,
+  formatForExtension,
   ArchiveHandle,
   BlobBuilder,
   HttpRangeReader,
@@ -88,6 +89,7 @@ import {
   resolveHelperUrl,
   SessionStatus
 } from './helper/client'
+import { checkHelper, HelperCheck, helperHasFeature } from './helper/gate'
 import { RemoteArchive } from './helper/remote'
 import { resolveLimits } from './limits'
 
@@ -206,6 +208,10 @@ export default defineComponent({
         : $gettext('Downloading… %{size}', { size: format(loaded.value) })
     })
 
+    const misconfiguredMessage = () =>
+      $gettext(
+        'The server helper is installed but not set up correctly, so this archive can’t be opened. You can download it instead.'
+      )
     const unsupportedMessage = () =>
       $gettext('This archive format is not supported yet. You can download it instead.')
     const damagedMessage = () =>
@@ -344,10 +350,16 @@ export default defineComponent({
 
     const tooLarge = (): null => {
       state.value = 'too-large'
-      message.value = $gettext(
-        'This archive is larger than %{limit}, the most this viewer opens in the browser on this device. You can download it instead.',
-        { limit: format(limits.value.archive) }
-      )
+      message.value =
+        helperUnavailable === 'misconfigured'
+          ? $gettext(
+              'This archive is larger than %{limit}, the most this viewer opens in the browser on this device, and the server helper is installed but not set up correctly. You can download it instead.',
+              { limit: format(limits.value.archive) }
+            )
+          : $gettext(
+              'This archive is larger than %{limit}, the most this viewer opens in the browser on this device. You can download it instead.',
+              { limit: format(limits.value.archive) }
+            )
       return null
     }
 
@@ -378,7 +390,10 @@ export default defineComponent({
 
     const helperUrl = computed(() => resolveHelperUrl(props.applicationConfig))
     const helperClient = () => new HelperClient(helperUrl.value, () => authStore.accessToken)
-    let healthCheck: Promise<HelperHealth | null> | null = null
+    /** The helper check for the current archive (see src/helper/gate.ts); reset by `load`. */
+    let healthCheck: Promise<HelperCheck> | null = null
+    /** Why the helper wasn't used for the current archive; picks the message when it was needed. */
+    let helperUnavailable: 'missing' | 'misconfigured' | null = null
 
     /** The file's WebDAV path as the helper expects it: /spaces/<space id>/<path>. */
     const webDavPath = (): string => {
@@ -392,22 +407,36 @@ export default defineComponent({
     }
 
     /**
-     * The helper's settings when it can open this file: installed (it answers), a logged-in user
-     * (public links have no token), and a format it reads. Checked once per viewer.
+     * The helper's settings when it can open this file: a logged-in user (public links have no
+     * token), a format it lists among its features, and a helper that passes the version gate and
+     * reports itself ready. Checked once per opened archive; the reason it can't be used goes to
+     * the console for the admin.
      */
-    const usableHelper = (): Promise<HelperHealth | null> => {
+    const usableHelper = async (): Promise<HelperHealth | null> => {
+      const extension = archiveExtension(props.resource.name)
       if (
         !helperUrl.value ||
         !authStore.accessToken ||
         !webDavPath() ||
-        !HELPER_EXTENSIONS.has(archiveExtension(props.resource.name))
+        !HELPER_EXTENSIONS.has(extension)
       ) {
-        return Promise.resolve(null)
+        return null
       }
-      healthCheck ??= helperClient()
-        .health()
-        .catch((): null => null)
-      return healthCheck
+      if (!healthCheck) {
+        healthCheck = checkHelper(helperClient(), props.applicationConfig)
+        healthCheck.then((check) => check.detail && console.warn(`Archive Viewer: ${check.detail}`))
+      }
+      const check = await healthCheck
+      if ('reason' in check) {
+        helperUnavailable = check.reason
+        return null
+      }
+      const feature = `format:${formatForExtension(extension) ?? extension}`
+      if (!helperHasFeature(check.health, feature)) {
+        helperUnavailable = 'misconfigured'
+        return null
+      }
+      return check.health
     }
 
     /** Opens the archive on the server and waits (with progress) until it is listed. */
@@ -464,6 +493,8 @@ export default defineComponent({
 
     const load = async () => {
       closeArchive()
+      healthCheck = null
+      helperUnavailable = null
       loaded.value = 0
       bytesRead.value = 0
       state.value = 'loading'
@@ -521,9 +552,12 @@ export default defineComponent({
         if (HELPER_ONLY.has(archiveExtension(props.resource.name))) {
           if (!(await tryServer()) && !signal.aborted) {
             state.value = 'error'
-            message.value = $gettext(
-              'This archive format can only be opened when the server helper is installed. You can download it instead.'
-            )
+            message.value =
+              helperUnavailable === 'misconfigured'
+                ? misconfiguredMessage()
+                : $gettext(
+                    'This archive format can only be opened when the server helper is installed. You can download it instead.'
+                  )
           }
           return
         }
@@ -557,9 +591,10 @@ export default defineComponent({
         }
         if (!opened) {
           // only when too large for the browser (the metadata's size was wrong): the "too large"
-          // message stays unless the helper can open it
-          if (!serverFailed) {
-            await tryServer()
+          // message stays unless the helper can open it; it was set before this helper check, so
+          // set it again in case the check found the helper installed but not set up correctly
+          if (!serverFailed && !(await tryServer()) && !signal.aborted) {
+            tooLarge()
           }
           return
         }

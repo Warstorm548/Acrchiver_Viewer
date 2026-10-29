@@ -51,7 +51,7 @@ half-working viewer.
     and logs the message with `console.warn`.
 
 To support a new OpenCloud version: test it, add it to `SUPPORTED_OPENCLOUD_VERSIONS`, bump the
-version and note it in `CHANGELOG.md`. Tests: `tests/unit/compatibility.spec.ts`,
+version and note it in `ArchiveViewerChangelog.md`. Tests: `tests/unit/compatibility.spec.ts`,
 `tests/unit/index.spec.ts`.
 
 ## `src/manifest.json`
@@ -66,6 +66,7 @@ version and note it in `CHANGELOG.md`. Tests: `tests/unit/compatibility.spec.ts`
     "maxUncompressedSizeMobile": 402653184,
     "maxEntrySizeMobile": 268435456,
     "allowUnsupportedOpenCloud": false,
+    "allowUnsupportedHelper": false,
     "archiveHelperUrl": "/archive-api"
   }
 }
@@ -74,7 +75,9 @@ version and note it in `CHANGELOG.md`. Tests: `tests/unit/compatibility.spec.ts`
 The SDK merges it into `dist/manifest.json` (with name, version, license, author and
 `entrypoint`). OpenCloud merges the `config` block with `apps.yaml`, and the result reaches the
 viewer as `applicationConfig`. The same limit defaults are hard-coded in `src/limits.ts` as a
-fallback; a missing `allowUnsupportedOpenCloud` means `false`; a missing `archiveHelperUrl`
+fallback; a missing `allowUnsupportedOpenCloud` or `allowUnsupportedHelper` means `false` (the
+latter lets the viewer use a server helper outside its supported version range,
+`src/helper/gate.ts`); a missing `archiveHelperUrl`
 means `/archive-api` (`src/helper/client.ts` `resolveHelperUrl`; `""` turns the server helper
 off, other origins are refused).
 

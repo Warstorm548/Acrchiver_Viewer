@@ -17,5 +17,4 @@ LABEL org.opencontainers.image.source="https://github.com/Warstorm548/Acrchiver_
       org.opencontainers.image.description="Archive Viewer helper: opens large archives next to OpenCloud" \
       org.opencontainers.image.licenses="AGPL-3.0"
 COPY --from=build /archive-helper /archive-helper
-EXPOSE 8080
 ENTRYPOINT ["/archive-helper"]

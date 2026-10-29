@@ -84,15 +84,36 @@ func (r *reader) size(key, fallback string) int64 {
 	return size
 }
 
-// addr reads a listen address: host:port or :port, with a port from 1 to 65535.
-func (r *reader) addr(key, fallback string) string {
-	text := r.str(key, fallback)
+// addr reads the required listen address: host:port or :port, with a port from 1 to 65535. The
+// compose file builds it from ARCHIVE_HELPER_PORT, so an empty value or a bare ":" means that
+// setting is missing from .env.
+func (r *reader) addr(key string) string {
+	text := r.str(key, "")
+	if text == "" || text == ":" {
+		r.errs = append(r.errs, fmt.Sprintf("%s: ARCHIVE_HELPER_PORT is not set in .env "+
+			"(e.g. ARCHIVE_HELPER_PORT=8080)", key))
+		return text
+	}
 	_, port, err := net.SplitHostPort(text)
 	number, portErr := strconv.Atoi(port)
 	if err != nil || portErr != nil || number < 1 || number > 65535 {
 		r.errs = append(r.errs, fmt.Sprintf("%s: invalid listen address %q (e.g. :8080)", key, text))
 	}
 	return text
+}
+
+// LoopbackWarning explains why a listen address on a loopback host can't work: the OpenCloud proxy
+// runs in another container, so /archive-api would answer 502. Empty for any other address.
+func LoopbackWarning(addr string) string {
+	host, _, err := net.SplitHostPort(addr)
+	if err != nil || host == "" {
+		return ""
+	}
+	if ip := net.ParseIP(host); host != "localhost" && (ip == nil || !ip.IsLoopback()) {
+		return ""
+	}
+	return fmt.Sprintf("ARCHIVE_HELPER_ADDR %q listens on a loopback address: the OpenCloud proxy "+
+		"can't reach it and /archive-api will answer 502; use :<port>", addr)
 }
 
 func (r *reader) duration(key, fallback string) time.Duration {
@@ -120,7 +141,7 @@ func Load(lookup func(string) (string, bool)) (Config, error) {
 	}
 	r := &reader{lookup: lookup}
 	c := Config{
-		Addr:                r.addr("ARCHIVE_HELPER_ADDR", ":8080"),
+		Addr:                r.addr("ARCHIVE_HELPER_ADDR"),
 		OpenCloudURL:        strings.TrimRight(r.str("ARCHIVE_HELPER_OPENCLOUD_URL", "http://opencloud:9200"), "/"),
 		DataDir:             r.str("ARCHIVE_HELPER_DATA_DIR", "/data"),
 		MaxStorage:          r.size("ARCHIVE_HELPER_MAX_STORAGE", "50GB"),

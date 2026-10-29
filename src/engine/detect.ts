@@ -22,6 +22,10 @@ const formatsByExtension: Record<string, ArchiveFormat> = {
   tlz: 'lzma'
 }
 
+/** The format for a file extension, or undefined for extensions the browser doesn't open (7z). */
+export const formatForExtension = (extension: string): ArchiveFormat | undefined =>
+  formatsByExtension[extension.toLowerCase()]
+
 /** Same rule as OpenCloud's web-client `extractExtensionFromFile` (tar.* counts as one extension). */
 const compoundExtensions = ['tar.gz', 'tar.bz2', 'tar.xz']
 

@@ -7,7 +7,7 @@
 # linux/arm64); to build it from source instead, add archive-helper-build.yml as well.
 services:
   archive-helper:
-    image: ghcr.io/warstorm548/archive-helper:${ARCHIVE_HELPER_TAG:-0.4.1}
+    image: ghcr.io/warstorm548/archive-helper:${ARCHIVE_HELPER_TAG:-0.5.0}
     # its own user ID, shared with no other container (it reaches OpenCloud only over HTTP);
     # must own the temp folder: sudo chown -R 1500:1500 ./archive-temp
     user: ${ARCHIVE_HELPER_UID_GID:-1500:1500}
@@ -24,9 +24,9 @@ services:
       # starts with ./ so it stays inside the opencloud-compose folder, never the system root
       - ${ARCHIVE_HELPER_TEMP_DIR:-./archive-temp}:/data
     environment:
-      # the port inside the Docker network (never published on the host); custom/proxy.yaml's two
-      # archive-helper backends must use the same number
-      ARCHIVE_HELPER_ADDR: ':${ARCHIVE_HELPER_PORT:-8080}'
+      # the port inside the Docker network (never published on the host), required: without
+      # ARCHIVE_HELPER_PORT in .env only the helper refuses to start, OpenCloud runs as usual
+      ARCHIVE_HELPER_ADDR: ':${ARCHIVE_HELPER_PORT:-}'
       ARCHIVE_HELPER_OPENCLOUD_URL: ${ARCHIVE_HELPER_OPENCLOUD_URL:-http://opencloud:9200}
       ARCHIVE_HELPER_MAX_STORAGE: ${ARCHIVE_HELPER_MAX_STORAGE:-50GB}
       ARCHIVE_HELPER_MAX_STORAGE_PER_USER: ${ARCHIVE_HELPER_MAX_STORAGE_PER_USER:-25GB}
@@ -45,6 +45,9 @@ services:
     restart: always
     stop_grace_period: 15s
   opencloud:
+    environment:
+      # read by custom/proxy.yaml's two archive-helper backends, so the port is set only in .env
+      ARCHIVE_HELPER_PORT: ${ARCHIVE_HELPER_PORT:-}
     volumes:
       # our copy of config/opencloud/proxy.yaml with the /archive-api routes
       - ./custom/proxy.yaml:/etc/opencloud/proxy.yaml

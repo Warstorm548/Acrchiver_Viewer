@@ -87,25 +87,35 @@ node_modules, dist, coverage, logs, `.env`/`.envrc`, `.DS_Store`, `.idea`, `.vsc
 
 ## Release zip — `scripts/package.mjs`
 
-`pnpm build && pnpm package` writes `release/archive-viewer-<version>.zip` (top folder
+`pnpm build && pnpm package` writes `release/ArchiveViewer-<version>.zip` (top folder
 `archive-viewer/` holding the contents of `dist/` plus `LICENSE` and `THIRD-PARTY-NOTICES.md`,
 ready to unzip into an apps folder) and
-`release/archive-viewer-<version>.zip.sha256`. Uses zip.js (Node, no workers) — no extra package
+`release/ArchiveViewer-<version>.zip.sha256` (`ZIP_NAME`; the top folder stays `APP_ID`). Uses zip.js (Node, no workers) — no extra package
 or system `zip`. Stops if `dist/` is missing or its manifest version differs from `package.json`.
 Verified in step 6: checksum OK, unzipped folder identical to `dist/` plus the two notices.
 The root path uses `fileURLToPath`, so checkouts in folders with spaces work.
 
-## Release workflow — `.github/workflows/release.yml`
+## Release workflows — `.github/workflows/`
 
-The only CI: runs on a pushed `v*.*.*` tag (Ubuntu runner, Go from `server/go.mod`, Node from
-`.nvmrc`, pnpm from `packageManager`). Job `check` compares the tag with `package.json` and
-`api.Version`, runs `go vet` / `go test -race` and all viewer checks and unit tests (not e2e), then
-`pnpm build && pnpm package`. Job `image` builds `server/Dockerfile` with Buildx for linux/amd64
-and linux/arm64 (Go cross-compiles, no emulation) and pushes
-`ghcr.io/warstorm548/archive-helper:<version>` and `:latest` with the workflow's token. Job
-`release` creates the GitHub release: notes from the version's `CHANGELOG.md` entry plus install
-lines, assets the zip, `.sha256`, `archive-helper.yml`, `proxy.yaml` and
-`archive-helper.env.example`. Steps: [releasing](../deployment/deploying-to-opencloud.md#releasing).
+The only CI, one workflow per part since 0.5.0 (they have their own versions). Both run on a
+pushed tag (Ubuntu runner, Go from `server/go.mod`, Node from `.nvmrc`, pnpm from
+`packageManager`):
+
+- `release.yml` — viewer, tag `v*.*.*`. Job `check` compares the tag with `package.json`, runs
+  `go vet` / `go test -race` and all viewer checks and unit tests (not e2e), then
+  `pnpm build && pnpm package`. Job `release` creates the GitHub release "Archive Viewer X": notes
+  from the version's `ArchiveViewerChangelog.md` entry plus install lines, assets the zip and
+  `.sha256`.
+- `release-helper.yml` — helper, tag `helper-v*.*.*`. Job `check` compares the tag with
+  `api.Version` and the default image tag in `deploy/compose/archive-helper.yml`, runs the Go
+  checks and the unit tests (including `helperVersion.spec.ts`). Job `image` builds
+  `server/Dockerfile` with Buildx for linux/amd64 and linux/arm64 (Go cross-compiles, no
+  emulation) and pushes `ghcr.io/warstorm548/archive-helper:<version>` and `:latest` with the
+  workflow's token. Job `release` creates "Archive Helper X" (not marked latest, so the viewer
+  release stays the repository's latest): notes from `ArchiveHelperChangelog.md`, assets
+  `archive-helper.yml`, `proxy.yaml` and `archive-helper.env.example`.
+
+Steps: [releasing](../deployment/deploying-to-opencloud.md#releasing).
 
 ## Translations — `gettext.config.cjs`
 

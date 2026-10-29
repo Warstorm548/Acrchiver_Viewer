@@ -39,6 +39,11 @@ msgstr "Descargando… %{percent}%"
 msgid "Downloading… %{size}"
 msgstr "Descargando… %{size}"
 
+msgid ""
+"The server helper is installed but not set up correctly, so this archive "
+"can’t be opened. You can download it instead."
+msgstr "El asistente del servidor está instalado, pero no está bien configurado, por lo que no se puede abrir este archivo comprimido. Puede descargarlo en su lugar."
+
 msgid "This archive format is not supported yet. You can download it instead."
 msgstr ""
 "Este formato de archivo comprimido aún no es compatible. Puede descargarlo "
@@ -102,6 +107,12 @@ msgstr ""
 
 msgid "The archive could not be loaded."
 msgstr "No se pudo cargar el archivo comprimido."
+
+msgid ""
+"This archive is larger than %{limit}, the most this viewer opens in the "
+"browser on this device, and the server helper is installed but not set up "
+"correctly. You can download it instead."
+msgstr "Este archivo comprimido supera %{limit}, lo máximo que este visor abre en el navegador en este dispositivo, y el asistente del servidor está instalado, pero no está bien configurado. Puede descargarlo en su lugar."
 
 msgid ""
 "This archive is larger than %{limit}, the most this viewer opens in the "

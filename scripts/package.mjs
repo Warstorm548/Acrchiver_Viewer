@@ -1,4 +1,4 @@
-// Packs dist/ into release/archive-viewer-<version>.zip (top folder "archive-viewer/", the layout
+// Packs dist/ into release/ArchiveViewer-<version>.zip (top folder "archive-viewer/", the layout
 // OpenCloud's apps folder expects) plus a .sha256 file. Run `pnpm build` first. The license and
 // third-party notices are added next to the build, as the AGPL/MIT/BSD terms require.
 import { createHash } from 'node:crypto'
@@ -12,7 +12,9 @@ import {
   ZipWriter
 } from '@zip.js/zip.js/lib/zip-native.js'
 
+// the app ID OpenCloud installs the extension under; the zip file itself is named ZIP_NAME
 const APP_ID = 'archive-viewer'
+const ZIP_NAME = 'ArchiveViewer'
 const NOTICES = ['LICENSE', 'THIRD-PARTY-NOTICES.md']
 const root = fileURLToPath(new URL('..', import.meta.url))
 const dist = join(root, 'dist')
@@ -55,7 +57,7 @@ for (const [file, path] of files) {
 const zip = Buffer.from(await (await writer.close()).arrayBuffer())
 
 mkdirSync(releaseDir, { recursive: true })
-const zipName = `${APP_ID}-${version}.zip`
+const zipName = `${ZIP_NAME}-${version}.zip`
 writeFileSync(join(releaseDir, zipName), zip)
 const sha256 = createHash('sha256').update(zip).digest('hex')
 writeFileSync(join(releaseDir, `${zipName}.sha256`), `${sha256}  ${zipName}\n`)

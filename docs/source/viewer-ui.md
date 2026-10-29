@@ -39,7 +39,12 @@ calls `tryServer()`. It is used only if `usableHelper()` finds all of: `archiveH
 (same-origin path, `resolveHelperUrl`), a login token (`useAuthStore().accessToken`; public
 links have none), a WebDAV path (`resource.webDavPath`, else `space.webDavPath` + `resource.path`),
 an extension it reads (`HELPER_EXTENSIONS`: TAR family, single compressed files, ZIP, 7z), and a
-`GET /health` answer (checked once per viewer; any failure → null → browser behaviour unchanged).
+helper that passes `checkHelper` (`src/helper/gate.ts`, 0.5.0: `/health` within 5 s, expected
+fields, version in `^0.5.0` unless `allowUnsupportedHelper`, `ready: true`) and lists the file's
+format in its `features` (`format:<formatForExtension>`). The check runs once per opened archive
+(`load()` resets it), so a fixed helper is used without a reload; any failure keeps browser
+behaviour unchanged, logs the reason to the console once, and records `helperUnavailable`
+(`missing` / `misconfigured`).
 `openOnServer` posts the session, polls its status every second ("Preparing the archive on the
 server… N%" while copying, "Reading the archive on the server… N%" while scanning) with a
 **Cancel** button (state `cancelled`: message + "Open again" + "Download archive"), then starts
@@ -47,7 +52,9 @@ the heartbeat and renders `<archive-browser :remote>`. Helper error codes get th
 (server busy, too many large archives open, larger than the server allows, too complex,
 password-protected, changed, generic). 0.4.0 adds three routes
 ([zip-and-7z](archive-helper/zip-and-7z.md)): **7z** (`HELPER_ONLY`) goes to `tryServer()` first
-at any size, else "can only be opened when the server helper is installed" without downloading;
+at any size, else "can only be opened when the server helper is installed" without downloading
+(or, when the helper is `misconfigured`, "installed but not set up correctly"; the browser "too
+large" message gets the same addition);
 a **ZIP over `maxArchiveSize`** tries the helper before range mode, and a **range-listed ZIP with
 `needsServer` entries** is opened on the helper instead (progress and Cancel as usual; the range
 listing, not shown meanwhile, is used only if the helper is missing or fails, and closed otherwise). For ZIPs, `tryServerOrRange()` turns
@@ -60,7 +67,8 @@ Config keys (`apps.yaml` / manifest): `maxArchiveSize`, `maxUncompressedSize`, `
 their `…Mobile` variants; invalid values fall back to the defaults (1 GiB / 2 GiB / 1 GiB desktop,
 128 / 384 / 256 MiB mobile), which are also published in `src/manifest.json` →
 `dist/manifest.json` `config`. `archiveHelperUrl` (default `/archive-api`; `""` or anything not
-starting with a single `/` turns the helper off).
+starting with a single `/` turns the helper off). `allowUnsupportedHelper` (default `false`): use
+a helper outside `SUPPORTED_HELPER` anyway.
 
 ## `components/ArchiveBrowser.vue`
 
@@ -94,7 +102,8 @@ Props `handle` **or** `remote` (a `RemoteArchive`, server helper mode), `archive
   300 ms after typing stops ("Showing the first N results" when capped), a spinner shows while a
   page loads. Downloads (`downloadOnServer`) ask the helper for size and caps first, show an
   `oc-modal` "Download X?" (files + total, "make sure your device has enough free space") when
-  `confirm` is set, then follow a single-use link with `triggerUrlDownload`. Helper error codes
+  `confirm` is set, then follow a single-use link with `triggerUrlDownload`. "Download selected"
+  is shown only when the helper lists `download:selection` (`canDownloadSelection`). Helper error codes
   (`download-too-large` with size and limit, `too-many-downloads`, closed session, nothing to
   download) get their own messages.
 

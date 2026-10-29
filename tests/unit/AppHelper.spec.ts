@@ -11,14 +11,37 @@ const json = (body: unknown, status = 200) =>
   new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } })
 
 const health = {
-  version: '0.4.1',
-  heartbeatSeconds: 30,
+  version: '0.5.0',
+  features: [
+    'format:zip',
+    'format:7z',
+    'format:tar',
+    'format:tar.gz',
+    'format:tar.bz2',
+    'format:tar.xz',
+    'format:gz',
+    'format:bz2',
+    'format:xz',
+    'format:lzma',
+    'download:selection'
+  ],
+  ready: true,
+  problems: [] as string[],
+  maxStorage: 50e9,
+  maxStoragePerUser: 25e9,
+  maxDownloadSize: 10e9,
+  maxSelectionSize: 10e9,
   confirmDownloadSize: 1e9,
-  maxDownloadsPerUser: 3
+  maxDownloadsPerUser: 3,
+  maxPreviewSize: 16 << 20,
+  heartbeatSeconds: 30,
+  sessionTimeoutSeconds: 600
 }
 
 interface FakeHelper {
   installed?: boolean
+  /** Fields to change in the health answer. */
+  healthChanges?: Record<string, unknown>
   openError?: { code: string; status: number; limit?: number }
   /** Status answers in order; the last one repeats. */
   statuses?: Record<string, unknown>[]
@@ -33,6 +56,7 @@ interface FakeHelper {
 /** Routes the viewer's fetch calls: the helper API, else the signed file URL. */
 const fakeServer = ({
   installed = true,
+  healthChanges,
   openError,
   statuses,
   holdOpen,
@@ -61,7 +85,7 @@ const fakeServer = ({
       return new Response('<html>OpenCloud</html>') // the web UI answers the unrouted path
     }
     if (url === '/archive-api/health') {
-      return json(health)
+      return json({ ...health, ...healthChanges })
     }
     if (url === '/archive-api/sessions' && method === 'POST') {
       if (openError) {
@@ -217,6 +241,17 @@ describe('App with the server helper', () => {
     expect(calls[0].url).toBe('https://cloud.test/signed')
   })
 
+  it('names a helper that is not ready when the download turns out larger than its metadata said', async () => {
+    vi.spyOn(console, 'warn').mockImplementation(() => {})
+    fakeServer({ healthChanges: { ready: false, problems: ['temp-not-writable'] } })
+    const wrapper = createWrapper({ size: 10 })
+    await waitFor(() =>
+      expect(wrapper.find('.archive-viewer-message').text()).toContain(
+        'installed but not set up correctly'
+      )
+    )
+  })
+
   it.each([
     [{ code: 'server-busy', status: 507 }, 'Server busy: not enough space'],
     [{ code: 'user-quota', status: 507 }, 'too many large archives open'],
@@ -309,6 +344,59 @@ describe('App with the server helper', () => {
       )
     )
     expect(calls.map((c) => c.url)).toEqual(['/archive-api/health'])
+  })
+
+  it.each([
+    ['an unsupported version', { version: '0.6.0' }, 'archive helper 0.6.0 is not supported'],
+    ['a helper before 0.5.0', { version: '0.4.1', ready: undefined }, 'archive helper 0.4.1'],
+    [
+      'a helper that is not ready',
+      { ready: false, problems: ['temp-not-writable'] },
+      'not set up correctly (temp-not-writable)'
+    ],
+    ['a helper without 7z', { features: ['format:zip'] }, '']
+  ])('explains that a 7z can’t be opened with %s', async (_, changes, detail) => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+    const calls = fakeServer({ healthChanges: changes })
+    const wrapper = createWrapper({ name: 'small.7z', size: 100 })
+    await waitFor(() =>
+      expect(wrapper.find('.archive-viewer-message').text()).toContain(
+        'installed but not set up correctly'
+      )
+    )
+    expect(calls.map((c) => c.url)).toEqual(['/archive-api/health'])
+    if (detail) {
+      expect(warn).toHaveBeenCalledWith(expect.stringContaining(detail))
+    }
+  })
+
+  it('uses a helper outside the supported range when the admin allows it', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+    fakeServer({ healthChanges: { version: '0.6.0' } })
+    const wrapper = createWrapper({
+      name: 'small.7z',
+      size: 100,
+      config: { allowUnsupportedHelper: true }
+    })
+    await waitFor(() =>
+      expect(wrapper.findAll('.archive-name').map((n) => n.text())).toEqual(['docs', 'a.txt'])
+    )
+    expect(warn).toHaveBeenCalledWith(expect.stringContaining('using it anyway'))
+  })
+
+  it('names the helper setup in the “too large” message when it isn’t ready', async () => {
+    vi.spyOn(console, 'warn').mockImplementation(() => {})
+    const calls = fakeServer({
+      healthChanges: { ready: false, problems: ['opencloud-unreachable'] }
+    })
+    const wrapper = createWrapper()
+    await waitFor(() =>
+      expect(wrapper.find('.archive-viewer-message').text()).toContain(
+        'installed but not set up correctly'
+      )
+    )
+    expect(calls.map((c) => c.url)).toEqual(['/archive-api/health'])
+    expect(wrapper.find('.archive-viewer-download').exists()).toBe(true)
   })
 
   it('explains a password-protected archive', async () => {

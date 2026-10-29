@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs'
 import { defineConfig } from '@opencloud-eu/extension-sdk'
 
-// package.json is the single source of the version (SemVer, see CHANGELOG.md). The SDK already
+// package.json is the single source of the version (SemVer, see ArchiveViewerChangelog.md). The SDK already
 // copies it into dist/manifest.json; the banner also stamps it on every compiled JS file.
 const { version } = JSON.parse(readFileSync(new URL('./package.json', import.meta.url), 'utf8'))
 

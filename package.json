@@ -1,6 +1,6 @@
 {
   "name": "web-app-archive-viewer",
-  "version": "0.4.1",
+  "version": "0.5.0",
   "private": true,
   "description": "OpenCloud Web archive viewer - browse and preview archive contents",
   "type": "module",

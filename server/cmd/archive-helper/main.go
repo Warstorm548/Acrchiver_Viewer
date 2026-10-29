@@ -33,6 +33,9 @@ func run() error {
 	if err != nil {
 		return err
 	}
+	if warning := config.LoopbackWarning(cfg.Addr); warning != "" {
+		slog.Warn(warning)
+	}
 	// refuse to start rather than half-work: the viewer then stays in browser mode
 	if err := session.CheckWritable(cfg.DataDir); err != nil {
 		return err
