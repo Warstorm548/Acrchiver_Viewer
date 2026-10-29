@@ -6,15 +6,15 @@ Every tracked file (0.4.0), what it is, and its line count. Generated/ignored: `
 
 | Path                                   | Lines | Purpose                                                                                                            |
 | -------------------------------------- | ----: | ------------------------------------------------------------------------------------------------------------------ |
-| `README.md`                            |   179 | User-facing readme (rewritten in step 6)                                                                           |
-| `CLAUDE.md`                            |   159 | Index into `docs/`                                                                                                 |
+| `README.md`                            |   187 | User-facing readme (rewritten in step 6)                                                                           |
+| `CLAUDE.md`                            |   170 | Index into `docs/`                                                                                                 |
 | `LICENSE`                              |   661 | GNU AGPL-3.0 (canonical gnu.org text); copyright notice is in `README.md`                                          |
 | `THIRD-PARTY-NOTICES.md`               |   201 | Licenses of ported (seek-bzip) and bundled (zip.js) code; the helper's Go modules                                  |
 | `package.json`                         |    67 | Package metadata, scripts, `@zip.js/zip.js` dependency, devDependencies, `packageManager`                          |
 | `pnpm-lock.yaml`                       |  5384 | Locked dependency tree                                                                                             |
 | `.nvmrc`                               |     1 | Node version for nvm (`24`)                                                                                        |
 | `ArchiveViewerChangelog.md`            |   220 | The viewer's SemVer rules, compatibility table (OpenCloud, helper) and per-version changes                         |
-| `ArchiveHelperChangelog.md`            |    49 | The helper's own SemVer rules (minor = breaking API) and changes, from 0.5.0                                       |
+| `ArchiveHelperChangelog.md`            |    52 | The helper's own SemVer rules (minor = breaking API) and changes, from 0.5.0                                       |
 | `playwright.config.ts`                 |    30 | E2E config: Chromium, one worker, login project, global setup/teardown                                             |
 | `vite.config.ts`                       |    17 | extension-sdk `defineConfig`, plus the version banner on compiled JS                                               |
 | `gettext.config.cjs`                   |    17 | vue3-gettext extract/compile config (de/es/fr)                                                                     |
@@ -36,7 +36,7 @@ Every tracked file (0.4.0), what it is, and its line count. Generated/ignored: `
 | `src/compatibility.ts`              |    91 | OpenCloud version check: supported versions, `waitForProductVersion`, `checkCompatibility`                                                   |
 | `src/manifest.json`                 |    13 | Default `config` (6 size limits, `allowUnsupportedOpenCloud`, `allowUnsupportedHelper`, `archiveHelperUrl`) merged into `dist/manifest.json` |
 | `src/limits.ts`                     |    65 | Desktop/mobile limits: `isMobileDevice`, `resolveLimits`, defaults rationale                                                                 |
-| `src/App.vue`                       |   650 | Viewer shell: ZIP range mode, size check, capped streamed download, detect + open, server helper (7z, big ZIPs, `needsServer`), errors       |
+| `src/App.vue`                       |   651 | Viewer shell: ZIP range mode, size check, capped streamed download, detect + open, server helper (7z, big ZIPs, `needsServer`), errors       |
 | `src/components/ArchiveBrowser.vue` |   721 | File table: folders, breadcrumb, search, sort, selection, downloads, cap, progress; server mode (pages, server search, confirm)              |
 | `src/components/PreviewModal.vue`   |   133 | Text/image preview in `oc-modal` (reads via the capped `read` prop)                                                                          |
 | `src/download.ts`                   |    94 | `sanitizeFileName`, `triggerDownload`, `triggerUrlDownload`, `zipEntries` (selection → zip)                                                  |
@@ -86,7 +86,7 @@ Details: [extension-entry](../source/extension-entry.md), [viewer-ui](../source/
 | ----------------------------------------- | ----: | --------------------------------------------------------------------------------- |
 | `tests/unit/App.spec.ts`                  |   180 | Viewer flow: range mode, renewal, fallbacks, limits, errors                       |
 | `tests/unit/ArchiveBrowser.spec.ts`       |   133 | Navigation, search, sort, downloads, entry cap, progress                          |
-| `tests/unit/AppHelper.spec.ts`            |   495 | Server helper flow: when used, progress, fallbacks, errors, cancel                |
+| `tests/unit/AppHelper.spec.ts`            |   506 | Server helper flow: when used, progress, fallbacks, errors, cancel                |
 | `tests/unit/ArchiveBrowserRemote.spec.ts` |   195 | Server mode: pages, sort, search, downloads, confirmation, errors                 |
 | `tests/unit/helper/client.spec.ts`        |   110 | Helper client: URL rule, token, errors, URLs, keepalive                           |
 | `tests/unit/helper/remote.spec.ts`        |    78 | `RemoteArchive`: entries, heartbeat, lost session, close                          |
@@ -139,7 +139,7 @@ Playwright suite, see [e2e](../testing/e2e.md).
 | `e2e/specs/version-gate.spec.ts`  |    51 | Spec (table in e2e.md)                                                               |
 | `e2e/specs/i18n.spec.ts`          |    31 | Spec (table in e2e.md)                                                               |
 | `e2e/specs/large-zip.spec.ts`     |   147 | Spec (table in e2e.md)                                                               |
-| `e2e/specs/helper.spec.ts`        |   248 | Spec (table in e2e.md); needs the helper in the local stack                          |
+| `e2e/specs/helper.spec.ts`        |   300 | Spec (table in e2e.md); needs the helper in the local stack                          |
 
 ## `server/` (archive helper, Go)
 
@@ -170,7 +170,7 @@ See [archive-helper overview](../source/archive-helper/overview.md). Tests run w
 | `server/internal/session/tickets.go`     |   168 | Download preparation (caps, ZIP names) and single-use tickets                                                                     |
 | `server/internal/zipstream/zipstream.go` |   336 | Store-only ZIP/ZIP64 writer with exact size; `Names`, `SanitizeFileName`                                                          |
 | `server/internal/api/api.go`             |   409 | HTTP routes, `Version` and `Features`, error codes, downloads                                                                     |
-| `server/internal/api/readiness.go`       |    80 | `/health` readiness: temp folder writable, OpenCloud `status.php` reachable, 30 s cache                                           |
+| `server/internal/api/readiness.go`       |    98 | `/health` readiness: temp folder writable, OpenCloud `status.php` reachable, 30 s cache                                           |
 | `server/internal/*/*_test.go`            |     – | Unit and HTTP tests for each package                                                                                              |
 
 ## `deploy/`
