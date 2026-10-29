@@ -40,7 +40,8 @@ nothing.
 - `ready` is false, with codes in `problems`, when the helper runs but can't do its job:
   `temp-not-writable` (temp folder) or `opencloud-unreachable` (`GET
 ARCHIVE_HELPER_OPENCLOUD_URL/status.php` did not answer 200 with OpenCloud's status JSON,
-  `"installed": true`, within 3 s; so a wrong URL pointing at another server counts too). The
+  `"installed": true` and `"productname": "OpenCloud"`, within 3 s; so a wrong URL pointing at
+  another server, also a Nextcloud or ownCloud, counts too). The
   checks run at most every 30 s (`readiness.go`); a check whose `/health` caller gave up is not
   cached. The viewer never uses a helper that isn't ready.
 

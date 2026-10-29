@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"io"
 	"net/http"
+	"strings"
 	"sync"
 	"time"
 
@@ -70,8 +71,9 @@ func (r *readiness) Problems(ctx context.Context) []string {
 }
 
 // openCloudReachable: OpenCloud's status.php must answer 200 with its status JSON
-// (`"installed": true`). A failed connection, an error status or another server's answer (a wrong
-// ARCHIVE_HELPER_OPENCLOUD_URL, OpenCloud down or still starting) count as unreachable.
+// (`"installed": true`, `"productname": "OpenCloud"`). A failed connection, an error status or
+// another server's answer (a wrong ARCHIVE_HELPER_OPENCLOUD_URL, also a Nextcloud or ownCloud
+// with the same status.php, OpenCloud down or still starting) count as unreachable.
 func (r *readiness) openCloudReachable(ctx context.Context) bool {
 	ctx, cancel := context.WithTimeout(ctx, readinessTimeout)
 	defer cancel()
@@ -88,7 +90,9 @@ func (r *readiness) openCloudReachable(ctx context.Context) bool {
 		return false
 	}
 	var status struct {
-		Installed bool `json:"installed"`
+		Installed   bool   `json:"installed"`
+		ProductName string `json:"productname"`
 	}
-	return json.NewDecoder(io.LimitReader(response.Body, 64<<10)).Decode(&status) == nil && status.Installed
+	return json.NewDecoder(io.LimitReader(response.Body, 64<<10)).Decode(&status) == nil &&
+		status.Installed && strings.EqualFold(status.ProductName, "OpenCloud")
 }

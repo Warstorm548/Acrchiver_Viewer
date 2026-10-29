@@ -339,7 +339,8 @@ func TestReadinessNeedsOpenCloudStatus(t *testing.T) {
 	answers := map[string]func(http.ResponseWriter){
 		"404 (another server)": func(w http.ResponseWriter) { http.NotFound(w, nil) },
 		"200 without status":   func(w http.ResponseWriter) { fmt.Fprint(w, "<html>hello</html>") },
-		"not installed":        func(w http.ResponseWriter) { fmt.Fprint(w, `{"installed":false}`) },
+		"not installed":        func(w http.ResponseWriter) { fmt.Fprint(w, `{"installed":false,"productname":"OpenCloud"}`) },
+		"Nextcloud":            func(w http.ResponseWriter) { fmt.Fprint(w, `{"installed":true,"productname":"Nextcloud"}`) },
 		"503 (starting)":       func(w http.ResponseWriter) { w.WriteHeader(http.StatusServiceUnavailable) },
 	}
 	for name, answer := range answers {
@@ -354,7 +355,7 @@ func TestReadinessNeedsOpenCloudStatus(t *testing.T) {
 
 func TestReadinessDoesNotCacheACanceledCheck(t *testing.T) {
 	healthy := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
-		fmt.Fprint(w, `{"installed":true}`)
+		fmt.Fprint(w, `{"installed":true,"productname":"OpenCloud"}`)
 	}))
 	t.Cleanup(healthy.Close)
 	r := newReadiness(t.TempDir(), healthy.URL)

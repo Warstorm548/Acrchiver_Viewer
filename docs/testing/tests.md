@@ -84,7 +84,7 @@ tickets: limit, single use, expiry, file kept while a download runs, startup cle
 `ah-*`, writability check), `api` (whole flow over HTTP incl. ZIP download, access rules, caps,
 error codes, health with `features`/`ready`/`problems`, not ready with an unwritable temp folder
 and an unreachable OpenCloud, `status.php` answers that don't count (404, no status JSON, not
-installed, 503), the 30 s readiness cache and no caching of a canceled check, `Content-Disposition`).
+installed, Nextcloud, 503), the 30 s readiness cache and no caching of a canceled check, `Content-Disposition`).
 
 ## Patterns
 

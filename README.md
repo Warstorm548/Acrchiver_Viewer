@@ -141,7 +141,7 @@ Requires Node 24 (`.nvmrc`) and pnpm (via Corepack).
 ```bash
 pnpm install
 pnpm build           # → dist/
-pnpm package         # → release/archive-viewer-<version>.zip + .sha256
+pnpm package         # → release/ArchiveViewer-<version>.zip + .sha256
 ```
 
 Development:
