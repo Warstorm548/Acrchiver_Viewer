@@ -104,6 +104,8 @@ minute, 3.04 GiB) and deletes it from the server, the trash and `test-fixtures/`
 - 2026-10-29, 0.5.0 build (helper 0.5.0 built from source, `ARCHIVE_HELPER_PORT=8080` read by
   the proxy through `${ARCHIVE_HELPER_PORT}`): all 81 tests and the login step passed in 3.8
   minutes (peak 559 MiB), including the five helper-gate cases.
+- 2026-11-01, 0.5.1 build (Dependabot dev-dependency updates; helper 0.5.0 unchanged): all 81
+  tests and the login step passed in 3.7 minutes; `./archive-temp` empty afterwards.
 - Sanity: with the CSP rewrite removed, the four fallback tests fail (no "worker unavailable"), so
   the simulation is what makes them pass.
 
