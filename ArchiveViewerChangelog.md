@@ -28,7 +28,7 @@ ignored and the viewer stays in browser mode (an admin can override that with
 | 0.4.1  | 8.0.1     | 0.4.1  |
 | 0.4.0  | 8.0.1     | 0.4.0  |
 
-## [0.5.1] - Unreleased
+## [0.5.1] - 2026-11-01
 
 Supported OpenCloud versions: **8.0.1**. Works with helper **^0.5.0** (0.5.x).
 
