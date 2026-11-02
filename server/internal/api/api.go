@@ -27,7 +27,7 @@ import (
 // Version is the helper's own SemVer, independent of the viewer's (see ArchiveHelperChangelog.md):
 // a minor bump marks a breaking change to this API, a patch bump a compatible one. The viewer only
 // uses helper versions in its supported range (src/helper/gate.ts).
-const Version = "0.5.0"
+const Version = "0.5.1"
 
 // Features lists what this helper offers; the viewer uses an optional feature only when it is
 // listed, so a patch release can add one without breaking older viewers.

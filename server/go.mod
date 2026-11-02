@@ -17,7 +17,7 @@ require (
 	github.com/pierrec/lz4/v4 v4.1.27 // indirect
 	github.com/spf13/afero v1.15.0 // indirect
 	go4.org v0.0.0-20260112195520-a5071408f32f // indirect
-	golang.org/x/text v0.40.0 // indirect
+	golang.org/x/text v0.43.0 // indirect
 )
 
 // patched copy (header limits), see third_party/sevenzip/PATCHES.md
