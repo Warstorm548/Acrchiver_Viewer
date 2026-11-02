@@ -7,10 +7,12 @@ no tag or GitHub release yet. **0.3.0** (merged to `main` via PR #4, untagged) a
 server helper for archives too large for the browser
 ([archive-helper overview](../source/archive-helper/overview.md)); **0.4.0** (merged via PR #5,
 the first tagged release) lets it open 7z and large ZIPs ([zip-and-7z](../source/archive-helper/zip-and-7z.md));
-0.4.1 is the latest release. **0.5.0** (branch `feature/ports-version-gate`, untagged) gives the
+**0.5.0** (released 2026-10-29, PR #6) gives the
 helper its own version (0.5.0) with a viewer-side version gate (`src/helper/gate.ts`), a
 required `ARCHIVE_HELPER_PORT` used by the helper and the proxy alike, separate changelogs and
-release workflows, and the zip name `ArchiveViewer-<version>.zip`.
+release workflows, and the zip name `ArchiveViewer-<version>.zip`. **0.5.1** (branch
+`chore/dependabot-updates`, untagged) fixes the Dependabot alerts in devDependencies
+([dependencies](../tech-stack/dependencies.md#security-overrides-pnpm-workspaceyaml-since-051)).
 
 ## Summary
 
@@ -89,8 +91,8 @@ Details:
 - Author **Warstorm548**; repo/bugs → `Warstorm548/Acrchiver_Viewer` (the GitHub name keeps its
   old spelling; the project and the local folder are `Archive_Viewer`). README states the project is
   independent and not affiliated with OpenCloud GmbH.
-- Viewer version `0.5.0` (unreleased; latest release `v0.4.1`), helper version `0.5.0` (own
-  version from now on). `0.4.0` was the first tagged release (`v0.4.0`, published by the release workflow with
+- Viewer version `0.5.1` (unreleased; latest release `v0.5.0`), helper version `0.5.0` (own
+  version, latest release `helper-v0.5.0`). `0.4.0` was the first tagged release (`v0.4.0`, published by the release workflow with
   the helper image `ghcr.io/warstorm548/archive-helper`; 0.2.2 and 0.3.0 were never released on
   their own; the old "1.0.0 Production Ready" changelog in
   `docs/original-docs/` is historical and inaccurate).

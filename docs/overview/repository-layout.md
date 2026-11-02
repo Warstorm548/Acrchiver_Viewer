@@ -11,9 +11,10 @@ Every tracked file (0.4.0), what it is, and its line count. Generated/ignored: `
 | `LICENSE`                              |   661 | GNU AGPL-3.0 (canonical gnu.org text); copyright notice is in `README.md`                                          |
 | `THIRD-PARTY-NOTICES.md`               |   201 | Licenses of ported (seek-bzip) and bundled (zip.js) code; the helper's Go modules                                  |
 | `package.json`                         |    67 | Package metadata, scripts, `@zip.js/zip.js` dependency, devDependencies, `packageManager`                          |
-| `pnpm-lock.yaml`                       |  5384 | Locked dependency tree                                                                                             |
+| `pnpm-lock.yaml`                       |  5350 | Locked dependency tree                                                                                             |
+| `pnpm-workspace.yaml`                  |    15 | pnpm `overrides` forcing fixed versions of flagged sub-dependencies (0.5.1)                                        |
 | `.nvmrc`                               |     1 | Node version for nvm (`24`)                                                                                        |
-| `ArchiveViewerChangelog.md`            |   220 | The viewer's SemVer rules, compatibility table (OpenCloud, helper) and per-version changes                         |
+| `ArchiveViewerChangelog.md`            |   237 | The viewer's SemVer rules, compatibility table (OpenCloud, helper) and per-version changes                         |
 | `ArchiveHelperChangelog.md`            |    52 | The helper's own SemVer rules (minor = breaking API) and changes, from 0.5.0                                       |
 | `playwright.config.ts`                 |    30 | E2E config: Chromium, one worker, login project, global setup/teardown                                             |
 | `vite.config.ts`                       |    17 | extension-sdk `defineConfig`, plus the version banner on compiled JS                                               |

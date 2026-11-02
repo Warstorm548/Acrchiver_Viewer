@@ -31,7 +31,7 @@ whose npm build depends on Node's `Buffer` and can't run in a browser. License t
 | `vue3-gettext`                   | 4.0.1   | 4.0.1     | `useGettext` (host-provided)                                                                   |
 | `vite`                           | ^8.0.3  | 8.3.5     | Build                                                                                          |
 | `vitest`                         | ^5.0.0  | 5.0.5     | Tests                                                                                          |
-| `happy-dom`                      | ^20.0.0 | 20.14.6   | Test DOM                                                                                       |
+| `happy-dom`                      | ^21.0.4 | 21.0.4    | Test DOM                                                                                       |
 | `@vue/test-utils`                | ^2.4.6  | 2.5.1     | Component mounting                                                                             |
 | `vitest-mock-extended`           | ^5.0.0  | 5.1.1     | `mock<T>()`                                                                                    |
 | `@playwright/test`               | 1.64.1  | 1.64.1    | E2E tests in Chromium 156 ([e2e](../testing/e2e.md)); exact pin, its Chromium is bundled to it |
@@ -66,6 +66,25 @@ OpenCloud version the app is deployed to**, and bump the pins when the server is
 8.0.0 and 8.1.0 use the same Vite/Vitest ranges and `@module-federation/vite` 1.14.2. All checks
 pass on 8.0.0, which confirms `AppWrapperRoute`, `formatFileSize` and `AppConfigObject` exist in 8.0.
 
+## Security overrides (`pnpm-workspace.yaml`, since 0.5.1)
+
+The `@opencloud-eu/*` pins bring in some old sub-dependencies that Dependabot flags. They are all
+build or test tools, and none of them end up in `dist/`. Because the pins stay at `~8.0.0`, the
+fixed versions are forced with pnpm `overrides` in `pnpm-workspace.yaml`:
+
+| Package            | Pulled in by                                     | Forced to |
+| ------------------ | ------------------------------------------------ | --------- |
+| `axios`            | `@module-federation/dts-plugin` (extension-sdk)  | ^1.20.0   |
+| `adm-zip`          | `@module-federation/dts-plugin`                  | ^0.6.1    |
+| `ws`               | `@module-federation/dts-plugin`, `isomorphic-ws` | ^8.21.0   |
+| `follow-redirects` | `axios`                                          | ^1.16.2   |
+| `minimatch`        | `webdav` (web-client, 9.x), ESLint (10.x)        | ^11.0.1   |
+
+The dts-plugin isn't run (the SDK sets `dts: false`). minimatch 11 keeps the `minimatch` export
+and the `matchBase` option that webdav uses. Still open: `deepmerge` 4.3.1 (low, used by
+`web-pkg`; no fixed release). Remove an override once its parent package ships the fix, for
+example when the pins move to a newer OpenCloud line.
+
 ## Known install warnings (harmless, upstream)
 
 `pnpm peers check` reports two unmet peers inside OpenCloud's own dependency tree:
@@ -92,5 +111,5 @@ has the same tree.
 
 ## When changing dependencies
 
-Update this table (ranges and installed versions), [build-tooling](build-tooling.md) and
+Update this table (ranges and installed versions), the security overrides, [build-tooling](build-tooling.md) and
 [project-status](../overview/project-status.md). Commit the updated `pnpm-lock.yaml`.

@@ -28,6 +28,23 @@ ignored and the viewer stays in browser mode (an admin can override that with
 | 0.4.1  | 8.0.1     | 0.4.1  |
 | 0.4.0  | 8.0.1     | 0.4.0  |
 
+## [0.5.1] - Unreleased
+
+Supported OpenCloud versions: **8.0.1**. Works with helper **^0.5.0** (0.5.x).
+
+### Security
+
+- Fixed the open Dependabot alerts. All of them were in devDependencies (build and test tools);
+  none of the flagged packages are in the shipped extension, so the built viewer is the same as
+  in 0.5.0 apart from the version.
+  - `happy-dom` 20.14.6 → 21.0.4 (test DOM; SSRF and code execution through import aliases).
+  - New `pnpm-workspace.yaml` overrides for packages that come in through the `@opencloud-eu/*`
+    8.0 packages, which stay pinned to `~8.0.0`: `axios` 1.13.5 → 1.20.0, `adm-zip` 0.5.18 →
+    0.6.1, `ws` 8.18.0 → 8.22.0, `follow-redirects` 1.16.1 → 1.16.2, `minimatch` 9.0.9/10.2.6 →
+    11.0.3.
+  - Not fixable: `deepmerge` 4.3.1 (low; used by `@opencloud-eu/web-pkg`, no fixed release
+    exists). At runtime the host OpenCloud provides `web-pkg`, so the extension doesn't bundle it.
+
 ## [0.5.0] - 2026-10-29
 
 Supported OpenCloud versions: **8.0.1**. Works with helper **^0.5.0** (0.5.x).
