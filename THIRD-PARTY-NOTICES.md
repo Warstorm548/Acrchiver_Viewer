@@ -195,7 +195,7 @@ module paths, each with its full license text. None is part of the web app's rel
 | `github.com/hashicorp/golang-lru/v2` | v2.0.7             | MPL-2.0      | Stream reader cache (via sevenzip)   |
 | `github.com/spf13/afero`             | v1.15.0            | Apache-2.0   | File system interface (via sevenzip) |
 | `go4.org`                            | v0.0.0-20260112195 | Apache-2.0   | Reader-at helpers (via sevenzip)     |
-| `golang.org/x/text`                  | v0.40.0            | BSD-3-Clause | UTF-16 names (via sevenzip)          |
+| `golang.org/x/text`                  | v0.43.0            | BSD-3-Clause | UTF-16 names (via sevenzip)          |
 
 MPL-2.0 applies per file: golang-lru is used as published, and its source is available at its
 module path.

@@ -106,6 +106,10 @@ minute, 3.04 GiB) and deletes it from the server, the trash and `test-fixtures/`
   minutes (peak 559 MiB), including the five helper-gate cases.
 - 2026-11-01, 0.5.1 build (Dependabot dev-dependency updates; helper 0.5.0 unchanged): all 81
   tests and the login step passed in 3.7 minutes; `./archive-temp` empty afterwards.
+- 2026-11-01, helper 0.5.1 built from source (`golang.org/x/text` v0.43.0) with viewer 0.5.1:
+  80 of 81 passed in 4.1 minutes. The one failure (`helper.spec.ts` saw two own temp files) came
+  from archives opened by hand in another browser during the run. `helper.spec.ts` with
+  `--repeat-each=3` then passed 49/49; `./archive-temp` empty afterwards.
 - Sanity: with the CSP rewrite removed, the four fallback tests fail (no "worker unavailable"), so
   the simulation is what makes them pass.
 

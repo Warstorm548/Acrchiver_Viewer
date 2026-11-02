@@ -53,7 +53,7 @@ whose npm build depends on Node's `Buffer` and can't run in a browser. License t
 | `github.com/stangelandcl/ppmd`  | v0.1.1  | PPMd for 7z, memory checked first; MIT                                                                                                                                                                                                                         |
 
 Indirect (through sevenzip): brotli, lz4, bodgit/plumbing, bodgit/windows, golang-lru (MPL-2.0),
-afero, go4.org, golang.org/x/text; licenses in [notices](../../THIRD-PARTY-NOTICES.md). Deflate64
+afero, go4.org, golang.org/x/text (v0.43.0 since helper 0.5.1, GO-2026-6629); licenses in [notices](../../THIRD-PARTY-NOTICES.md). Deflate64
 is our own port of Go's `compress/flate` (`server/internal/deflate64`). gzip, bzip2, deflate, tar,
 CRC/SHA and HTTP come from Go's standard library; `archive/zip` only writes test files. The
 runtime image is `gcr.io/distroless/static-debian12` (no shell, no package manager).

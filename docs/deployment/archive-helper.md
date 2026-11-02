@@ -22,7 +22,7 @@ updates don't touch it. Docker commands need sudo; run them in your own terminal
    clone of this repository needed; pick a version the installed viewer supports, see the
    compatibility table in `ArchiveViewerChangelog.md`), in the opencloud-compose folder:
    ```
-   v=0.5.0; base=https://github.com/Warstorm548/Acrchiver_Viewer/releases/download/helper-v$v
+   v=0.5.1; base=https://github.com/Warstorm548/Acrchiver_Viewer/releases/download/helper-v$v
    curl -fsSLO $base/archive-helper.yml -O $base/proxy.yaml -O $base/archive-helper.env.example
    ```
 2. **Check for an existing proxy config first.** `deploy/compose/proxy.yaml` is upstream's
@@ -107,7 +107,7 @@ helper outside that range is ignored and the viewer stays in browser mode, which
 console explains (`allowUnsupportedHelper: true` in `apps.yaml` overrides it, for testing).
 
 ```
-sed -i 's/^ARCHIVE_HELPER_TAG=.*/ARCHIVE_HELPER_TAG=0.5.0/' .env   # or edit .env by hand
+sed -i 's/^ARCHIVE_HELPER_TAG=.*/ARCHIVE_HELPER_TAG=0.5.1/' .env   # or edit .env by hand
 sudo docker compose pull archive-helper && sudo docker compose up -d archive-helper
 ```
 

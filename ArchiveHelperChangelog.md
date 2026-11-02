@@ -21,6 +21,18 @@ the viewer relies on:
 Every change gets an entry and a bump of `Version`, and the default image tag in
 `deploy/compose/archive-helper.yml` must match it (checked by `tests/unit/helperVersion.spec.ts`).
 
+## [0.5.1] - 2026-11-01
+
+Works with viewer **0.5.x**. No settings change: pull the new image (`ARCHIVE_HELPER_TAG=0.5.1`, or
+the new `archive-helper.yml`) and restart the helper.
+
+### Security
+
+- `golang.org/x/text` v0.40.0 → v0.43.0 (GO-2026-6629: a panic when parsing crafted input in
+  `x/text/secure/precis`). The helper only uses the module's UTF-16 decoding for 7z file names
+  (through the patched sevenzip copy), so it was never affected (govulncheck: not reachable).
+  The bump clears the report.
+
 ## [0.5.0] - 2026-10-29
 
 Works with viewer **0.5.x**.
