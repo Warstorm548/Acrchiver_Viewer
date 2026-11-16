@@ -10,15 +10,15 @@ import { version } from '../../package.json'
 
 describe('normalizeVersion', () => {
   it('keeps X.Y.Z and strips build info', () => {
-    expect(normalizeVersion('8.0.1')).toBe('8.0.1')
-    expect(normalizeVersion('8.0.1+abc123')).toBe('8.0.1')
+    expect(normalizeVersion('9.1.0')).toBe('9.1.0')
+    expect(normalizeVersion('9.1.0+abc123')).toBe('9.1.0')
   })
 
   it('rejects anything else', () => {
     expect(normalizeVersion(undefined)).toBeNull()
     expect(normalizeVersion('')).toBeNull()
     expect(normalizeVersion('8.0')).toBeNull()
-    expect(normalizeVersion('8.0.1-rc.1')).toBeNull()
+    expect(normalizeVersion('9.1.0-rc.1')).toBeNull()
     expect(normalizeVersion('latest')).toBeNull()
     expect(normalizeVersion(801)).toBeNull()
   })
@@ -37,23 +37,23 @@ describe('isOverrideEnabled', () => {
 
 describe('checkCompatibility', () => {
   it('supports exactly the listed versions', () => {
-    expect(SUPPORTED_OPENCLOUD_VERSIONS).toEqual(['8.0.1'])
-    expect(checkCompatibility({ productVersion: '8.0.1', config: {} })).toEqual({
+    expect(SUPPORTED_OPENCLOUD_VERSIONS).toEqual(['9.1.0'])
+    expect(checkCompatibility({ productVersion: '9.1.0', config: {} })).toEqual({
       supported: true,
       overridden: false,
-      serverVersion: '8.0.1',
+      serverVersion: '9.1.0',
       message: ''
     })
-    expect(checkCompatibility({ productVersion: '8.0.1+abc', config: {} }).supported).toBe(true)
+    expect(checkCompatibility({ productVersion: '9.1.0+abc', config: {} }).supported).toBe(true)
   })
 
   it('refuses other versions with a message naming both', () => {
-    for (const productVersion of ['8.0.0', '8.0.2', '8.1.0', '9.0.0']) {
+    for (const productVersion of ['8.0.1', '9.0.0', '9.1.1', '10.0.0']) {
       const result = checkCompatibility({ productVersion, config: {} })
       expect(result.supported).toBe(false)
       expect(result.overridden).toBe(false)
       expect(result.message).toBe(
-        `Archive Viewer ${version} supports OpenCloud 8.0.1; this server runs ${productVersion}. ` +
+        `Archive Viewer ${version} supports OpenCloud 9.1.0; this server runs ${productVersion}. ` +
           'Set allowUnsupportedOpenCloud: true in apps.yaml to run it anyway.'
       )
     }
@@ -68,7 +68,7 @@ describe('checkCompatibility', () => {
 
   it('lets the admin override an unsupported version', () => {
     const result = checkCompatibility({
-      productVersion: '8.1.0',
+      productVersion: '8.0.1',
       config: { allowUnsupportedOpenCloud: true }
     })
     expect(result.supported).toBe(false)
@@ -79,8 +79,8 @@ describe('checkCompatibility', () => {
 
 describe('waitForProductVersion', () => {
   it('resolves at once when the capabilities are loaded', async () => {
-    const store = { isInitialized: true, status: { productversion: '8.0.1' } }
-    await expect(waitForProductVersion(store)).resolves.toBe('8.0.1')
+    const store = { isInitialized: true, status: { productversion: '9.1.0' } }
+    await expect(waitForProductVersion(store)).resolves.toBe('9.1.0')
   })
 
   it('waits for the capabilities to load', async () => {

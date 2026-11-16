@@ -13,12 +13,14 @@ required `ARCHIVE_HELPER_PORT` used by the helper and the proxy alike, separate 
 release workflows, and the zip name `ArchiveViewer-<version>.zip`. **0.5.1** (released
 2026-11-01, PR #7) fixes the Dependabot alerts in devDependencies
 ([dependencies](../tech-stack/dependencies.md#security-overrides-pnpm-workspaceyaml-since-051)).
+**0.6.0** (branch `feature/opencloud-9.1.0`, unreleased) moves to OpenCloud **9.1.0** only (8.0.1
+dropped) and builds against web 8.2.2, the web UI bundled with 9.1.0.
 
 ## Summary
 
-A standalone **OpenCloud v8 web extension** built with OpenCloud's own toolchain
-(`@opencloud-eu/extension-sdk`, Vite 8, Vue 3, TypeScript 6, pnpm 11, Node 24), pinned to the
-OpenCloud **8.0** line because the main server runs rolling **8.0.1**. It opens **ZIP, TAR,
+A standalone **OpenCloud web extension** (web UI v8) built with OpenCloud's own toolchain
+(`@opencloud-eu/extension-sdk`, Vite 8, Vue 3, TypeScript 6, pnpm 11, Node 24), pinned to web
+**8.2.2** because the main server runs rolling OpenCloud **9.1.0** (which bundles it). It opens **ZIP, TAR,
 TAR.GZ/TGZ, TAR.BZ2/TBZ2, TAR.XZ/TXZ, TAR.LZMA/TLZ** archives and single **.gz / .bz2 / .xz / .lzma** files in the browser: browse folders, search, sort, preview text and images,
 download single files or a selection as one zip. ZIPs of any size are read by HTTP Range requests
 (tested with 3 GiB), so only the index and the opened files are fetched. Everything runs in **plain JavaScript (no
@@ -33,13 +35,13 @@ deployment (removed in step 1); the old pre-v8 viewer was ported and deleted in 
 
 | Item                              | Status                                                                                        |
 | --------------------------------- | --------------------------------------------------------------------------------------------- |
-| `pnpm install`                    | OK (lockfile committed; 2 harmless upstream peer warnings)                                    |
+| `pnpm install`                    | OK (lockfile committed; 3 harmless upstream peer warnings)                                    |
 | `pnpm build`                      | OK → `dist/manifest.json`, `dist/js/*.mjs`, `dist/assets/*.css`; no `.wasm`, no `WebAssembly` |
 | `pnpm check:types`                | OK                                                                                            |
 | `pnpm lint` / `format:check`      | OK                                                                                            |
-| `pnpm test:unit --run`            | OK, 252/252                                                                                   |
+| `pnpm test:unit --run`            | OK, 292/292                                                                                   |
 | `go test -race ./...` (`server/`) | OK (7 packages)                                                                               |
-| Loaded in a running OpenCloud     | OK — local opencloud-compose, rolling 8.0.1 (steps 2–5)                                       |
+| Loaded in a running OpenCloud     | OK — local opencloud-compose, rolling 9.1.0 (0.6.0; 81/81 e2e), earlier 8.0.1                 |
 
 ## Feature status
 

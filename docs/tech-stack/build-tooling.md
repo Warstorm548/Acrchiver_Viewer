@@ -39,7 +39,7 @@ nothing). The image is built by compose from `server/Dockerfile` (multi-stage, `
 ## Vite — `vite.config.ts`
 
 `defineConfig({ name: 'archive-viewer', build })` from
-`@opencloud-eu/extension-sdk` 8.0.0 (pinned to the server's 8.0 line). Our only override is
+`@opencloud-eu/extension-sdk` 8.2.2 (pinned to the web UI that OpenCloud 9.1.0 bundles). Our only override is
 `build.rollupOptions.output.postBanner`, which stamps `/*! archive-viewer v<version> */` (read from
 `package.json`) on every compiled JS file. It must be `postBanner`: Rolldown adds a plain `banner`
 before minifying, and the minifier strips it. The SDK supplies:

@@ -11,6 +11,9 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 - **MINOR** — new features that keep existing behaviour working.
 - **PATCH** — bug fixes and small tweaks.
 
+While the version is still `0.x`, a breaking change bumps **MINOR** instead (SemVer treats every
+`0.x` minor as breaking): 0.6.0 dropped OpenCloud 8.0.1.
+
 Every change gets an entry and a version bump in `package.json`, which is the single source of
 the viewer's version: the build copies it into `dist/manifest.json` and stamps it on every
 compiled JS file (`/*! archive-viewer vX.Y.Z */`).
@@ -24,9 +27,37 @@ ignored and the viewer stays in browser mode (an admin can override that with
 
 | Viewer | OpenCloud | Helper |
 | ------ | --------- | ------ |
+| 0.6.x  | 9.1.0     | ^0.5.0 |
 | 0.5.x  | 8.0.1     | ^0.5.0 |
 | 0.4.1  | 8.0.1     | 0.4.1  |
 | 0.4.0  | 8.0.1     | 0.4.0  |
+
+## [0.6.0] - Unreleased
+
+Supported OpenCloud versions: **9.1.0**. Works with helper **^0.5.0** (0.5.x).
+
+**Upgrading:** this release runs only on OpenCloud **9.1.0**. **OpenCloud 8.0.1 is no longer
+supported**: on 8.0.1 the viewer hides itself (unless `allowUnsupportedOpenCloud` is set), so
+servers still on 8.0.1 should stay on viewer 0.5.1. The helper needs no change: 0.5.1 works with
+OpenCloud 9.1.0.
+
+### Changed (breaking)
+
+- `SUPPORTED_OPENCLOUD_VERSIONS` is now `['9.1.0']` (was `['8.0.1']`).
+
+### Changed
+
+- The `@opencloud-eu/*` packages move from `~8.0.0` to `~8.2.2`: OpenCloud 9.1.0 ships web UI
+  8.2.2, so the viewer is now built and tested against the same web packages the server runs.
+- Tests and the e2e suite now run against a local OpenCloud 9.1.0 stack; the version-gate tests
+  use 8.0.1 as the unsupported version.
+
+### Security
+
+- Two more `pnpm-workspace.yaml` overrides for devDependencies that come in through the 8.2.2
+  packages: `fast-xml-parser` 5.11.2 → 5.12.x (via `web-client`) and `glob` 13.x → 14.x (via
+  `@vue/test-utils` and `vue3-gettext`). Still not fixable: `deepmerge` 4.3.1 (low, no fixed
+  release). None of these end up in the built extension.
 
 ## [0.5.1] - 2026-11-01
 

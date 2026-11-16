@@ -90,7 +90,8 @@ than `ARCHIVE_HELPER_MAX_STORAGE`.
 
 1. `diff config/opencloud/proxy.yaml custom/proxy.yaml` — only the marked Archive Viewer block
    and its header comment should differ; copy any other upstream change into `custom/proxy.yaml`
-   (and into `deploy/compose/proxy.yaml` in the repo). Same for
+   (and into `deploy/compose/proxy.yaml` in the repo). Upstream's proxy.yaml was still unchanged
+   at opencloud-compose `d4695d2` (OpenCloud 9.1.0). Same for
    `diff config/opencloud/apps.yaml custom/apps.yaml` if you use it.
 2. If you enable **yjs** later: `yjs/yjs.yml` mounts upstream `proxy.yaml` at the same path;
    list `custom/archive-helper.yml` **after** it in `COMPOSE_FILE` so our copy (which keeps the

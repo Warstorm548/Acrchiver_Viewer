@@ -17,7 +17,7 @@ and what is still missing: [opencloud-v8-compatibility](opencloud-v8-compatibili
    inside `buildApplication`'s try/catch. **If `setup()` throws**, OpenCloud calls
    `appsStore.registerAppLoadingFailure` and never registers the app: no file types, no menu
    entry, no route. The OpenCloud version check uses this to hide the viewer on unsupported
-   versions (checked against web v8.0.0 source).
+   versions (checked against web v8.0.0 source; unchanged in v8.2.2, the web UI in OpenCloud 9.1.0).
 
 ## File types
 

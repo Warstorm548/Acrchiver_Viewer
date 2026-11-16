@@ -31,19 +31,19 @@ No `extensions` (registry) key — no menu items or file actions.
 ## OpenCloud version check — `src/compatibility.ts`
 
 The viewer runs only on the exact OpenCloud versions in `SUPPORTED_OPENCLOUD_VERSIONS`
-(currently `['8.0.1']`). That's deliberate, so an untested OpenCloud upgrade can't leave a
+(currently `['9.1.0']`; 0.5.x and older: `['8.0.1']`). That's deliberate, so an untested OpenCloud upgrade can't leave a
 half-working viewer.
 
 - Top level of `src/index.ts`: `await waitForProductVersion(useCapabilityStore())`. OpenCloud
   loads capabilities in parallel with the apps, so this waits for `isInitialized` (10 s timeout,
   then the version counts as unknown). OpenCloud awaits the module, top-level `await` included,
   before it calls `setup()`.
-- Only `status.productversion` is used, with build info stripped (`8.0.1+abc` → `8.0.1`), as
+- Only `status.productversion` is used, with build info stripped (`9.1.0+abc` → `9.1.0`), as
   OpenCloud itself does. `status.version` / `versionstring` are a legacy ownCloud number (10.x).
 - `setup()` calls `checkCompatibility({ productVersion, config: applicationConfig })`:
   - supported → registers as usual;
-  - unsupported or unknown → **throws** with a message like "Archive Viewer 0.2.0 supports
-    OpenCloud 8.0.1; this server runs 8.1.0. Set allowUnsupportedOpenCloud: true in apps.yaml to
+  - unsupported or unknown → **throws** with a message like "Archive Viewer 0.6.0 supports
+    OpenCloud 9.1.0; this server runs 8.0.1. Set allowUnsupportedOpenCloud: true in apps.yaml to
     run it anyway." OpenCloud then records an app loading failure and never registers the app,
     so there's no "Open in Archive Viewer", no file types and no route (see
     [opencloud-integration](../architecture/opencloud-integration.md));

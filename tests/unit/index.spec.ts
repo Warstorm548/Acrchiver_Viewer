@@ -1,4 +1,4 @@
-const capabilityStore = { isInitialized: true, status: { productversion: '8.0.1' } }
+const capabilityStore = { isInitialized: true, status: { productversion: '9.1.0' } }
 
 vi.mock('@opencloud-eu/web-pkg', () => ({
   AppWrapperRoute: () => ({}),
@@ -23,20 +23,20 @@ describe('extension entry', () => {
   afterEach(() => vi.restoreAllMocks())
 
   it('registers on a supported OpenCloud version', async () => {
-    const setup = await loadSetup('8.0.1')
+    const setup = await loadSetup('9.1.0')
     expect(setup({ applicationConfig: {} }).appInfo.id).toBe('archive-viewer')
   })
 
   it('refuses to register on an unsupported version, which hides the app', async () => {
-    const setup = await loadSetup('8.1.0')
+    const setup = await loadSetup('8.0.1')
     expect(() => setup({ applicationConfig: {} })).toThrow(
-      /supports OpenCloud 8\.0\.1; this server runs 8\.1\.0/
+      /supports OpenCloud 9\.1\.0; this server runs 8\.0\.1/
     )
   })
 
   it('registers with a warning when the admin overrides the check', async () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
-    const setup = await loadSetup('8.1.0')
+    const setup = await loadSetup('8.0.1')
     const result = setup({ applicationConfig: { allowUnsupportedOpenCloud: true } })
     expect(result.appInfo.id).toBe('archive-viewer')
     expect(warn).toHaveBeenCalledWith(expect.stringContaining('Running anyway'))
