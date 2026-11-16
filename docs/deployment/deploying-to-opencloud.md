@@ -119,7 +119,7 @@ compose default tag differs from `api.Version`, or a changelog lacks the current
 Installing a viewer release on a server (opencloud-compose, apps folder `config/opencloud/apps`):
 
 ```
-v=0.5.0; base=https://github.com/Warstorm548/Acrchiver_Viewer/releases/download/v$v
+v=0.6.0; base=https://github.com/Warstorm548/Acrchiver_Viewer/releases/download/v$v
 curl -fsSLO $base/ArchiveViewer-$v.zip -O $base/ArchiveViewer-$v.zip.sha256
 sha256sum -c ArchiveViewer-$v.zip.sha256
 rm -rf config/opencloud/apps/archive-viewer && unzip -q ArchiveViewer-$v.zip -d config/opencloud/apps
