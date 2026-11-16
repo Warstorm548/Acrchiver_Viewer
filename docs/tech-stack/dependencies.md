@@ -76,7 +76,8 @@ The `@opencloud-eu/*` pins bring in some old sub-dependencies that Dependabot fl
 only change our own install (build and tests), and none of these packages end up in `dist/`. At
 runtime the host-provided packages (`web-client`, with `webdav` and `fast-xml-parser`) come from
 OpenCloud's own web bundle, which these overrides can't change; fixes there ship with OpenCloud.
-Because the pins stay on one web UI line (`~8.2.2`), the fixed versions are forced with pnpm `overrides` in `pnpm-workspace.yaml`:
+Because the pins stay on one web UI line (`~8.2.2`), the fixed versions are forced with pnpm
+`overrides` in `pnpm-workspace.yaml`:
 
 | Package            | Pulled in by                                      | Forced to |
 | ------------------ | ------------------------------------------------- | --------- |
