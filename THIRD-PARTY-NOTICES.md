@@ -186,9 +186,9 @@ module paths, each with its full license text. None is part of the web app's rel
 
 | Module                               | Version            | License      | Used for                             |
 | ------------------------------------ | ------------------ | ------------ | ------------------------------------ |
-| `github.com/klauspost/compress`      | v1.19.0            | BSD-3-Clause | zstd (ZIP method 93, 7z)             |
+| `github.com/klauspost/compress`      | v1.20.2            | BSD-3-Clause | zstd (ZIP method 93, 7z)             |
 | `github.com/stangelandcl/ppmd`       | v0.1.1             | MIT          | PPMd (7z)                            |
-| `github.com/andybalholm/brotli`      | v1.2.2             | MIT          | Brotli (7z, via sevenzip)            |
+| `github.com/andybalholm/brotli`      | v1.2.7             | MIT          | Brotli (7z, via sevenzip)            |
 | `github.com/pierrec/lz4/v4`          | v4.1.27            | BSD-3-Clause | LZ4 (7z, via sevenzip)               |
 | `github.com/bodgit/plumbing`         | v1.3.0             | BSD-3-Clause | Reader helpers (via sevenzip)        |
 | `github.com/bodgit/windows`          | v1.0.1             | BSD-3-Clause | Windows file times (via sevenzip)    |

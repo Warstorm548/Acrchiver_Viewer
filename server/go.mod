@@ -4,13 +4,13 @@ go 1.27
 
 require (
 	github.com/bodgit/sevenzip v1.6.5
-	github.com/klauspost/compress v1.19.0
+	github.com/klauspost/compress v1.20.2
 	github.com/stangelandcl/ppmd v0.1.1
 	github.com/ulikunitz/xz v0.5.17
 )
 
 require (
-	github.com/andybalholm/brotli v1.2.2 // indirect
+	github.com/andybalholm/brotli v1.2.7 // indirect
 	github.com/bodgit/plumbing v1.3.0 // indirect
 	github.com/bodgit/windows v1.0.1 // indirect
 	github.com/hashicorp/golang-lru/v2 v2.0.7 // indirect

@@ -21,6 +21,27 @@ the viewer relies on:
 Every change gets an entry and a bump of `Version`, and the default image tag in
 `deploy/compose/archive-helper.yml` must match it (checked by `tests/unit/helperVersion.spec.ts`).
 
+## [0.5.2] - Unreleased
+
+Works with viewer **0.5.x** and **0.6.x** (both accept `^0.5.0`); tested on OpenCloud 9.1.0 with
+viewer 0.6.0. No settings change: pull the new image (`ARCHIVE_HELPER_TAG=0.5.2`, or the new
+`archive-helper.yml`) and restart the helper. No API change.
+
+### Security
+
+Three vulnerabilities reported by `govulncheck` as reachable from the helper's code (none were
+Dependabot alerts):
+
+- `github.com/andybalholm/brotli` v1.2.2 → v1.2.7 (GO-2026-6888: excessive memory allocation when
+  decompressing crafted streams; Brotli in 7z, via sevenzip).
+- `github.com/klauspost/compress` v1.19.0 → v1.20.2 (GO-2026-6865: panic on two-block frames;
+  zstd in ZIP and 7z).
+- Built with Go **1.27.4** (GO-2026-6859: HTTP/1 server crash from a `MaxBytesReader` header race
+  in `net/http`). The Dockerfile's `golang:1.27-alpine` already resolves to 1.27.4.
+
+Both module bumps are also made in the patched sevenzip copy (`third_party/sevenzip/go.mod`).
+`govulncheck ./...` now reports no vulnerabilities.
+
 ## [0.5.1] - 2026-11-01
 
 Works with viewer **0.5.x** and **0.6.x**. Tested with OpenCloud 8.0.1 and, with viewer 0.6.0,

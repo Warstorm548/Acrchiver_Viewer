@@ -113,6 +113,9 @@ minute, 3.04 GiB) and deletes it from the server, the trash and `test-fixtures/`
 - 2026-11-15, 0.6.0 build on **OpenCloud 9.1.0** (web 8.2.2 packages; helper 0.5.1 built from
   source, unchanged): all 81 tests and the login step passed in 3.7 minutes (peak 554 MiB),
   incl. the version gate with 8.0.1 as the unsupported version; `./archive-temp` empty afterwards.
+- 2026-11-16, helper 0.5.2 built from source (Go 1.27.4, brotli v1.2.7, klauspost/compress v1.20.2)
+  with viewer 0.6.0 on OpenCloud 9.1.0: `/health` reports 0.5.2 and ready; all 81 tests and the
+  login step passed in 3.6 minutes; `./archive-temp` empty afterwards.
 - Sanity: with the CSP rewrite removed, the four fallback tests fail (no "worker unavailable"), so
   the simulation is what makes them pass.
 

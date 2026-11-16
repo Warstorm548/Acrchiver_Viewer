@@ -93,8 +93,8 @@ Details:
 - Author **Warstorm548**; repo/bugs → `Warstorm548/Acrchiver_Viewer` (the GitHub name keeps its
   old spelling; the project and the local folder are `Archive_Viewer`). README states the project is
   independent and not affiliated with OpenCloud GmbH.
-- Viewer version `0.5.1` (latest release `v0.5.1`), helper version `0.5.1` (own
-  version, latest release `helper-v0.5.1`). `0.4.0` was the first tagged release (`v0.4.0`, published by the release workflow with
+- Viewer version `0.6.0` (unreleased; latest release `v0.5.1`), helper version `0.5.2`
+  (unreleased; own version, latest release `helper-v0.5.1`). `0.4.0` was the first tagged release (`v0.4.0`, published by the release workflow with
   the helper image `ghcr.io/warstorm548/archive-helper`; 0.2.2 and 0.3.0 were never released on
   their own; the old "1.0.0 Production Ready" changelog in
   `docs/original-docs/` is historical and inaccurate).

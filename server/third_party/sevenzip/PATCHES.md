@@ -3,7 +3,8 @@
 Copied from the v1.6.5 module (BSD-3-Clause, see `LICENSE`) without its tests and testdata, and
 used through a `replace` in `server/go.mod`. Upstream's `go.mod` lost only its test-only
 requirements (testify, x/sync), and `golang.org/x/text` was raised to v0.43.0 (helper
-0.5.1, GO-2026-6629) to match `server/go.mod`.
+0.5.1, GO-2026-6629), `andybalholm/brotli` to v1.2.7 (GO-2026-6888) and `klauspost/compress` to
+v1.20.2 (GO-2026-6865) in helper 0.5.2, to match `server/go.mod`.
 
 Why: upstream bounds every count read from a 7z header only at `math.MaxUint32`, then
 `make()`s slices of that length (e.g. `make([]FileHeader, files)`). A header of a few bytes can
