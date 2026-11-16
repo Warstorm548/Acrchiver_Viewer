@@ -14,7 +14,7 @@ test('OpenCloud serves this build with its default config', async () => {
   expect(app?.config).toEqual(manifest.config)
 })
 
-test('"Open with" offers the Archive Viewer on 8.0.1 and opens it', async ({ page, viewer }) => {
+test('"Open with" offers the Archive Viewer on 9.1.0 and opens it', async ({ page, viewer }) => {
   await page.goto('/files/spaces/personal/admin?view-mode=resource-table&items-per-page=500')
   const file = page.locator('tr', { has: page.locator('[data-test-resource-name="sample.zip"]') })
   await file.click({ button: 'right' })

@@ -1,5 +1,13 @@
 # OpenCloud v8 Compatibility
 
+**OpenCloud 9.1.0 (checked 2026-11-15, viewer 0.6.0): compatible.** OpenCloud 9.1.0 bundles web UI
+**v8.2.2** (`WEB_ASSETS_VERSION` in `services/web/Makefile`), so the extension API is still web
+v8. The packages moved to `~8.2.2` with no code change. The app-loading code that hides the viewer
+when `setup()` throws (`web-runtime` `bootstrap.ts`, `registerAppLoadingFailure`) is the same in
+v8.0.0 and v8.2.2. The production CSP is unchanged apart from a new `media-src blob:`. All 81 e2e
+tests pass on a local 9.1.0 stack. OpenCloud 8.0.1 is no longer supported (0.6.0). The rest of
+this page is the original 8.0.1 research and stays as history.
+
 **Verdict (after rework step 6): compatible and functional on OpenCloud 8.0.1** for ZIP, TAR,
 TAR.GZ/TGZ, TAR.BZ2/TBZ2, TAR.XZ/TXZ, legacy TAR.LZMA/TLZ and single .gz/.bz2/.xz/.lzma files
 (pure JavaScript, no CSP change; bzip2/xz/lzma run in a `blob:` Web Worker). ZIPs of any size

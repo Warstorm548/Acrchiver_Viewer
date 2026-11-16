@@ -23,7 +23,8 @@ Every change gets an entry and a bump of `Version`, and the default image tag in
 
 ## [0.5.1] - 2026-11-01
 
-Works with viewer **0.5.x**. No settings change: pull the new image (`ARCHIVE_HELPER_TAG=0.5.1`, or
+Works with viewer **0.5.x** and **0.6.x**. Tested with OpenCloud 8.0.1 and, with viewer 0.6.0,
+OpenCloud 9.1.0 (no change needed). No settings change: pull the new image (`ARCHIVE_HELPER_TAG=0.5.1`, or
 the new `archive-helper.yml`) and restart the helper.
 
 ### Security

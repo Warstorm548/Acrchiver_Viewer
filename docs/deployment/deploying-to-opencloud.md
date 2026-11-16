@@ -1,7 +1,7 @@
-# Deploying to OpenCloud v8
+# Deploying to OpenCloud
 
 How a built extension gets into an OpenCloud server. Verified in rework step 2 against the
-production compose stack on rolling 8.0.1 (local setup:
+production compose stack on rolling 8.0.1, and again for 0.6.0 on rolling 9.1.0 (local setup:
 [local-dev-environment](local-dev-environment.md)). The old Docker/nginx/`install.sh` deployment
 was removed in step 1.
 
@@ -48,12 +48,12 @@ Requirements from the OpenCloud web service: each app has its own directory, con
 - In Files, right-click a `.zip` → "Open in Archive Viewer".
 - If that entry is missing, check the browser console. On an OpenCloud version the release
   doesn't support, the console shows `cannot create application` with "Archive Viewer <version>
-  supports OpenCloud 8.0.1; this server runs …". See below.
+  supports OpenCloud 9.1.0; this server runs …". See below.
 
 ## Supported OpenCloud versions
 
-Each release runs only on the exact OpenCloud versions it was tested on (`8.0.1` for 0.2.x, listed
-in `ArchiveViewerChangelog.md`). On any other version, or if the version can't be read, the viewer hides
+Each release runs only on the exact OpenCloud versions it was tested on (`8.0.1` for 0.2.x–0.5.x, `9.1.0` since 0.6.0,
+listed in `ArchiveViewerChangelog.md`). On any other version, or if the version can't be read, the viewer hides
 itself (no "Open in Archive Viewer", no file types). Before upgrading OpenCloud, install a viewer
 release that supports the new version, or set `allowUnsupportedOpenCloud: true` (below) at your
 own risk. Details: [extension-entry](../source/extension-entry.md).
@@ -131,7 +131,8 @@ Then install or update a helper version the viewer supports
 
 ## Production security policy (CSP)
 
-opencloud-compose serves the CSP from `config/opencloud/csp.yaml`. Observed on 8.0.1:
+opencloud-compose serves the CSP from `config/opencloud/csp.yaml`. Observed on 8.0.1 and again
+on 9.1.0 (which only adds `media-src blob:`):
 `worker-src 'self' blob:` (web workers allowed) but `script-src` without `'wasm-unsafe-eval'`, so
 **WebAssembly is blocked**. A WASM-based archive engine would need the server's `csp.yaml`
 changed; a pure-JS engine works as is.
@@ -145,8 +146,8 @@ worker. See
 
 ## Version alignment
 
-The app's `@opencloud-eu/*` packages are pinned to the server's line (`~8.0.0` for an 8.0.x
-server); see [dependencies](../tech-stack/dependencies.md).
+The app's `@opencloud-eu/*` packages are pinned to the web UI version the server bundles
+(`~8.2.2` for OpenCloud 9.1.0, which ships web 8.2.2); see [dependencies](../tech-stack/dependencies.md).
 
 ## Sources
 

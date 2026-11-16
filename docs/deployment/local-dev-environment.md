@@ -1,7 +1,8 @@
 # Local Dev Environment (OpenCloud production stack)
 
 A local copy of OpenCloud's official **production** compose stack, matching the main server
-(rolling **8.0.1**), with this app mounted as an installed extension. Set up in rework step 2.
+(rolling **9.1.0** since 2026-11-15; 8.0.1 before), with this app mounted as an installed
+extension. Set up in rework step 2.
 It lives **outside this repo** (not pushed), so this doc records how to recreate it.
 
 ## Layout
@@ -18,8 +19,8 @@ It lives **outside this repo** (not pushed), so this doc records how to recreate
 ```
 
 No upstream file is edited, so `git pull` in `opencloud-compose/` keeps working. The repo has no
-tags; since its 8.0.1 commit (`2d992b77`, 2026-09-16) only image bumps landed, so `main` with
-`OC_DOCKER_TAG=8.0.1` matches an 8.0.1 server except Traefik's patch level (3.7.14).
+tags; `main` at `d4695d2` (2026-11-13) defaults to 9.1.0 (Traefik 3.7.18), and `OC_DOCKER_TAG=9.1.0`
+pins it. Its `proxy.yaml` is unchanged since 8.0.1, so `custom/proxy.yaml` still only adds our block.
 
 ## How the stack works
 
@@ -41,7 +42,7 @@ COMPOSE_FILE=docker-compose.yml:traefik/opencloud.yml:custom/archive-viewer.yml:
 INSECURE=true
 TRAEFIK_SERVICES_TLS_CONFIG="tls=true"
 OC_DOCKER_IMAGE=opencloudeu/opencloud-rolling
-OC_DOCKER_TAG=8.0.1
+OC_DOCKER_TAG=9.1.0
 DEMO_USERS=true
 ARCHIVE_HELPER_PORT=8080
 INITIAL_ADMIN_PASSWORD=admin
@@ -120,7 +121,7 @@ curl -sk -u admin:admin -T sample.zip https://cloud.opencloud.test/remote.php/we
 ## Automated checks (no sudo needed)
 
 ```
-curl -sk https://cloud.opencloud.test/status.php              # productversion 8.0.1, edition rolling
+curl -sk https://cloud.opencloud.test/status.php              # productversion 9.1.0, edition rolling
 curl -sk https://cloud.opencloud.test/config.json             # external_apps contains archive-viewer
 curl -sk https://cloud.opencloud.test/assets/apps/archive-viewer/manifest.json
 curl -sk -D - -o /dev/null https://cloud.opencloud.test/      # Content-Security-Policy header
@@ -282,3 +283,11 @@ CSP (`worker-src 'self' blob:`, so bzip2/xz/lzma ran in the worker).
 
 - `pnpm test:e2e` (Playwright 1.64.1, Chromium 156): all 64 tests passed in 3.0 minutes, incl. the
   3 GiB ZIP (900 MiB download peak 584–591 MiB). Details in [e2e](../testing/e2e.md#results).
+
+## OpenCloud 9.1.0 results (0.6.0, 2026-11-15)
+
+- `git pull` to upstream `d4695d2`, `OC_DOCKER_TAG=9.1.0`, `docker compose pull && up -d`:
+  `status.php` reports 9.1.0 rolling. CSP as on 8.0.1 plus `media-src 'self' blob:`.
+- The proxy still expands `${ARCHIVE_HELPER_PORT}` (`/archive-api/download/x` answers 410 from the
+  helper); `custom/proxy.yaml` equals `deploy/compose/proxy.yaml`; upstream proxy.yaml unchanged.
+- 292 unit and 81/81 e2e tests pass on 9.1.0 with the 0.6.0 build ([e2e](../testing/e2e.md)).

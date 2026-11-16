@@ -1,13 +1,14 @@
 # CLAUDE.md — Archive Viewer
 
-Archive viewer extension for **OpenCloud Web v8** (browse/preview/download ZIP, TAR, etc. inside
-OpenCloud). Standalone extension at the repo root, built with OpenCloud's toolchain
-(`@opencloud-eu/extension-sdk`, Vite, Vue 3, TypeScript, pnpm, Node 24), pinned to OpenCloud
-**8.0** to match the main server (rolling 8.0.1). All 6 rework steps are done: it opens ZIP,
+Archive viewer extension for **OpenCloud 9.1.0** (web UI v8; browse/preview/download ZIP, TAR,
+etc. inside OpenCloud). Standalone extension at the repo root, built with OpenCloud's toolchain
+(`@opencloud-eu/extension-sdk`, Vite, Vue 3, TypeScript, pnpm, Node 24), pinned to web
+**8.2.2**, the web UI bundled with the main server (rolling OpenCloud 9.1.0; 8.0.1 dropped in
+0.6.0). All 6 rework steps are done: it opens ZIP,
 TAR, TAR.GZ/TGZ, TAR.BZ2/TBZ2, TAR.XZ/TXZ, TAR.LZMA and single .gz/.bz2/.xz/.lzma files in the
 browser with pure JavaScript (no WebAssembly, no CSP change) — browse, search, sort, preview,
 download; ZIPs of any size are read by HTTP Range requests. UI in English, German,
-Spanish and French (AI-drafted); runs only on OpenCloud 8.0.1. An optional Go **archive helper**
+Spanish and French (AI-drafted); runs only on OpenCloud 9.1.0. An optional Go **archive helper**
 (`server/`, compose files in `deploy/`, since 0.3.0) opens archives too large for the browser,
 7z and large ZIPs; since 0.5.0 it has its own version, and the viewer uses it only when
 `src/helper/gate.ts` accepts it (else browser mode). Start with [project status](docs/overview/project-status.md).
@@ -40,7 +41,8 @@ for a quick run), `pnpm package` (release zip), `pnpm l10n:extract` / `pnpm l10n
   that mentions it.
 - **Every change bumps the SemVer version** of the part it changes, with a changelog entry in the
   same change; unreleased versions collect further changes until tagged. Viewer: `package.json`
-  (MAJOR breaking, MINOR feature, PATCH fix) + [ArchiveViewerChangelog.md](ArchiveViewerChangelog.md).
+  (MAJOR breaking, MINOR feature, PATCH fix; while on 0.x a breaking change bumps MINOR, e.g. 0.6.0
+  dropped OpenCloud 8.0.1) + [ArchiveViewerChangelog.md](ArchiveViewerChangelog.md).
   Helper (own version since 0.5.0): `Version` in `server/internal/api/api.go` and the default
   image tag in `deploy/compose/archive-helper.yml` (MINOR = breaking API change, PATCH =
   compatible) + [ArchiveHelperChangelog.md](ArchiveHelperChangelog.md). A breaking helper change
@@ -77,7 +79,7 @@ for a quick run), `pnpm package` (release zip), `pnpm l10n:extract` / `pnpm l10n
 ### Tech stack
 
 - [docs/tech-stack/dependencies.md](docs/tech-stack/dependencies.md) — zip.js (native build only)
-  and devDependencies with versions, the helper's Go modules (ulikunitz/xz, patched sevenzip, zstd, ppmd), 8.0 alignment rule, install warnings, step 4 candidates.
+  and devDependencies with versions, the helper's Go modules (ulikunitz/xz, patched sevenzip, zstd, ppmd), web-UI version alignment rule (9.1.0 → 8.2.2), install warnings, step 4 candidates.
 - [docs/tech-stack/build-tooling.md](docs/tech-stack/build-tooling.md) — Node/pnpm, Go toolchain, scripts, what
   the extension-sdk `defineConfig` provides, TypeScript, ESLint, Prettier, `.gitignore`, release
   zip script, release workflows (viewer `release.yml`, helper `release-helper.yml` with the GHCR
@@ -137,7 +139,7 @@ for a quick run), `pnpm package` (release zip), `pnpm l10n:extract` / `pnpm l10n
   required `ARCHIVE_HELPER_PORT` (internal, set only in `.env`), OpenCloud's internal ports,
   Traefik's 80/443 and how to move them (Let's Encrypt, URL, external proxy).
 - [docs/deployment/local-dev-environment.md](docs/deployment/local-dev-environment.md) — the local
-  opencloud-compose stack (rolling 8.0.1) outside the repo: setup to recreate it, sudo commands,
+  opencloud-compose stack (rolling 9.1.0) outside the repo: setup to recreate it, sudo commands,
   dev loop, fixtures, browser checklist, large-ZIP test + cleanup, step results, troubleshooting.
 
 ### Known issues

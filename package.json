@@ -1,6 +1,6 @@
 {
   "name": "web-app-archive-viewer",
-  "version": "0.5.1",
+  "version": "0.6.0",
   "private": true,
   "description": "OpenCloud Web archive viewer - browse and preview archive contents",
   "type": "module",
@@ -38,13 +38,13 @@
     "l10n:compile": "vue-gettext-compile && prettier --write l10n/translations.json"
   },
   "devDependencies": {
-    "@opencloud-eu/eslint-config": "~8.0.0",
-    "@opencloud-eu/extension-sdk": "~8.0.0",
-    "@opencloud-eu/prettier-config": "~8.0.0",
-    "@opencloud-eu/tsconfig": "~8.0.0",
-    "@opencloud-eu/web-client": "~8.0.0",
-    "@opencloud-eu/web-pkg": "~8.0.0",
-    "@opencloud-eu/web-test-helpers": "~8.0.0",
+    "@opencloud-eu/eslint-config": "~8.2.2",
+    "@opencloud-eu/extension-sdk": "~8.2.2",
+    "@opencloud-eu/prettier-config": "~8.2.2",
+    "@opencloud-eu/tsconfig": "~8.2.2",
+    "@opencloud-eu/web-client": "~8.2.2",
+    "@opencloud-eu/web-pkg": "~8.2.2",
+    "@opencloud-eu/web-test-helpers": "~8.2.2",
     "@playwright/test": "1.64.1",
     "@types/node": "^24.0.0",
     "@vue/test-utils": "^2.4.6",

@@ -15,16 +15,16 @@ const openWithEntries = async (page: Page) => {
   return page.getByText('Archive Viewer', { exact: true })
 }
 
-test.describe('unsupported version (8.1.0)', () => {
+test.describe('unsupported version (8.0.1)', () => {
   // OpenCloud logs the app's refusal as a failed app load
   test.use({
-    allowedConsole: [/Archive Viewer .* supports OpenCloud 8\.0\.1; this server runs 8\.1\.0/]
+    allowedConsole: [/Archive Viewer .* supports OpenCloud 9\.1\.0; this server runs 8\.0\.1/]
   })
 
   test('hides the viewer', async ({ consoleEntries, page }) => {
-    await patchProductVersion(page, '8.1.0')
+    await patchProductVersion(page, '8.0.1')
     expect(await (await openWithEntries(page)).count()).toBe(0)
-    expect(consoleEntries.some(({ text }) => text.includes('this server runs 8.1.0'))).toBe(true)
+    expect(consoleEntries.some(({ text }) => text.includes('this server runs 8.0.1'))).toBe(true)
   })
 
   test('allowUnsupportedOpenCloud brings it back with a warning', async ({
@@ -32,7 +32,7 @@ test.describe('unsupported version (8.1.0)', () => {
     page,
     viewer
   }) => {
-    await patchProductVersion(page, '8.1.0')
+    await patchProductVersion(page, '8.0.1')
     await patchAppConfig(page, { allowUnsupportedOpenCloud: true })
     await viewer.open('sample.zip')
     await expect(viewer.row('docs')).toBeVisible()

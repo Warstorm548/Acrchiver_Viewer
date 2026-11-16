@@ -20,13 +20,13 @@ whose npm build depends on Node's `Buffer` and can't run in a browser. License t
 
 | Package                          | Range   | Installed | Role                                                                                           |
 | -------------------------------- | ------- | --------- | ---------------------------------------------------------------------------------------------- |
-| `@opencloud-eu/web-pkg`          | ~8.0.0  | 8.0.0     | `defineWebApplication`, `AppWrapperRoute`, `formatFileSize`, types (host-provided at runtime)  |
-| `@opencloud-eu/web-client`       | ~8.0.0  | 8.0.0     | `Resource` type, WebDAV client (host-provided)                                                 |
-| `@opencloud-eu/extension-sdk`    | ~8.0.0  | 8.0.0     | `defineConfig` for Vite/Vitest                                                                 |
-| `@opencloud-eu/tsconfig`         | ~8.0.0  | 8.0.0     | Base `tsconfig`                                                                                |
-| `@opencloud-eu/eslint-config`    | ~8.0.0  | 8.0.0     | ESLint rules                                                                                   |
-| `@opencloud-eu/prettier-config`  | ~8.0.0  | 8.0.0     | Prettier rules                                                                                 |
-| `@opencloud-eu/web-test-helpers` | ~8.0.0  | 8.0.0     | `mount`, `defaultPlugins` for tests                                                            |
+| `@opencloud-eu/web-pkg`          | ~8.2.2  | 8.2.2     | `defineWebApplication`, `AppWrapperRoute`, `formatFileSize`, types (host-provided at runtime)  |
+| `@opencloud-eu/web-client`       | ~8.2.2  | 8.2.2     | `Resource` type, WebDAV client (host-provided)                                                 |
+| `@opencloud-eu/extension-sdk`    | ~8.2.2  | 8.2.2     | `defineConfig` for Vite/Vitest                                                                 |
+| `@opencloud-eu/tsconfig`         | ~8.2.2  | 8.2.2     | Base `tsconfig`                                                                                |
+| `@opencloud-eu/eslint-config`    | ~8.2.2  | 8.2.2     | ESLint rules                                                                                   |
+| `@opencloud-eu/prettier-config`  | ~8.2.2  | 8.2.2     | Prettier rules                                                                                 |
+| `@opencloud-eu/web-test-helpers` | ~8.2.2  | 8.2.2     | `mount`, `defaultPlugins` for tests                                                            |
 | `vue`                            | ^3.5.10 | 3.5.44    | Host-provided at runtime                                                                       |
 | `vue3-gettext`                   | 4.0.1   | 4.0.1     | `useGettext` (host-provided)                                                                   |
 | `vite`                           | ^8.0.3  | 8.3.5     | Build                                                                                          |
@@ -60,37 +60,50 @@ runtime image is `gcr.io/distroless/static-debian12` (no shell, no package manag
 
 ## OpenCloud version alignment
 
-The main server runs OpenCloud rolling **8.0.1**, so the `@opencloud-eu/*` packages are pinned to
-`~8.0.0` (npm has 8.0.0 and 8.1.0; 8.0.0 is the 8.0 line). Rule: build against the **oldest
-OpenCloud version the app is deployed to**, and bump the pins when the server is upgraded.
-8.0.0 and 8.1.0 use the same Vite/Vitest ranges and `@module-federation/vite` 1.14.2. All checks
-pass on 8.0.0, which confirms `AppWrapperRoute`, `formatFileSize` and `AppConfigObject` exist in 8.0.
+The main server runs OpenCloud rolling **9.1.0** (since 0.6.0; 0.5.x and older targeted 8.0.1).
+OpenCloud's server version and its web UI version are numbered separately: each server release
+bundles one web UI release, set by `WEB_ASSETS_VERSION` in `services/web/Makefile` of
+`opencloud-eu/opencloud`. 9.1.0 bundles web **v8.2.2** (8.0.1 bundled v8.0.0), so the
+`@opencloud-eu/*` packages are pinned to `~8.2.2`. There are no 9.x web packages on npm.
+
+Rule: pin the packages to the web UI version bundled with the **oldest OpenCloud version the app
+is deployed to**, and bump the pins when the server is upgraded. 8.2.2 keeps the SDK's Vite/Vitest
+ranges and `@module-federation/vite` 1.14.2; all checks pass without code changes.
 
 ## Security overrides (`pnpm-workspace.yaml`, since 0.5.1)
 
-The `@opencloud-eu/*` pins bring in some old sub-dependencies that Dependabot flags. They are all
-build or test tools, and none of them end up in `dist/`. Because the pins stay at `~8.0.0`, the
-fixed versions are forced with pnpm `overrides` in `pnpm-workspace.yaml`:
+The `@opencloud-eu/*` pins bring in some old sub-dependencies that Dependabot flags. The overrides
+only change our own install (build and tests), and none of these packages end up in `dist/`. At
+runtime the host-provided packages (`web-client`, with `webdav` and `fast-xml-parser`) come from
+OpenCloud's own web bundle, which these overrides can't change; fixes there ship with OpenCloud.
+Because the pins stay on one web UI line (`~8.2.2`), the fixed versions are forced with pnpm
+`overrides` in `pnpm-workspace.yaml`:
 
-| Package            | Pulled in by                                     | Forced to |
-| ------------------ | ------------------------------------------------ | --------- |
-| `axios`            | `@module-federation/dts-plugin` (extension-sdk)  | ^1.20.0   |
-| `adm-zip`          | `@module-federation/dts-plugin`                  | ^0.6.1    |
-| `ws`               | `@module-federation/dts-plugin`, `isomorphic-ws` | ^8.21.0   |
-| `follow-redirects` | `axios`                                          | ^1.16.2   |
-| `minimatch`        | `webdav` (web-client, 9.x), ESLint (10.x)        | ^11.0.1   |
+| Package            | Pulled in by                                      | Forced to |
+| ------------------ | ------------------------------------------------- | --------- |
+| `axios`            | `@module-federation/dts-plugin` (extension-sdk)   | ^1.20.0   |
+| `adm-zip`          | `@module-federation/dts-plugin`                   | ^0.6.1    |
+| `ws`               | `@module-federation/dts-plugin`, `isomorphic-ws`  | ^8.21.0   |
+| `follow-redirects` | `axios`                                           | ^1.16.2   |
+| `minimatch`        | `webdav` (web-client, 9.x), ESLint (10.x)         | ^11.0.1   |
+| `fast-xml-parser`  | `web-client` 8.2.2, `webdav` (5.11.x)             | ^5.12.0   |
+| `glob`             | `js-beautify` (`@vue/test-utils`), `vue3-gettext` | ^14.0.2   |
 
 The dts-plugin isn't run (the SDK sets `dts: false`). minimatch 11 keeps the `minimatch` export
-and the `matchBase` option that webdav uses. Still open: `deepmerge` 4.3.1 (low, used by
+and the `matchBase` option that webdav uses. `fast-xml-parser` and `glob` were added in 0.6.0 for
+the 8.2.2 packages; glob 14 keeps the API `vue3-gettext` and `js-beautify` use (unit tests and
+`pnpm l10n:extract` pass). Still open: `deepmerge` 4.3.1 (low, used by
 `web-pkg`; no fixed release). Remove an override once its parent package ships the fix, for
 example when the pins move to a newer OpenCloud line.
 
 ## Known install warnings (harmless, upstream)
 
-`pnpm peers check` reports two unmet peers inside OpenCloud's own dependency tree:
+`pnpm peers check` reports three unmet peers inside OpenCloud's own dependency tree:
 
 - `@module-federation/dts-plugin` wants `typescript ^4.9 || ^5` (we use 6; the SDK sets `dts: false`).
 - `focus-trap-vue` wants `focus-trap ^7` (8 installed via web-pkg).
+- `@tiptap/extension-table-of-contents` wants `@tiptap/core` 3.34.0 (3.32.0 installed via
+  web-pkg 8.2.2).
 
 Also two deprecated sub-dependencies (`cron-parser@4`, `node-domexception`). OpenCloud's own repo
 has the same tree.

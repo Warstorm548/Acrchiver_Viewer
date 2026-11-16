@@ -1,6 +1,6 @@
 # Archive Viewer for OpenCloud
 
-A web extension for **OpenCloud 8** that opens archives right in the browser: browse folders,
+A web extension for **OpenCloud 9** (9.1.0) that opens archives right in the browser: browse folders,
 search, preview text and images, and download single files or a selection — without extracting
 anything into your storage.
 
@@ -73,8 +73,16 @@ archive-viewer:
 ## Compatibility
 
 Each release runs only on the exact OpenCloud versions it was tested on. This release supports
-**OpenCloud 8.0.1** (rolling); [ArchiveViewerChangelog.md](ArchiveViewerChangelog.md) lists the supported versions for each
-release. On any other version, or if the server version can't be read, the viewer hides itself
+**OpenCloud 9.1.0** (rolling); [ArchiveViewerChangelog.md](ArchiveViewerChangelog.md) lists the supported versions for each
+release.
+
+| Viewer          | OpenCloud | Helper            |
+| --------------- | --------- | ----------------- |
+| 0.6.x           | 9.1.0     | ^0.5.0            |
+| 0.5.x and older | 8.0.1     | see the changelog |
+
+**OpenCloud 8.0.1 is no longer supported since 0.6.0.** Servers still on 8.0.1 should use viewer
+0.5.1. On any other version, or if the server version can't be read, the viewer hides itself
 and logs the reason in the browser console. This is on purpose, so an OpenCloud upgrade can't
 leave a half-working viewer.
 
@@ -86,7 +94,8 @@ archive-viewer:
     allowUnsupportedOpenCloud: true # default false; logs a console warning
 ```
 
-The `@opencloud-eu/*` packages are pinned to the server's 8.0 line.
+The `@opencloud-eu/*` packages are pinned to `~8.2.2`, the web UI version that OpenCloud 9.1.0
+bundles (OpenCloud's server and web UI are numbered separately).
 
 ## Archive helper (optional)
 

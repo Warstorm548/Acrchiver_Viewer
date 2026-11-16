@@ -17,8 +17,8 @@ const FIXTURE = /\.(zip|7z|tar|gz|tgz|bz2|tbz2|xz|txz|lzma)$/
 
 export default async () => {
   const status = await getJson<{ productversion: string }>('/status.php')
-  if (status.productversion !== '8.0.1') {
-    throw new Error(`The stack runs OpenCloud ${status.productversion}; the suite expects 8.0.1`)
+  if (status.productversion !== '9.1.0') {
+    throw new Error(`The stack runs OpenCloud ${status.productversion}; the suite expects 9.1.0`)
   }
 
   const built = JSON.parse(readFileSync(DIST_MANIFEST, 'utf8')).version

@@ -6,7 +6,7 @@ import { version as appVersion } from '../package.json'
  * run on anything else, so an untested OpenCloud upgrade can't break it half-way. Supporting a new
  * version means adding it here in a new release (and noting it in ArchiveViewerChangelog.md).
  */
-export const SUPPORTED_OPENCLOUD_VERSIONS = ['8.0.1']
+export const SUPPORTED_OPENCLOUD_VERSIONS = ['9.1.0']
 
 /** `apps.yaml` key that lets an admin run the viewer on an unsupported version anyway. */
 export const OVERRIDE_KEY = 'allowUnsupportedOpenCloud'
@@ -49,7 +49,7 @@ export const waitForProductVersion = (
   })
 }
 
-/** `8.0.1+abc123` → `8.0.1`, as OpenCloud itself does; anything without X.Y.Z → `null`. */
+/** `9.1.0+abc123` → `9.1.0`, as OpenCloud itself does; anything without X.Y.Z → `null`. */
 export const normalizeVersion = (raw: unknown): string | null => {
   if (typeof raw !== 'string') {
     return null
