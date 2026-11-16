@@ -41,7 +41,8 @@ for a quick run), `pnpm package` (release zip), `pnpm l10n:extract` / `pnpm l10n
   that mentions it.
 - **Every change bumps the SemVer version** of the part it changes, with a changelog entry in the
   same change; unreleased versions collect further changes until tagged. Viewer: `package.json`
-  (MAJOR breaking, MINOR feature, PATCH fix) + [ArchiveViewerChangelog.md](ArchiveViewerChangelog.md).
+  (MAJOR breaking, MINOR feature, PATCH fix; while on 0.x a breaking change bumps MINOR, e.g. 0.6.0
+  dropped OpenCloud 8.0.1) + [ArchiveViewerChangelog.md](ArchiveViewerChangelog.md).
   Helper (own version since 0.5.0): `Version` in `server/internal/api/api.go` and the default
   image tag in `deploy/compose/archive-helper.yml` (MINOR = breaking API change, PATCH =
   compatible) + [ArchiveHelperChangelog.md](ArchiveHelperChangelog.md). A breaking helper change
