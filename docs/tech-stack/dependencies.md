@@ -72,9 +72,11 @@ ranges and `@module-federation/vite` 1.14.2; all checks pass without code change
 
 ## Security overrides (`pnpm-workspace.yaml`, since 0.5.1)
 
-The `@opencloud-eu/*` pins bring in some old sub-dependencies that Dependabot flags. They are all
-build or test tools, and none of them end up in `dist/`. Because the pins stay on one web UI line
-(`~8.2.2`), the fixed versions are forced with pnpm `overrides` in `pnpm-workspace.yaml`:
+The `@opencloud-eu/*` pins bring in some old sub-dependencies that Dependabot flags. The overrides
+only change our own install (build and tests), and none of these packages end up in `dist/`. At
+runtime the host-provided packages (`web-client`, with `webdav` and `fast-xml-parser`) come from
+OpenCloud's own web bundle, which these overrides can't change; fixes there ship with OpenCloud.
+Because the pins stay on one web UI line (`~8.2.2`), the fixed versions are forced with pnpm `overrides` in `pnpm-workspace.yaml`:
 
 | Package            | Pulled in by                                      | Forced to |
 | ------------------ | ------------------------------------------------- | --------- |
