@@ -13,7 +13,7 @@ required `ARCHIVE_HELPER_PORT` used by the helper and the proxy alike, separate 
 release workflows, and the zip name `ArchiveViewer-<version>.zip`. **0.5.1** (released
 2026-11-01, PR #7) fixes the Dependabot alerts in devDependencies
 ([dependencies](../tech-stack/dependencies.md#security-overrides-pnpm-workspaceyaml-since-051)).
-**0.6.0** (branch `feature/opencloud-9.1.0`, unreleased) moves to OpenCloud **9.1.0** only (8.0.1
+**0.6.0** (released 2026-11-15, PR #9; helper **0.5.2** fixes three Go vulnerabilities) moves to OpenCloud **9.1.0** only (8.0.1
 dropped) and builds against web 8.2.2, the web UI bundled with 9.1.0.
 
 ## Summary
@@ -93,8 +93,8 @@ Details:
 - Author **Warstorm548**; repo/bugs → `Warstorm548/Acrchiver_Viewer` (the GitHub name keeps its
   old spelling; the project and the local folder are `Archive_Viewer`). README states the project is
   independent and not affiliated with OpenCloud GmbH.
-- Viewer version `0.6.0` (unreleased; latest release `v0.5.1`), helper version `0.5.2`
-  (unreleased; own version, latest release `helper-v0.5.1`). `0.4.0` was the first tagged release (`v0.4.0`, published by the release workflow with
+- Viewer version `0.6.0` (latest release `v0.6.0`), helper version `0.5.2` (own version, latest
+  release `helper-v0.5.2`). `0.4.0` was the first tagged release (`v0.4.0`, published by the release workflow with
   the helper image `ghcr.io/warstorm548/archive-helper`; 0.2.2 and 0.3.0 were never released on
   their own; the old "1.0.0 Production Ready" changelog in
   `docs/original-docs/` is historical and inaccurate).

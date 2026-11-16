@@ -21,7 +21,7 @@ the viewer relies on:
 Every change gets an entry and a bump of `Version`, and the default image tag in
 `deploy/compose/archive-helper.yml` must match it (checked by `tests/unit/helperVersion.spec.ts`).
 
-## [0.5.2] - Unreleased
+## [0.5.2] - 2026-11-15
 
 Works with viewer **0.5.x** and **0.6.x** (both accept `^0.5.0`); tested on OpenCloud 9.1.0 with
 viewer 0.6.0. No settings change: pull the new image (`ARCHIVE_HELPER_TAG=0.5.2`, or the new
@@ -41,6 +41,12 @@ Dependabot alerts):
 
 Both module bumps are also made in the patched sevenzip copy (`third_party/sevenzip/go.mod`).
 `govulncheck ./...` now reports no vulnerabilities.
+
+### Changed
+
+- Release workflow: `setup-go` now uses `check-latest`, so the CI tests run on the newest Go 1.27.x
+  (the last release ran them on the runner's cached 1.27.3), and all actions moved to their
+  Node 24 majors (GitHub had flagged the Node 20 ones as deprecated).
 
 ## [0.5.1] - 2026-11-01
 

@@ -32,14 +32,14 @@ ignored and the viewer stays in browser mode (an admin can override that with
 | 0.4.1  | 8.0.1     | 0.4.1  |
 | 0.4.0  | 8.0.1     | 0.4.0  |
 
-## [0.6.0] - Unreleased
+## [0.6.0] - 2026-11-15
 
 Supported OpenCloud versions: **9.1.0**. Works with helper **^0.5.0** (0.5.x).
 
 **Upgrading:** this release runs only on OpenCloud **9.1.0**. **OpenCloud 8.0.1 is no longer
 supported**: on 8.0.1 the viewer hides itself (unless `allowUnsupportedOpenCloud` is set), so
-servers still on 8.0.1 should stay on viewer 0.5.1. The helper needs no change: 0.5.1 works with
-OpenCloud 9.1.0.
+servers still on 8.0.1 should stay on viewer 0.5.1. Use helper **0.5.2**
+(tested on 9.1.0 with this release; it also fixes three Go vulnerabilities).
 
 ### Changed (breaking)
 
@@ -51,6 +51,8 @@ OpenCloud 9.1.0.
   8.2.2, so the viewer is now built and tested against the same web packages the server runs.
 - Tests and the e2e suite now run against a local OpenCloud 9.1.0 stack; the version-gate tests
   use 8.0.1 as the unsupported version.
+- Release workflow: all actions moved to their Node 24 majors (GitHub had flagged the Node 20 ones
+  as deprecated), and `setup-go` uses `check-latest` for the newest Go 1.27.x.
 
 ### Security
 
