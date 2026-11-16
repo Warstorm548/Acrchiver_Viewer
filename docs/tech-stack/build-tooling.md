@@ -98,8 +98,12 @@ The root path uses `fileURLToPath`, so checkouts in folders with spaces work.
 ## Release workflows — `.github/workflows/`
 
 The only CI, one workflow per part since 0.5.0 (they have their own versions). Both run on a
-pushed tag (Ubuntu runner, Go from `server/go.mod`, Node from `.nvmrc`, pnpm from
-`packageManager`):
+pushed tag (Ubuntu runner, Go from `server/go.mod` with `check-latest` so the newest 1.27.x is
+used instead of the runner's cached one, Node from `.nvmrc`, pnpm from `packageManager`). Since
+2026-11-15 all actions are on their Node 24 majors (checkout v7, setup-go v7, setup-node v7,
+pnpm/action-setup v6, upload-artifact v7, download-artifact v8, Docker setup-buildx v4, login v4,
+build-push v7). The image itself is built by `server/Dockerfile` (`golang:1.27-alpine`, the newest
+1.27.x):
 
 - `release.yml` — viewer, tag `v*.*.*`. Job `check` compares the tag with `package.json`, runs
   `go vet` / `go test -race` and all viewer checks and unit tests (not e2e), then
